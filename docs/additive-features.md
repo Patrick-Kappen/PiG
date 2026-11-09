@@ -2031,24 +2031,24 @@ Remove when: Pi evaluates plugins in a runtime PiG does not start, or the progra
 Approval: owner decision relayed 2026-11-01 for the plugins' Node evaluator (plugfull lane), the same as D221.
 SCRUTINIZED:approved
 
-## D234 The start-up shell lookup finds bash without starting `which`
+## D234 The default shell is resolved once per process, beside the start, without starting `which`
 
-Summary: Where bash is not at /bin/bash, as on NixOS, PiG finds it on PATH itself instead of starting `which` on every start.
+Summary: PiG finds bash once when it starts, on PATH itself where bash is not at /bin/bash (as on NixOS), instead of starting `which` for every start and every bash command.
 
 Audience: runtime
 
 Stock disposition: inert capability. It selects no product behavior; the shell found is the one `which` names on every system where `which` reports the first executable match on PATH.
 
-What: `internal/shellconfig/default_unix.go` `findBash` looks `bash` up with `exec.LookPath` before `unixDefault` falls back to the lookup command. Pi's `getShellConfig` runs `findExecutableOnPath("bash")`, a `which` subprocess, whenever `/bin/bash` does not exist. `exec.LookPath` returns the first executable `bash` on PATH, as `which` does, without a process; when it finds none (a shell without the execute bit, as on Termux, or a relative PATH entry Go refuses) `FindExecutableOnPath` runs `which` and its first line decides, as in Pi. `FindExecutableOnPath` itself is unchanged, so the PowerShell lookup and Windows keep Pi's command.
+What: (1) `internal/shellconfig/default.go` `Default` resolves the platform's default shell once per process and returns that result to every later call; a failed lookup is not kept, so a shell installed later is found by the next call, as in Pi. `Prefetch` resolves it on its own goroutine, and `coding/cli/main.go` `Main` calls it at the start, beside the other facts of the process (the working directory, the environment), so the extension host info and the bash tool find it ready. (2) `internal/shellconfig/default_unix.go` `findBash` looks `bash` up with `exec.LookPath` before falling back to the lookup command: `exec.LookPath` returns the first executable `bash` on PATH, as `which` does, without a process; when it finds none (a shell without the execute bit, as on Termux, or a relative PATH entry Go refuses) `FindExecutableOnPath` runs `which` and its first line decides, as in Pi. `FindExecutableOnPath` itself is unchanged, so the PowerShell lookup and Windows keep Pi's command. A custom `shellPath` from the settings is still resolved on every call.
 
-Why: the lookup runs on every start with extensions (the extension host info) and for the bash tool. On a system without `/bin/bash` it was the first subprocess of a start, about 0.5 ms (MyPiglets #90, measured with its profiler).
+Why: Pi's `getShellConfig` runs `findExecutableOnPath("bash")`, a `which` subprocess, on every call whenever `/bin/bash` does not exist: once per start for the extension host info and once more for every bash tool call. On NixOS that was the first subprocess of a start, about 0.5 ms, and 0.5 ms before every bash command (MyPiglets #90, measured with its profiler). PATH does not change under a running process.
 
 Pi source: `packages/coding-agent/src/utils/shell.ts` `getShellConfig` (unix branch) and `findExecutableOnPath`.
 
-Call-site markers: `internal/shellconfig/default_unix.go` (`findBash`).
+Call-site markers: `internal/shellconfig/default.go` (`defaultShell`), `internal/shellconfig/default_unix.go` (`findBash`), `coding/cli/main.go` (`shellconfig.Prefetch`).
 
-Locked by: `TestFindBashLooksUpInProcessBeforeWhich` (`internal/shellconfig/default_unix_test.go`), with `TestFindExecutableOnPathTrustsTheFirstLineOfWhich` and `TestUnixShellConfigResolutionOrder` unchanged.
+Locked by: `TestDefaultResolvesTheShellOncePerProcess`, `TestDefaultLooksAgainAfterAFailure`, `TestPrefetchResolvesTheShellForTheFirstCaller` (`internal/shellconfig/default_test.go`), `TestFindBashLooksUpInProcessBeforeWhich` (`internal/shellconfig/default_unix_test.go`), with `TestFindExecutableOnPathTrustsTheFirstLineOfWhich` and `TestUnixShellConfigResolutionOrder` unchanged.
 
-Remove when: Pi looks the shell up without a subprocess.
+Remove when: Pi resolves the shell once or without a subprocess.
 
 Approval: pending; proposed on the fork's performance branch (Patrick-Kappen/PiG) for MyPiglets #90.
