@@ -7,11 +7,11 @@ import (
 	"os/exec"
 )
 
-// Default resolves the shell on unix, mirroring upstream getShellConfig's unix
-// branch (shell.ts). It never errors.
+// platformDefault resolves the shell on unix, mirroring upstream getShellConfig's unix
+// branch (shell.ts). It never errors. Default keeps its result for the process.
 //
 // Ports packages/coding-agent/src/utils/shell.ts (getShellConfig, unix branch).
-func Default() (Config, error) {
+func platformDefault() (Config, error) {
 	return unixDefault(fileExists, findBash), nil
 }
 
