@@ -2030,3 +2030,25 @@ Remove when: Pi evaluates plugins in a runtime PiG does not start, or the progra
 
 Approval: owner decision relayed 2026-11-01 for the plugins' Node evaluator (plugfull lane), the same as D221.
 SCRUTINIZED:approved
+
+## D234 The start-up shell lookup finds bash without starting `which`
+
+Summary: Where bash is not at /bin/bash, as on NixOS, PiG finds it on PATH itself instead of starting `which` on every start.
+
+Audience: runtime
+
+Stock disposition: inert capability. It selects no product behavior; the shell found is the one `which` names on every system where `which` reports the first executable match on PATH.
+
+What: `internal/shellconfig/default_unix.go` `findBash` looks `bash` up with `exec.LookPath` before `unixDefault` falls back to the lookup command. Pi's `getShellConfig` runs `findExecutableOnPath("bash")`, a `which` subprocess, whenever `/bin/bash` does not exist. `exec.LookPath` returns the first executable `bash` on PATH, as `which` does, without a process; when it finds none (a shell without the execute bit, as on Termux, or a relative PATH entry Go refuses) `FindExecutableOnPath` runs `which` and its first line decides, as in Pi. `FindExecutableOnPath` itself is unchanged, so the PowerShell lookup and Windows keep Pi's command.
+
+Why: the lookup runs on every start with extensions (the extension host info) and for the bash tool. On a system without `/bin/bash` it was the first subprocess of a start, about 0.5 ms (MyPiglets #90, measured with its profiler).
+
+Pi source: `packages/coding-agent/src/utils/shell.ts` `getShellConfig` (unix branch) and `findExecutableOnPath`.
+
+Call-site markers: `internal/shellconfig/default_unix.go` (`findBash`).
+
+Locked by: `TestFindBashLooksUpInProcessBeforeWhich` (`internal/shellconfig/default_unix_test.go`), with `TestFindExecutableOnPathTrustsTheFirstLineOfWhich` and `TestUnixShellConfigResolutionOrder` unchanged.
+
+Remove when: Pi looks the shell up without a subprocess.
+
+Approval: pending; proposed on the fork's performance branch (Patrick-Kappen/PiG) for MyPiglets #90.
