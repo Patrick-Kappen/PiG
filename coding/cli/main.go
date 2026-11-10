@@ -67,7 +67,6 @@ import (
 	"github.com/MichaelKinsy/PiG/internal/procpolicy"
 	"github.com/MichaelKinsy/PiG/internal/profiling"
 	"github.com/MichaelKinsy/PiG/internal/resolvepath"
-	"github.com/MichaelKinsy/PiG/internal/shellconfig"
 	"github.com/MichaelKinsy/PiG/internal/termuxenv"
 	"github.com/MichaelKinsy/PiG/tui"
 )
@@ -736,9 +735,6 @@ func Main(args []string, options *MainOptions) {
 	// pig divergence (D39): publish update ownership before command dispatch.
 	codingagent.PigletBinaryRelease = PigletBinaryVersion
 	codingagent.InstalledPigVersion = PigVersion
-
-	// pig additive (D234): the default shell is a fact of the process, as the working directory is; resolve it beside the start.
-	shellconfig.Prefetch()
 
 	// pig additive (D18): a Piglet Binary verifies its baked closure and
 	// signature before any command or session behavior. Stock Pig has no baked

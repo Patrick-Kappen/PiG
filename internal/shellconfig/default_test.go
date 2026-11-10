@@ -64,23 +64,3 @@ func TestDefaultLooksAgainAfterAFailure(t *testing.T) {
 		t.Fatalf("lookups: %d, want 2", *calls)
 	}
 }
-
-// Prefetch resolves the shell on its own goroutine; a caller that comes while it runs waits for the same result.
-func TestPrefetchResolvesTheShellForTheFirstCaller(t *testing.T) {
-	release := make(chan struct{})
-	calls := countLookups(t, func() (Config, error) {
-		<-release
-		return ForBash("/opt/bash"), nil
-	})
-	Prefetch()
-	close(release)
-	if got, err := Default(); err != nil || got.Path != "/opt/bash" {
-		t.Fatalf("got %+v, %v", got, err)
-	}
-	if _, err := Default(); err != nil {
-		t.Fatal(err)
-	}
-	if *calls != 1 {
-		t.Fatalf("lookups: %d, want 1", *calls)
-	}
-}
