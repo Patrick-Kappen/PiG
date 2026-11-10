@@ -2031,9 +2031,9 @@ Remove when: Pi evaluates plugins in a runtime PiG does not start, or the progra
 Approval: owner decision relayed 2026-11-01 for the plugins' Node evaluator (plugfull lane), the same as D221.
 SCRUTINIZED:approved
 
-## D234 The default shell is resolved once per process, beside the start, without starting `which`
+## D234 The default shell is resolved once per process, when first needed, without starting `which`
 
-Summary: PiG finds bash once when it starts, on PATH itself where bash is not at /bin/bash (as on NixOS), instead of starting `which` for every start and every bash command.
+Summary: PiG finds bash once per process, when it first needs it, on PATH itself where bash is not at /bin/bash (as on NixOS), instead of starting `which` for every start and every bash command.
 
 Audience: runtime
 
@@ -2051,4 +2051,5 @@ Locked by: `TestDefaultResolvesTheShellOncePerProcess`, `TestDefaultLooksAgainAf
 
 Remove when: Pi resolves the shell once or without a subprocess.
 
-Approval: pending; proposed on the fork's performance branch (Patrick-Kappen/PiG) for MyPiglets #90.
+Approval: fork owner decision 2026-11-10 for the fork's performance branch (Patrick-Kappen/PiG#1, MyPiglets #90); upstream approval pending.
+SCRUTINIZED:approved
