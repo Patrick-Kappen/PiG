@@ -2030,3 +2030,26 @@ Remove when: Pi evaluates plugins in a runtime PiG does not start, or the progra
 
 Approval: owner decision relayed 2026-11-01 for the plugins' Node evaluator (plugfull lane), the same as D221.
 SCRUTINIZED:approved
+
+## D234 The default shell is resolved once per process, when first needed, without starting `which`
+
+Summary: PiG finds bash once per process, when it first needs it, on PATH itself where bash is not at /bin/bash (as on NixOS), instead of starting `which` for every start and every bash command.
+
+Audience: runtime
+
+Stock disposition: inert capability. It selects no product behavior; the shell found is the one `which` names on every system where `which` reports the first executable match on PATH.
+
+What: (1) `internal/shellconfig/default.go` `Default` resolves the platform's default shell when it is first needed and keeps it for the environment the lookup reads (`PATH`, `PATHEXT`, `ProgramFiles`, `ProgramFiles(x86)`, `SystemRoot`): later calls in that environment read the kept result, a change to one of those variables looks again (code and tests that set them get the shell they describe), and a failed lookup is not kept, so a shell installed later is found by the next call, as in Pi. A run that never needs a shell resolves none, and the in-process lookup of (2) costs about 20 µs. (2) costs about 20 µs. (2) `internal/shellconfig/default_unix.go` `findBash` looks `bash` up with `exec.LookPath` before falling back to the lookup command: `exec.LookPath` returns the first executable `bash` on PATH, as `which` does, without a process; when it finds none (a shell without the execute bit, as on Termux, or a relative PATH entry Go refuses) `FindExecutableOnPath` runs `which` and its first line decides, as in Pi. `FindExecutableOnPath` itself is unchanged, so the PowerShell lookup and Windows keep Pi's command. A custom `shellPath` from the settings is still resolved on every call.
+
+Why: Pi's `getShellConfig` runs `findExecutableOnPath("bash")`, a `which` subprocess, on every call whenever `/bin/bash` does not exist: once per start for the extension host info and once more for every bash tool call. On NixOS that was the first subprocess of a start, about 0.5 ms, and 0.5 ms before every bash command (MyPiglets #90, measured with its profiler). PATH does not change under a running process.
+
+Pi source: `packages/coding-agent/src/utils/shell.ts` `getShellConfig` (unix branch) and `findExecutableOnPath`.
+
+Call-site markers: `internal/shellconfig/default.go` (`defaultShell`), `internal/shellconfig/default_unix.go` (`findBash`).
+
+Locked by: `TestDefaultResolvesTheShellOncePerProcess`, `TestDefaultLooksAgainAfterAFailure`, `TestDefaultLooksAgainWhenTheEnvironmentChanges` (`internal/shellconfig/default_test.go`), the Windows `TestWin_ShellResolvesGitBash`, `TestWin_ShellNoBashReturnsHelpfulError` and `TestResolveBangCmdFallsBackToCmdWithoutBash`, `TestFindBashLooksUpInProcessBeforeWhich` (`internal/shellconfig/default_unix_test.go`), with `TestFindExecutableOnPathTrustsTheFirstLineOfWhich` and `TestUnixShellConfigResolutionOrder` unchanged.
+
+Remove when: Pi resolves the shell once or without a subprocess.
+
+Approval: fork owner decision 2026-11-10 for the fork's performance branch (Patrick-Kappen/PiG#1, MyPiglets #90); upstream approval pending.
+SCRUTINIZED:approved
