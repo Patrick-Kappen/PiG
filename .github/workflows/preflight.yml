@@ -4,6 +4,8 @@ name: Pre-flight
 # The PiG CI pre-flight: automation/ci/preflight/README.md.
 
 on:
+  push:
+    branches: [ci/run]
   schedule:
     - cron: '17 * * * *'
   workflow_dispatch:
@@ -82,8 +84,17 @@ jobs:
           DRY_RUN: ${{ inputs.dry-run }}
           REPO: ${{ inputs.repo }}
           PRIVATE_TERMS: ${{ secrets.PIG_PRIVATE_TERMS }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -uo pipefail
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            PRS=$(gh pr list --repo "$GITHUB_REPOSITORY" --base ci/preflight --state open --json number --jq '[.[].number] | join(" ")')
+            echo "PRs against ci/preflight: ${PRS:-none}"
+            if [ -z "$PRS" ]; then
+              echo '[]' > "$RUNNER_TEMP/preflight/preflight-handled-0.json"
+              exit 0
+            fi
+          fi
           if [ -n "${PRIVATE_TERMS:-}" ]; then
             (umask 077 && printf '%s\n' "$PRIVATE_TERMS" > "$RUNNER_TEMP/private-terms")
             export PIG_PRIVATE_TERMS_FILE="$RUNNER_TEMP/private-terms"
