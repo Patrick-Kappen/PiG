@@ -913,7 +913,7 @@ What: upstream `formatUserAgent(identity)` (`packages/ai/src/utils/identity.ts`)
 
 Why: PiG is not Pi; providers, diagnostics, and their logs should distinguish PiG traffic and artifacts from Pi's, and identify both the PiG release and the Pi release it ports. The owner chose this shape on 2026-09-23 (delivery/OWNER-DECISIONS.md Q4).
 
-Observable effect: every default provider `User-Agent` (Anthropic Messages, OpenAI Completions, OpenAI/Azure/Codex Responses, Google Generative AI/Vertex, Mistral Conversations) and the `report.json` environment identity in an exported bug report read `pig/...` instead of one of Pi's `pi...` forms. A user-configured provider `User-Agent` header overrides the default, including for OpenAI Codex Responses (`buildBaseCodexHeaders` sets `originator` and `User-Agent` first, #10429). An Anthropic OAuth (subscription-token) request keeps sending `claude-cli/2.1.280` regardless (D63's sibling decision, Q3): that identity is not `getPiUserAgent()`'s output and is untouched by this divergence.
+Observable effect: every default provider `User-Agent` (Anthropic Messages, OpenAI Completions, OpenAI/Azure/Codex Responses, Google Generative AI/Vertex, Mistral Conversations) and the `report.json` environment identity in an exported bug report read `pig/...` instead of one of Pi's `pi...` forms. A user-configured provider `User-Agent` header overrides the default, including for OpenAI Codex Responses (`buildBaseCodexHeaders` sets `originator` and `User-Agent` first, #10429). An Anthropic OAuth (subscription-token) request keeps sending `claude-cli/2.1.322` (D235) regardless (D63's sibling decision, Q3): that identity is not `getPiUserAgent()`'s output and is untouched by this divergence.
 
 Call sites:
 - `ai/identity.go`: `FormatUserAgent` (detailed `pig/<version> (<platform> <release>; <arch>)`, short `pig`). `ai/anthropic_client.go`: `anthropicIdentityHeaders` (seeds the `User-Agent` key below the other client headers; an Anthropic OAuth request sends the Claude Code identity instead, as upstream). `ai/providers/bedrock/bedrock.go`: `bedrockUserAgent` adds `pig/<version>` to the AWS SDK for Go user agent, where Pi adds `pi/<version>` to the SDK for JavaScript.
@@ -3027,3 +3027,25 @@ Call-site markers: `mcp/streamable_http.go` (`Send`'s `application/json` case, `
 Evidence: `TestStreamableHTTPAppliesMaxMessageBytesToJSONResponses` (red on 67d7188739: the 2 KB reply is accepted), `TestStreamableHTTPDecodesJSONResponsesSplitInsideABOMAndAMultiByteCharacter`, `TestStreamableHTTPReadsOnlyAnExcerptOfHTTPErrorBodiesAndCancelsTheRest` (`mcp/streamable_http_body_cap_pi_test.go`, Pi's three tests), `TestStreamableHTTPTransportKeepsTheFirstMaxErrorBodyBytesOfAnErrorBody` (`mcp/review_regression_test.go`).
 
 Parity allowance: none needed; Pi 1.5.0 has no test of either behavior, and Pi main's tests are ported.
+
+## D235 An Anthropic OAuth request names Claude Code 2.1.322, as Pi main a05e3a0 does
+
+What: PiG's Anthropic Messages client ports Pi main a05e3a0 (`fix(ai): update reported Claude Code version`), which is not in Pi 1.5.0. An OAuth-token request sends `user-agent: claude-cli/2.1.322` where Pi 1.5.0 sends `claude-cli/2.1.280`. A configured or request `User-Agent` header still replaces it, as in Pi.
+
+Why: Anthropic refuses OAuth requests for newer models from a Claude Code release older than 2.1.290 (`400 invalid_request_error`, `error_code: claude_code_version_too_old`), so a Claude subscription cannot use those models through Pi 1.5.0's identity. Pi main's value, ahead of the pin, so that they work.
+
+Pi bug: Pi 1.5.0 (`packages/ai/src/api/anthropic-messages.ts`, `claudeCodeVersion = "2.1.280"`), fixed on Pi main by the commit above.
+
+Scope: the `user-agent` of Anthropic Messages requests with an OAuth token (`createClient`'s OAuth branch). Not affected: API-key requests, which send PiG's identity (D65), and requests whose headers set a `User-Agent`.
+
+Owner decision: approved for the personal fork only (Patrick-Kappen/PiG, `performance` branch) by fork owner Patrick Kappen on 2026-11-10, so that the fork's builds (MyPiglets `pig-test`) can use Claude subscription models before upstream takes the fix. This is not an approval by the PiG owner Michael Kinsy: upstream approval is requested in the pull request to MichaelKinsy/PiG, and this line is replaced by the upstream owner decision there.
+
+SCRUTINIZED:approved
+
+Remove when: the pinned Pi release contains a05e3a0. Then the call-site marker, the oracle comparison's mapping and this record go.
+
+Call-site markers: `ai/anthropic_client.go` (`claudeCodeVersion`).
+
+Evidence: `TestAnthropicClientUserAgent`, `TestAnthropicRequestAuthShapes`, `TestAnthropicOnPayloadReplacesBetas` (`ai/anthropic_oauth_test.go`), `TestBuildModelAnthropicEnvAuthRequestShapes` (`coding/anthropic_auth_test.go`) and `TestBuildModelAnthropicAuthRequestShapes` (`coding/cli/model_anthropic_auth_test.go`), which expect `claude-cli/2.1.322`.
+
+Parity allowance: `comparableRequest` (`ai/response_oracle_support_test.go`) reads the Pi 1.5.0 oracle's `claude-cli/2.1.280` as `claude-cli/2.1.322`, so `TestProviderIdentityHeadersMatchPi` and `TestAnthropicUserAgentHeaderReplacesTheClaudeCodeIdentityLikePi` keep comparing every other header and the header precedence with Pi.
