@@ -11,6 +11,10 @@ name: Pre-flight
 # keeps the run green. The verify job then checks that every PR of the run got its status and comment; when one did
 # not, the pre-flight itself fell short: it keeps one issue open that says which, and fails the run.
 on:
+  # Fork CI branch only, never merged: the other workflows are gone from this branch. A push to ci/run (this branch
+  # and an empty commit) runs the pre-flight for real, over this fork's PRs against ci/preflight only.
+  push:
+    branches: [ci/run]
   schedule:
     - cron: '17 * * * *'
   workflow_dispatch:
@@ -71,8 +75,19 @@ jobs:
           PRS: ${{ inputs.prs }}
           DRY_RUN: ${{ inputs.dry-run }}
           REPO: ${{ inputs.repo }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -uo pipefail
+          # Fork CI branch only: the PRs against ci/preflight, never the fork's other PRs. None is an empty report:
+          # an empty --prs would mean every open PR.
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            PRS=$(gh pr list --repo "$GITHUB_REPOSITORY" --base ci/preflight --state open --json number --jq '[.[].number] | join(" ")')
+            echo "PRs against ci/preflight: ${PRS:-none}"
+            if [ -z "$PRS" ]; then
+              echo '[]' > "$RUNNER_TEMP/preflight/preflight-handled-0.json"
+              exit 0
+            fi
+          fi
           extra=()
           if [ "${DRY_RUN:-}" = true ]; then extra+=(--dry-run); fi
           # Another repository is read only: never written to.
