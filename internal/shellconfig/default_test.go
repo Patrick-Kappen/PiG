@@ -64,3 +64,33 @@ func TestDefaultLooksAgainAfterAFailure(t *testing.T) {
 		t.Fatalf("lookups: %d, want 2", *calls)
 	}
 }
+
+// The shell is kept per environment it was found in: a change to PATH (or, on Windows, to where Git is installed)
+// looks again, as code and tests that set them expect; the same environment does not (D234).
+func TestDefaultLooksAgainWhenTheEnvironmentChanges(t *testing.T) {
+	calls := countLookups(t, func() (Config, error) { return ForBash("/opt/bash"), nil })
+	t.Setenv("PATH", "/first")
+	if _, err := Default(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Default(); err != nil {
+		t.Fatal(err)
+	}
+	if *calls != 1 {
+		t.Fatalf("same environment: %d lookups, want 1", *calls)
+	}
+	t.Setenv("PATH", "/second")
+	if _, err := Default(); err != nil {
+		t.Fatal(err)
+	}
+	if *calls != 2 {
+		t.Fatalf("PATH changed: %d lookups, want 2", *calls)
+	}
+	t.Setenv("ProgramFiles", `C:\elsewhere`)
+	if _, err := Default(); err != nil {
+		t.Fatal(err)
+	}
+	if *calls != 3 {
+		t.Fatalf("ProgramFiles changed: %d lookups, want 3", *calls)
+	}
+}
