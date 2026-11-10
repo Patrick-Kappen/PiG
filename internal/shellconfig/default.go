@@ -11,7 +11,7 @@ var resolveDefault = platformDefault
 // defaultShell is the default shell this process resolved.
 //
 // pig additive (D234): Pi resolves the default shell on every getShellConfig call (shell.ts), a `which` process each
-// time where /bin/bash does not exist. PiG resolves it once per process, beside the start (Prefetch), and every later
+// time where /bin/bash does not exist. PiG resolves it once per process, when it is first needed, and every later
 // call reads that result: PATH does not change under a running process. A failed lookup is not kept, so a shell
 // installed later is still found, as in Pi.
 var defaultShell struct {
@@ -33,9 +33,4 @@ func Default() (Config, error) {
 	c := *defaultShell.config
 	c.Args = slices.Clone(c.Args)
 	return c, nil
-}
-
-// Prefetch resolves Default on its own goroutine, so the extension host and the bash tool find it ready.
-func Prefetch() {
-	go func() { _, _ = Default() }()
 }
