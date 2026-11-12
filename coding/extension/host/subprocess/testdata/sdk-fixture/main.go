@@ -245,8 +245,14 @@ func main() {
 
 	ext.ToolWithPrepareArguments("prepared_tool", "Transform legacy arguments before execution", sdk.Schema{
 		"type": "object", "required": []string{"text"}, "properties": map[string]any{"text": map[string]any{"type": "string"}},
-	}, func(params map[string]any) (map[string]any, error) {
-		return map[string]any{"text": params["legacy"]}, nil
+	}, func(args json.RawMessage) (json.RawMessage, error) {
+		var params struct {
+			Legacy any `json:"legacy"`
+		}
+		if err := json.Unmarshal(args, &params); err != nil {
+			return nil, err
+		}
+		return json.Marshal(map[string]any{"text": params.Legacy})
 	}, func(_ sdk.Context, params map[string]any) (any, error) {
 		text, _ := params["text"].(string)
 		return map[string]string{"content": "prepared:" + text}, nil
