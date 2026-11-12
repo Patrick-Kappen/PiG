@@ -137,6 +137,9 @@ type Options struct {
 	ClientVersion string
 	// Terminal adds the terminal presentation (tool renderers, the `/mcp` manager view). Nil is headless.
 	Terminal *Terminal
+	// Pool keeps stdio server connections across session replacements of the process (D236). Nil closes every
+	// server on session_shutdown and starts it again on the next session_start, as Pi does.
+	Pool *ConnectionPool
 }
 
 const (
@@ -894,8 +897,9 @@ func (e *Extension) attemptCurrentLocked(session context.Context, s *server, att
 	return session.Err() == nil && s.attempt == attempt && s.enabled() && slices.Contains(e.servers, s)
 }
 
-// createConnection creates the server's connection, or returns nil when isCurrent reports that the attempt no longer applies.
-func (e *Extension) createConnection(s *server, isCurrent func() bool) (*Connection, error) {
+// createConnection creates the server's connection for owner, or returns nil when the attempt no longer applies. The
+// connection reports its tools and state to its owner at the time, which a session that takes it over replaces.
+func (e *Extension) createConnection(s *server, owner *connectionOwner) (*Connection, error) {
 	e.mu.Lock()
 	cwd := e.sessionCwd
 	e.mu.Unlock()
@@ -919,18 +923,22 @@ func (e *Extension) createConnection(s *server, isCurrent func() bool) (*Connect
 		},
 		Log: e.getServerLog(),
 		OnTools: func(connection *Connection) {
-			if isCurrent() {
-				e.registerTools(connection)
+			if o := connection.owner.Load(); o != nil && o.current() {
+				o.ext.registerTools(connection)
 			}
 		},
 		OnChange: func(connection *Connection) {
-			if isCurrent() {
-				e.onConnectionChange(connection)
+			o := connection.owner.Load()
+			if o == nil {
 				return
 			}
-			e.mu.Lock()
-			delete(e.tokensAtSignIn, connection)
-			e.mu.Unlock()
+			if o.current() {
+				o.ext.onConnectionChange(connection)
+				return
+			}
+			o.ext.mu.Lock()
+			delete(o.ext.tokensAtSignIn, connection)
+			o.ext.mu.Unlock()
 		},
 		ClientName:    e.options.ClientName,
 		ClientVersion: e.options.ClientVersion,
@@ -938,10 +946,14 @@ func (e *Extension) createConnection(s *server, isCurrent func() bool) (*Connect
 	if err != nil {
 		return nil, err
 	}
-	if !isCurrent() {
+	connection.owner.Store(owner)
+	// Checked and stored under one lock: a session_start or shutdown in between would otherwise miss the connection, which
+	// it takes over or closes through the server.
+	e.mu.Lock()
+	if !e.attemptCurrentLocked(owner.session, s, owner.attempt) {
+		e.mu.Unlock()
 		return nil, nil
 	}
-	e.mu.Lock()
 	s.connection.Store(connection)
 	e.mu.Unlock()
 	e.emitChange()
@@ -962,28 +974,57 @@ func (e *Extension) startConnection(ctx EventContext, s *server, after <-chan st
 	s.attempt = attempt
 	s.ready = ready
 	e.mu.Unlock()
-	isCurrent := func() bool {
-		e.mu.Lock()
-		defer e.mu.Unlock()
-		return e.attemptCurrentLocked(session, s, attempt)
-	}
+	owner := &connectionOwner{ext: e, session: session, server: s, attempt: attempt}
 	e.background.Go(func() {
 		defer close(ready)
 		if after != nil {
 			<-after
 		}
-		if !isCurrent() {
+		if !owner.current() {
 			return
 		}
-		connection, err := e.createConnection(s, isCurrent)
+		connection, err := e.createConnection(s, owner)
 		if err != nil {
 			ctx.notifyLoadFailure("MCP failed to load: " + err.Error())
 			return
 		}
-		if connection == nil || !isCurrent() {
+		if connection == nil || !owner.current() {
 			return
 		}
 		_, _ = connection.GetClient(context.Background())
+	})
+	return ready
+}
+
+// adoptConnection makes a connection of an earlier session or session_start the connection of s, without starting the
+// server again: the connection reports to this session from now on, and its tools are registered here once it is
+// connected. It returns the server's ready channel, or nil when the connection was closed or claimed meanwhile.
+func (e *Extension) adoptConnection(s *server, connection *Connection) <-chan struct{} {
+	previous := connection.owner.Load()
+	if previous == nil || connection.isClosed() {
+		return nil
+	}
+	ready := make(chan struct{})
+	attempt := &attemptToken{}
+	e.mu.Lock()
+	owner := &connectionOwner{ext: e, session: e.session, server: s, attempt: attempt}
+	if !connection.owner.CompareAndSwap(previous, owner) {
+		e.mu.Unlock()
+		return nil
+	}
+	s.attempt, s.ready = attempt, ready
+	s.connection.Store(connection)
+	e.mu.Unlock()
+	e.background.Go(func() {
+		defer close(ready)
+		// Joins a connect in flight; returns at once when the connection is connected. Closing the connection ends its
+		// lifetime, which aborts the connect.
+		//portlint:allow ctxbackground the connect is bound to the connection's lifetime, as startConnection's is
+		_, _ = connection.GetClient(context.Background())
+		if owner.current() && connection.State() == StateConnected {
+			e.registerTools(connection)
+		}
+		e.emitChange()
 	})
 	return ready
 }
@@ -1529,6 +1570,18 @@ func (e *Extension) acceptedConfig(ctx EventContext) LoadedMcpConfig {
 func (e *Extension) SessionStart(ctx EventContext) {
 	loaded := e.acceptedConfig(ctx)
 	e.mu.Lock()
+	// A session_start without a session_shutdown before it (RPC mode binds a replacement twice, rpc-mode.ts:435-441)
+	// carries the connections of the first: Pi's second start replaces the servers before the first start's
+	// connections spawn anything (they wait for setImmediate and the MCP runtime, index.ts:1140), so it runs each
+	// server once.
+	carried := map[string]*Connection{}
+	if e.session.Err() == nil {
+		for _, s := range e.servers {
+			if connection := s.connection.Load(); connection != nil {
+				carried[poolKey(s.entry, e.sessionCwd)] = connection
+			}
+		}
+	}
 	e.configErrors = loaded.Errors
 	e.projectConfig = loaded.ProjectConfig
 	e.autoEnableCodemode = loaded.AutoEnableCodemode == nil || *loaded.AutoEnableCodemode
@@ -1560,13 +1613,20 @@ func (e *Extension) SessionStart(ctx EventContext) {
 	// Codemode or tool_search is activated from the config: the first prompt does not wait for servers whose tools
 	// are not declared to the model, and scripts or searches wait for them.
 	e.ensureDiscoveryActive(ctx)
+	readies := make([]<-chan struct{}, 0, len(enabled))
+	for _, s := range enabled {
+		readies = append(readies, e.connectServer(ctx, s, carried))
+	}
+	for _, connection := range carried {
+		e.background.Go(func() { closeUnowned(connection) })
+	}
+	if e.options.Pool != nil {
+		// pig divergence (D236): what the previous session left and this one did not take over closes in the background.
+		e.options.Pool.closeParked()
+	}
 	if len(enabled) == 0 {
 		e.reportProblems(ctx, nil)
 		return
-	}
-	readies := make([]<-chan struct{}, len(enabled))
-	for i, s := range enabled {
-		readies[i] = e.startConnection(ctx, s, nil)
 	}
 	pending := make(chan struct{})
 	e.mu.Lock()
@@ -1581,6 +1641,32 @@ func (e *Extension) SessionStart(ctx EventContext) {
 			e.reportStartupProblems(ctx)
 		}
 	})
+}
+
+// connectServer connects an enabled server at session_start: it takes over the server's connection from an earlier
+// session_start of this session (carried, from which it removes it) or, for a stdio server, from the previous session
+// in the pool, and starts a new connection otherwise. It returns the server's ready channel.
+func (e *Extension) connectServer(ctx EventContext, s *server, carried map[string]*Connection) <-chan struct{} {
+	key := poolKey(s.entry, ctx.Cwd)
+	connection := carried[key]
+	delete(carried, key)
+	if connection == nil && e.options.Pool != nil && isStdio(s.entry) {
+		// pig divergence (D236): the server keeps running across the session replacement.
+		connection = e.options.Pool.take(key)
+	}
+	if connection != nil {
+		if ready := e.adoptConnection(s, connection); ready != nil {
+			return ready
+		}
+	}
+	return e.startConnection(ctx, s, nil)
+}
+
+// closeUnowned closes a connection that no session took over, unless a session took it over or closed it meanwhile.
+func closeUnowned(connection *Connection) {
+	if owner := connection.owner.Load(); owner != nil && connection.owner.CompareAndSwap(owner, nil) {
+		connection.Close()
+	}
 }
 
 // reportStartupProblems runs reportProblems at the end of the startup chain. Upstream's `.catch` on that chain also
@@ -1860,23 +1946,54 @@ func (e *Extension) McpServersChange(ctx EventContext) {
 // SessionShutdown is the `session_shutdown` handler: it ends the session, which
 // stops running sign-ins, closes every connection and waits for the extension's
 // background work.
-func (e *Extension) SessionShutdown() { e.sessionShutdown(context.Background()) } //portlint:allow ctxbackground Pi's session_shutdown handler takes no signal (extensions/mcp/index.ts:1252)
+func (e *Extension) SessionShutdown() { e.sessionShutdown(context.Background(), "quit") } //portlint:allow ctxbackground Pi's session_shutdown handler takes no signal (extensions/mcp/index.ts:1252)
 
-// sessionShutdown is SessionShutdown for a dispatch that hears when the handler stops running synchronously. Pi's
+// SessionShutdownFor is SessionShutdown for the session_shutdown reason of the event: "reload", "new", "resume" and
+// "fork" end a session that another replaces, and any other reason ("quit") ends the process. With [Options.Pool], a replaced
+// session leaves its connected stdio servers running for the next session and closes the other connections in the
+// background (D236).
+func (e *Extension) SessionShutdownFor(reason string) {
+	//portlint:allow ctxbackground Pi's session_shutdown handler takes no signal (extensions/mcp/index.ts:1252)
+	e.sessionShutdown(context.Background(), reason)
+}
+
+// sessionShutdown is SessionShutdownFor for a dispatch that hears when the handler stops running synchronously. Pi's
 // handler awaits Promise.all over the background actions and the connections it closes (index.ts:1249-1255): with any of
 // them pending its event loop turns there, and with none it settles within microtasks.
-func (e *Extension) sessionShutdown(ctx context.Context) {
+func (e *Extension) sessionShutdown(ctx context.Context, reason string) {
+	pool := e.options.Pool
+	replaced := pool != nil && slices.Contains([]string{"reload", "new", "resume", "fork"}, reason)
 	e.mu.Lock()
 	e.endSession()
 	var closing []*Connection
 	for _, s := range e.servers {
-		if s.connection.Load() != nil {
-			closing = append(closing, s.connection.Load())
+		connection := s.connection.Load()
+		if connection == nil {
+			continue
 		}
+		if replaced && isStdio(s.entry) && s.enabled() && connection.State() == StateConnected {
+			// pig divergence (D236): the next session takes the running server over. A server that is still connecting
+			// closes: the shutdown would otherwise wait for its connect.
+			pool.park(poolKey(s.entry, e.sessionCwd), connection)
+			continue
+		}
+		closing = append(closing, connection)
 	}
 	e.servers = nil
 	e.mu.Unlock()
 	e.emitChange()
+	if replaced {
+		// pig divergence (D236): the replacement does not wait for servers to exit; the pool closes them, and the
+		// shutdown that ends the process waits for it.
+		for _, connection := range closing {
+			pool.closeInBackground(connection)
+		}
+		if e.background.running() {
+			handleryield.Report(ctx)
+		}
+		e.background.Wait()
+		return
+	}
 	if len(closing) > 0 || e.background.running() {
 		handleryield.Report(ctx)
 	}
@@ -1886,6 +2003,9 @@ func (e *Extension) sessionShutdown(ctx context.Context) {
 	}
 	wg.Wait()
 	e.background.Wait()
+	if pool != nil {
+		pool.Close()
+	}
 }
 
 // lane returns the call lane of a server. The caller holds toolMu.

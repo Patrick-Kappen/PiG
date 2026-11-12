@@ -13,7 +13,7 @@ import (
 func TestSessionShutdownYieldsOnlyWhileWorkIsPending(t *testing.T) {
 	yields := func(e *Extension) int {
 		n := 0
-		e.sessionShutdown(handleryield.With(context.Background(), func() { n++ }))
+		e.sessionShutdown(handleryield.With(context.Background(), func() { n++ }), "quit")
 		return n
 	}
 	idle := New(nil, Options{LoadConfig: func(context.Context) LoadedMcpConfig { return LoadedMcpConfig{} }, LogPath: t.TempDir() + "/mcp.log"})
@@ -28,7 +28,7 @@ func TestSessionShutdownYieldsOnlyWhileWorkIsPending(t *testing.T) {
 	busy.sessionShutdown(handleryield.With(context.Background(), func() {
 		n++
 		close(release)
-	}))
+	}), "quit")
 	if n != 1 {
 		t.Fatalf("shutdown with a background action yields = %d, want 1", n)
 	}
