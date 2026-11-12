@@ -17,3 +17,6 @@ func (o *Options) RefuseMcpConfigFiles(string) {}
 
 // ConfigureMcp does nothing: this build has no MCP.
 func (o *Options) ConfigureMcp(string, string, func(string), ...func(string) error) {}
+
+// KeepMcpServersAcrossSessions does nothing: this build has no MCP.
+func (o *Options) KeepMcpServersAcrossSessions() {}

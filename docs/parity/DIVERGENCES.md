@@ -3050,6 +3050,28 @@ Evidence: `TestAnthropicClientUserAgent`, `TestAnthropicRequestAuthShapes`, `Tes
 
 Parity allowance: `comparableRequest` (`ai/response_oracle_support_test.go`) reads the Pi 1.5.0 oracle's `claude-cli/2.1.280` as `claude-cli/2.1.322`, so `TestProviderIdentityHeadersMatchPi` and `TestAnthropicUserAgentHeaderReplacesTheClaudeCodeIdentityLikePi` keep comparing every other header and the header precedence with Pi.
 
+## D236 A session replacement keeps the running stdio MCP servers
+
+What: In the `pig` CLI, a session replacement hands every connected stdio MCP server to the next session when the next session has the same server entry (name, config, source, scope and override) and the same working directory. The replacements are `/new`, `/resume`, `/fork` and `/reload`, the RPC commands `new_session`, `switch_session`, `fork` and `clone`, and an extension's `newSession`, `fork` and `switchSession`. The next session registers the server's tools and calls them without starting the process again. The replacement closes the other connections in the background and does not wait for those servers to exit: HTTP servers, servers that are still connecting, and servers whose entry or directory changed. The session_shutdown that ends the process (`quit`) closes every server and waits for it, as in Pi.
+
+Why: Pi stops every server on session_shutdown, waits until each one exits, and starts every server again on the next session_start. A stdio server gets 500 ms to exit after its stdin closes, then SIGTERM, then SIGKILL 2 s later. The Azure MCP Server (`azmcp`) ignores SIGTERM and needs about 5 s to exit, so every replacement waited 2.5 s before the next session started, and the next session then started every server again (`azmcp` answers `tools/list` after about 1 s). Measured on 2026-11-12 in a directory with four stdio servers (azure, azure-devops, bicep, forgejo) and two HTTP servers: RPC `new_session` took 2.53 s and started 4 server processes; with this change it takes 20–60 ms and starts none. Interactive `/new` behaves the same way.
+
+Pi bug: not a bug in Pi. Pi's lifecycle is correct but slow; this is a performance difference.
+
+Scope: the built-in MCP extension of the `pig` CLI (`builtin.Options.KeepMcpServersAcrossSessions`, which `cli.nativeBuiltInExtensions` calls), through `mcpext.Options.Pool`. Not affected: programs that use `mcpext` without a pool (they keep Pi's behavior), the MCP extension a session-graph factory creates, HTTP servers, and the `pig mcp` shell commands. `/reload` keeps a server whose entry did not change; `/mcp` reconnect restarts it.
+
+Owner decision: approved for the personal fork only (Patrick-Kappen/PiG) by fork owner Patrick Kappen on 2026-11-12 (MyPiglets #382), so that the fork's builds stop a session switch from waiting for and restarting MCP servers. This is not an approval by the PiG owner Michael Kinsy: upstream approval is requested in the pull request to MichaelKinsy/PiG, and this line is replaced by the upstream owner decision there.
+
+SCRUTINIZED:approved
+
+Remove when: Pi keeps MCP servers across a session replacement, or a host-level MCP server service replaces the pool. Then the call-site markers, `ConnectionPool`, `Options.Pool`, `KeepMcpServersAcrossSessions` and this record go.
+
+Call-site markers: `coding/mcpext/pool.go` (`ConnectionPool`), `coding/mcpext/extension.go` (`SessionStart`, `connectServer`, `sessionShutdown`), `coding/extension/builtin/mcp_on.go` (`KeepMcpServersAcrossSessions`), `coding/cli/builtin_extensions.go` (`nativeBuiltInExtensions`).
+
+Evidence: `TestThePoolKeepsAStdioServerAcrossASessionReplacement`, `TestThePoolDoesNotKeepAServerWhoseEntryOrDirectoryChanged`, `TestAReplacementClosesServersInTheBackground` and `TestWithoutAPoolAReplacementStartsTheServersAgain` (`coding/mcpext/pool_test.go`).
+
+Parity allowance: no parity scenario starts an MCP server and replaces the session. The scenarios of the `rpc` and `session` families replace sessions without MCP servers, so they compare unchanged output. Server process starts are not output that a comparator reads.
+
 ## D615 The Go, Python, Lisp and Rust SDKs show the host each provider stream event as it was when the provider pushed it, which is stronger than Pi's consumer guarantees
 
 What: an extension provider that builds its stream with `CreateAssistantMessageEventStream` (Go `sdk.CreateAssistantMessageEventStream`, Python `create_assistant_message_event_stream`, Lisp `create-assistant-message-event-stream`) and pushes an event that shows a message it goes on changing (the shared `partial`) is forwarded to the host with the message as it was when `Push` returned. The result the host receives is the message as it was when the provider ended the stream (the `done`/`error` event's message, or the value passed to `End`). The Go SDK encodes the event on the provider's goroutine at `Push`; the Python and Lisp SDKs queue a deep copy. In-process iteration (`Events`, `events()`, `model-stream-next`) still yields the pushed object itself, and `Result` returns the provider's own message. A value that cannot be copied or encoded (a cycle, a lock, a dotted list) fails the request that forwards the stream; it does not raise in `Push`. The Rust SDK takes the event by value, so it shows the host the event as pushed with no copy.
