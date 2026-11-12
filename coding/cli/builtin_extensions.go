@@ -29,6 +29,8 @@ func nativeBuiltInExtensions(settings *codingagent.SettingsManager) []extension.
 		agentDir = dir
 	}
 	options.ConfigureMcp(agentDir, codingagent.ConfigDirName(), codingagent.OpenBrowser, codingagent.CopyToClipboard)
+	// pig divergence (D236): a session replacement keeps the running stdio MCP servers.
+	options.KeepMcpServersAcrossSessions()
 	// pig additive (D202): a closed Piglet Binary starts no server from the user or project mcp.json.
 	options.RefuseMcpConfigFiles(pigletBinaryMcpConfigRefusal(currentPigletBinary()))
 	// pig additive (D92): a Binary without llama.cpp has no llama.cpp entry.

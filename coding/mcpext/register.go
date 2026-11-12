@@ -141,8 +141,8 @@ func Factory(options Options) func(api API) *Extension {
 				return e.RunCommand(ctx, args, commandContext(ctx, options.CopyToClipboard, options.Terminal))
 			},
 		})
-		api.OnSessionShutdown(func(ctx context.Context, _ extension.SessionShutdownEvent) error {
-			e.sessionShutdown(ctx)
+		api.OnSessionShutdown(func(ctx context.Context, event extension.SessionShutdownEvent) error {
+			e.sessionShutdown(ctx, event.Reason)
 			return nil
 		})
 		return e
