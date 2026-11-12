@@ -21,4 +21,5 @@ The fork keeps two lines, and these files keep them current. Every workflow here
 - `UPSTREAM_PR_TOKEN`: a classic token with `public_repo`, for pull requests in `MichaelKinsy/PiG`.
 - `FORK_SIGNING_KEY`: the private SSH key whose public half is a signing key of the fork owner's account.
 - Auto-merge allowed; rulesets on `main` and `performance` require `CI result` and `Security result`.
+- One inherited file is changed: `ci.yml`'s commit sign-off check skips a pull request from a `sync/` branch. Upstream squash-merges through GitHub, and most of those commits carry no sign-off of their own; upstream checks the sign-offs on its pull requests before the squash. A forward pull request still gets the check.
 - Disabled inherited workflows (no file is changed): `release-candidate`, `npm-publish`, `mirror-ci-tools`, `ci-images`, `live-providers`, `discord-notify`, `scorecard`, `nightly`, `startup-performance`.
