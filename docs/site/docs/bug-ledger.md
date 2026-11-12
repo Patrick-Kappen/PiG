@@ -215,6 +215,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-2c3897f](#bf-2c3897f) | The Lisp and Python extension SDKs now give each `onThemeChange` handler the theme of its own change, in… | PiG's own defect | All platforms | 0.7.0 |
 | [BF-2c5d240](#bf-2c5d240) | fix(extension): take a Node client whose pipe connect event has not been set | PiG's own defect | All platforms | Unreleased |
 | [BF-2c5db8b](#bf-2c5db8b) | A Piglet Binary with a fused Go extension starts within a few milliseconds of Stock PiG | PiG's own defect | All platforms | 0.5.0 |
+| [BF-2c79a49](#bf-2c79a49) | In RPC mode, a session replacement no longer leaves a second process of each MCP server running | PiG's own defect | All platforms | Unreleased |
 | [BF-2c88c5f](#bf-2c88c5f) | Ill-formed UTF-8 in a string that PiG re-encodes as JSON (an extension's raw JSON, tool schemas, code-mode… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-2d05dc8](#bf-2d05dc8) | A models.json cost that sets `tiers: []` (a custom model's cost, or a `modelOverrides` cost) keeps… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-2d23c91](#bf-2d23c91) | A redundant system prompt update (tools, rules) no longer follows an extension setting the same active tools… | A fix Pi shipped that PiG ported | All platforms | 0.7.0 |
@@ -4339,6 +4340,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Fix commits:** `2c5db8b20a` (2026-10-06)
 - **Tests:** None recorded.
 - **Release note:** A Piglet Binary with a fused Go extension starts within a few milliseconds of Stock PiG. On an Apple M4 Pro (median of 20, faux provider), `-p` took 72.1 ms against 31.7 ms for Stock PiG and now takes 33.0 ms, and the first typed key showed in the editor after 71.0 ms against 33.6 ms and now after 33.4 ms. The extension host encoded the whole model catalog (more than 1 MB of JSON) three times at startup for every extension. Now it builds and sends that snapshot only to Node extensions, which answer `ctx.modelRegistry` reads from it. Go, Rust and Python extensions read the registry from the host when they ask, as before, so Stock PiG with such extensions starts faster too. See D19 in `docs/additive-features.md`.
+
+### BF-2c79a49
+
+**In RPC mode, a session replacement no longer leaves a second process of each MCP server running**
+
+- **Source:** PiG's own defect
+- **Symptom:** In RPC mode, a session replacement no longer leaves a second process of each MCP server running.
+- **Root cause:** RPC mode binds a replaced session twice (rpc-mode.ts:435-441), so the MCP extension gets a second session_start without a session_shutdown. It replaced its servers without closing their connections: a server the first start had already spawned kept running until the process exited, one process per server and replacement (MyPiglets #382). The second start now takes over the connections of the first, so each server runs once, as in Pi, where the first start's connections wait for setImmediate and are replaced before they spawn. A connection is checked and stored under one lock, so a start or shutdown in between cannot miss it.
+- **User impact:** Behavior differed from Pi
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `2c79a49d4f` (2026-11-12)
+- **Tests:** `coding/mcpext/pool_test.go::TestAReplacementClosesServersInTheBackground`, `coding/mcpext/pool_test.go::TestASecondSessionStartClosesAStartingServerItReplaces`, `coding/mcpext/pool_test.go::TestASecondSessionStartTakesOverTheConnectionsOfTheFirst`, `coding/mcpext/pool_test.go::TestThePoolDoesNotKeepAServerWhoseEntryOrDirectoryChanged`, `coding/mcpext/pool_test.go::TestThePoolKeepsAStdioServerAcrossASessionReplacement`, `coding/mcpext/pool_test.go::TestWithoutAPoolAReplacementStartsTheServersAgain`, `coding/mcpext/session_shutdown_yield_internal_test.go::TestSessionShutdownYieldsOnlyWhileWorkIsPending`
+- **Release note:** In RPC mode, a session replacement no longer leaves a second process of each MCP server running. RPC mode starts a replaced session twice, and the second start replaced the servers of the first without closing them, so a server the first start had already spawned ran until PiG exited. The second start now takes over the first start's connections, and each server runs once.
 
 ### BF-2c88c5f
 
@@ -24069,6 +24084,7 @@ Each divergence record is accounted for here. A divergence that fixes a Pi defec
 | D231 | PiG follows Pi main 1708b4788 ahead of the v1.5.0 pin: RPC mode acts on an idle `ctx.shutdown()` | [BF-0cced6a](#bf-0cced6a) |
 | D233 | A Streamable HTTP application/json reply is capped at maxMessageBytes, and an HTTP error body keeps its first… | [BF-d4e641b](#bf-d4e641b) |
 | D235 | An Anthropic OAuth request names Claude Code 2.1.322, as Pi main a05e3a0 does | [BF-935506d](#bf-935506d) |
+| D236 | A session replacement keeps the running stdio MCP servers | deliberate difference |
 | D615 | The Go, Python, Lisp and Rust SDKs show the host each provider stream event as it was when the provider… | deliberate difference |
 
 ## Fix-titled commits that are not bugs in a release

@@ -5775,6 +5775,34 @@
       "tests": []
     },
     {
+      "id": "BF-2c79a49",
+      "title": "In RPC mode, a session replacement no longer leaves a second process of each MCP server running",
+      "symptom": "In RPC mode, a session replacement no longer leaves a second process of each MCP server running.",
+      "rootCause": "RPC mode binds a replaced session twice (rpc-mode.ts:435-441), so the MCP extension gets a second session_start without a session_shutdown. It replaced its servers without closing their connections: a server the first start had already spawned kept running until the process exited, one process per server and replacement (MyPiglets #382). The second start now takes over the connections of the first, so each server runs once, as in Pi, where the first start's connections wait for setImmediate and are replaced before they spawn. A connection is checked and stored under one lock, so a start or shutdown in between cannot miss it.",
+      "rootCauseSource": "commit",
+      "userImpact": "Behavior differed from Pi",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "In RPC mode, a session replacement no longer leaves a second process of each MCP server running. RPC mode starts a replaced session twice, and the second start replaced the servers of the first without closing them, so a server the first start had already spawned ran until PiG exited. The second start now takes over the first start's connections, and each server runs once.",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "2c79a49d4f",
+          "date": "2026-11-12"
+        }
+      ],
+      "tests": [
+        "coding/mcpext/pool_test.go::TestAReplacementClosesServersInTheBackground",
+        "coding/mcpext/pool_test.go::TestASecondSessionStartClosesAStartingServerItReplaces",
+        "coding/mcpext/pool_test.go::TestASecondSessionStartTakesOverTheConnectionsOfTheFirst",
+        "coding/mcpext/pool_test.go::TestThePoolDoesNotKeepAServerWhoseEntryOrDirectoryChanged",
+        "coding/mcpext/pool_test.go::TestThePoolKeepsAStdioServerAcrossASessionReplacement",
+        "coding/mcpext/pool_test.go::TestWithoutAPoolAReplacementStartsTheServersAgain",
+        "coding/mcpext/session_shutdown_yield_internal_test.go::TestSessionShutdownYieldsOnlyWhileWorkIsPending"
+      ]
+    },
+    {
       "id": "BF-2c88c5f",
       "title": "Ill-formed UTF-8 in a string that PiG re-encodes as JSON (an extension's raw JSON, tool schemas, code-mode…",
       "symptom": "Ill-formed UTF-8 in a string that PiG re-encodes as JSON (an extension's raw JSON, tool schemas, code-mode keys, Bedrock and Google request members) is written as `JSON.stringify` writes the decoded text: one literal U+FFFD for each ill-formed sequence, instead of one `\\ufffd` escape per byte.",
@@ -47715,6 +47743,10 @@
       "id": "D235",
       "title": "An Anthropic OAuth request names Claude Code 2.1.322, as Pi main a05e3a0 does",
       "entry": "BF-935506d"
+    },
+    {
+      "id": "D236",
+      "title": "A session replacement keeps the running stdio MCP servers"
     },
     {
       "id": "D615",
