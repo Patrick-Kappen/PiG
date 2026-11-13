@@ -80,7 +80,7 @@ func inspectFusedEntry(ctx context.Context, entry fusedEntry) ([]fusedHazard, er
 		if !ok {
 			continue
 		}
-		packageHazards, imports, err := inspectFusedPackage(entry.Name, dir)
+		packageHazards, imports, err := inspectFusedPackage(entry.Name, dir, entry.Direct)
 		if err != nil {
 			return nil, err
 		}
@@ -130,7 +130,7 @@ func fusedPackageDir(importPath string, modules []fusedModule) (string, bool) {
 	return "", false
 }
 
-func inspectFusedPackage(extensionName, dir string) ([]fusedHazard, []string, error) {
+func inspectFusedPackage(extensionName, dir string, direct bool) ([]fusedHazard, []string, error) {
 	buildContext := build.Default
 	pkg, err := buildContext.ImportDir(dir, 0)
 	if err != nil {
@@ -176,6 +176,10 @@ func inspectFusedPackage(extensionName, dir string) ([]fusedHazard, []string, er
 				return true
 			}
 			if symbol := fusedHazardSymbol(expression, aliases, dotImports); symbol != "" {
+				// pig additive (D234): native member factories may use the native factory type and loader, not built-in table mutation or process-global hazards.
+				if direct && (symbol == "github.com/MichaelKinsy/PiG/coding/extension.ExtensionFactory" || strings.HasPrefix(symbol, "github.com/MichaelKinsy/PiG/coding/extension/factoryload.")) {
+					return true
+				}
 				hazards = append(hazards, fusedHazard{extension: extensionName, position: fset.Position(expression.Pos()), symbol: symbol})
 			}
 			return true

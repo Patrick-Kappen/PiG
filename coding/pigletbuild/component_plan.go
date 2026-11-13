@@ -43,6 +43,8 @@ func buildPigletComponentPlan(cells []subprocess.CellSpec, delivery Plan, inputs
 				},
 			}
 			switch extension.Decision {
+			case DecisionDirect:
+				component.Direct = true
 			case DecisionFuse:
 				component.Fusible = true
 			case DecisionSidecar:

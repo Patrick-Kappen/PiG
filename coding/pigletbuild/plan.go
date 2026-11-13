@@ -22,6 +22,8 @@ const (
 type Decision string
 
 const (
+	// DecisionDirect links an explicitly selected native factory without the SDK.
+	DecisionDirect  Decision = "direct"
 	DecisionFuse    Decision = "fuse"
 	DecisionSidecar Decision = "sidecar"
 )
@@ -46,9 +48,11 @@ func (t Target) String() string { return t.OS + "/" + t.Arch }
 
 // ExtensionInput contains the runtime-cell facts needed for one decision.
 type ExtensionInput struct {
-	Name             string
-	Language         Language
-	Fusible          bool
+	Name     string
+	Language Language
+	Fusible  bool
+	// Direct explicitly selects a native Go factory, independent of SDK fusibility.
+	Direct           bool
 	NotFusibleReason string
 }
 
@@ -59,8 +63,7 @@ type Sandbox struct {
 	PyCross   bool
 }
 
-// Options configures one Piglet output build. Component realization is not
-// configurable; it is derived from component facts.
+// Options configures one Piglet output build. Component realization follows resolved member facts and explicit direct selections.
 type Options struct {
 	Format        string
 	Locked        bool
@@ -142,15 +145,19 @@ func BuildPlan(extensions []ExtensionInput, options Options) Plan {
 	plan := Plan{Targets: targets}
 	for _, extension := range extensions {
 		entry := ExtPlan{Extension: extension.Name, Compat: make(map[string]Compat, len(options.Targets))}
-		if extension.Fusible {
+		// pig additive (D234): a direct member overrides the default fused selection.
+		switch {
+		case extension.Direct && extension.Language == Go:
+			entry.Decision = DecisionDirect
+		case extension.Fusible:
 			entry.Decision = DecisionFuse
-		} else {
+		default:
 			entry.Decision = DecisionSidecar
 			entry.Reason = extension.NotFusibleReason
 		}
 		for _, target := range options.Targets {
 			compatibility := CompatNative
-			if entry.Decision != DecisionFuse {
+			if entry.Decision != DecisionFuse && entry.Decision != DecisionDirect {
 				compatibility = compatFor(extension.Language, target, options.Sandbox)
 			}
 			entry.Compat[target.String()] = compatibility
@@ -196,7 +203,7 @@ func Validate(plan Plan, resolutionWarnings []string, listedExtensions, extensio
 		blockers = append(blockers, "piglet resolves to no extensions")
 	}
 	for _, extension := range plan.Ext {
-		if !requireFused || extension.Decision == DecisionFuse {
+		if !requireFused || extension.Decision == DecisionFuse || extension.Decision == DecisionDirect {
 			continue
 		}
 		reason := ""

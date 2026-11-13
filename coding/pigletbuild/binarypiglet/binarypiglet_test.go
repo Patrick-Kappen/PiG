@@ -192,7 +192,7 @@ func planWithBuiltIns(t *testing.T) (artifact.Record, []string, []string) {
 // closure check passes regardless of what is registered.
 func TestVerifyRegisteredClosure_StockIsNoop(t *testing.T) {
 	swapBaked(t, nil, nil)
-	if err := VerifyRegisteredClosure([]string{"anything"}, []string{"else"}); err != nil {
+	if err := VerifyRegisteredClosure([]string{"anything"}, []string{"else"}, nil); err != nil {
 		t.Fatalf("VerifyRegisteredClosure() with no closure = %v, want nil", err)
 	}
 }
@@ -202,7 +202,7 @@ func TestVerifyRegisteredClosure_StockIsNoop(t *testing.T) {
 func TestVerifyRegisteredClosure_MatchPasses(t *testing.T) {
 	record, fused, packed := planWithBuiltIns(t)
 	swapBaked(t, []byte("name: t\n"), marshal(t, record))
-	if err := VerifyRegisteredClosure(fused, packed); err != nil {
+	if err := VerifyRegisteredClosure(fused, packed, nil); err != nil {
 		t.Fatalf("VerifyRegisteredClosure(match) = %v, want nil", err)
 	}
 }
@@ -212,7 +212,7 @@ func TestVerifyRegisteredClosure_MatchPasses(t *testing.T) {
 func TestVerifyRegisteredClosure_MissingFusedFails(t *testing.T) {
 	record, _, packed := planWithBuiltIns(t)
 	swapBaked(t, []byte("name: t\n"), marshal(t, record))
-	err := VerifyRegisteredClosure(nil, packed)
+	err := VerifyRegisteredClosure(nil, packed, nil)
 	if err == nil || !strings.Contains(err.Error(), "fused") || !strings.Contains(err.Error(), "missing [fx]") {
 		t.Fatalf("VerifyRegisteredClosure(missing fused) = %v, want a missing-fused error", err)
 	}
@@ -220,10 +220,37 @@ func TestVerifyRegisteredClosure_MissingFusedFails(t *testing.T) {
 
 // TestVerifyRegisteredClosure_UnexpectedPackedFails: a packed extension the plan
 // did not declare (extra cell) fails closed.
+func TestVerifyRegisteredClosure_DirectInventoryIsExact(t *testing.T) {
+	record, fused, packed := planWithBuiltIns(t)
+	components := record.Resolution.ComponentPlan.Components
+	var inputs []artifact.ComponentInput
+	for _, c := range components {
+		inputs = append(inputs, artifact.ComponentInput{Kind: c.Kind, Name: c.Name, Language: c.Language, Origin: c.Origin, Fusible: c.Realization == artifact.RealizationFused, Materialization: c.Materialization})
+	}
+	inputs = append(inputs, artifact.ComponentInput{Kind: artifact.ComponentKindExtension, Name: "native", Language: "go", Direct: true, Origin: artifact.Origin{Source: "local:native", Digest: "sha256:" + strings.Repeat("a", 64)}})
+	plan, err := artifact.BuildPlan(inputs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	record, err = artifact.NewResolutionRecord("t", "1.0.0", time.Unix(1, 0), artifact.ResolutionInput{SourceDigest: "sha256:" + strings.Repeat("a", 64), EffectiveDigest: "sha256:" + strings.Repeat("c", 64), ComponentPlan: plan})
+	if err != nil {
+		t.Fatal(err)
+	}
+	swapBaked(t, []byte("name: t\n"), marshal(t, record))
+	if err := VerifyRegisteredClosure(fused, packed, []string{"native"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, names := range [][]string{nil, {"ghost"}, {"native", "native"}} {
+		if err := VerifyRegisteredClosure(fused, packed, names); err == nil {
+			t.Fatalf("accepted %v", names)
+		}
+	}
+}
+
 func TestVerifyRegisteredClosure_UnexpectedPackedFails(t *testing.T) {
 	record, fused, packed := planWithBuiltIns(t)
 	swapBaked(t, []byte("name: t\n"), marshal(t, record))
-	err := VerifyRegisteredClosure(fused, append(packed, "ghost"))
+	err := VerifyRegisteredClosure(fused, append(packed, "ghost"), nil)
 	if err == nil || !strings.Contains(err.Error(), "binary-packed") || !strings.Contains(err.Error(), "unexpected [ghost]") {
 		t.Fatalf("VerifyRegisteredClosure(unexpected packed) = %v, want an unexpected-packed error", err)
 	}
