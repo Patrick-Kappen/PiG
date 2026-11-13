@@ -52,11 +52,31 @@ func DirectExtension(api extension.API) error {
 // makeDirectGoHarness registers the same native reference fixture through the production factory API instead of constructing the Runner's record directly. Piglet builder tests prove generated main-package linkage separately.
 func makeDirectGoHarness(t *testing.T) *harness {
 	t.Helper()
+	return makeDirectGoHarnessWithAPIProbes(t, false)
+}
+
+func makeAPIProbeHarness(t *testing.T, tc harnessCase) *harness {
+	t.Helper()
+	if tc.name == "direct-go" {
+		return makeDirectGoHarnessWithAPIProbes(t, true)
+	}
+	return tc.make(t)
+}
+
+func makeDirectGoHarnessWithAPIProbes(t *testing.T, withProbes bool) *harness {
+	t.Helper()
 	notify, status, actions := &[]string{}, &[]string{}, &[]string{}
 	ui := newRecordingUI(notify, status)
 	fixture := makeInprocFixture(ui, actions)
 	runtime := extension.CreateExtensionRuntime()
+	var probe *directStateProbe
+	if withProbes {
+		probe = newDirectStateProbe(t)
+	}
 	loaded, err := factoryload.LoadExtensionFromFactory(func(api extension.API) error {
+		if withProbes {
+			registerDirectAPIProbes(api, ui, probe)
+		}
 		for _, name := range slices.Sorted(maps.Keys(fixture.Tools)) {
 			api.RegisterTool(fixture.Tools[name].Definition)
 		}
@@ -135,6 +155,12 @@ func makeDirectGoHarness(t *testing.T) *harness {
 	runner := inproc.NewRunner([]extension.Extension{loaded}, t.TempDir(), runtime)
 	runner.SetUIContext(ui, extension.ExtensionMode(conformanceMode))
 	options := conformanceSystemPromptOptions()
-	runner.BindCore(extension.ExtensionActions{}, extension.ContextActions{GetSystemPromptOptions: func() *extension.BuildSystemPromptOptions { return &options }, IsProjectTrusted: func() bool { return conformanceProjectTrusted }}, nil)
-	return &harness{runner: runner, notify: notify, status: status, actions: actions, ui: ui, cleanup: func() { runner.Invalidate("direct conformance complete") }}
+	var coreActions extension.ExtensionActions
+	if withProbes {
+		coreActions.GetCommands = func() []extension.SlashCommandInfo {
+			return []extension.SlashCommandInfo{{Name: "conformance-listed", Source: "prompt", Description: "Listed by the host"}}
+		}
+	}
+	runner.BindCore(coreActions, extension.ContextActions{GetSystemPromptOptions: func() *extension.BuildSystemPromptOptions { return &options }, IsProjectTrusted: func() bool { return conformanceProjectTrusted }}, nil)
+	return &harness{runner: runner, notify: notify, status: status, actions: actions, ui: ui, directProbe: probe, cleanup: func() { runner.Invalidate("direct conformance complete") }}
 }

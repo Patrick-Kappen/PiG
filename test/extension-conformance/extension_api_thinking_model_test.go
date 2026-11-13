@@ -17,7 +17,7 @@ func TestExtensionAPIThinkingLevelAndSetModelAcrossSDKs(t *testing.T) {
 	t.Parallel()
 	for _, tc := range allHarnessCases() {
 		t.Run(tc.name, func(t *testing.T) {
-			h := tc.make(t)
+			h := makeAPIProbeHarness(t, tc)
 			t.Cleanup(func() {
 				if h.cleanup != nil {
 					h.cleanup()
@@ -26,29 +26,46 @@ func TestExtensionAPIThinkingLevelAndSetModelAcrossSDKs(t *testing.T) {
 					h.host.Shutdown("test complete")
 				}
 			})
-			if h.bridge == nil {
+			if h.bridge == nil && tc.name != "direct-go" {
 				t.Skip("the in-process harness has no ExtensionAPI implementer; getThinkingLevel and setModel are SDK calls")
 			}
 			var mu sync.Mutex
 			var models []string
 			var levels []string
 			level := "xhigh"
-			h.bridge.SetHostAction("getThinkingLevel", func() string {
-				mu.Lock()
-				defer mu.Unlock()
-				return level
-			})
-			h.bridge.SetHostAction("setModel", func(_ context.Context, model string) (bool, error) {
-				mu.Lock()
-				defer mu.Unlock()
-				models = append(models, model)
-				return false, nil
-			})
-			h.bridge.SetHostAction("setThinkingLevel", func(set string) {
-				mu.Lock()
-				defer mu.Unlock()
-				levels = append(levels, set)
-			})
+			if tc.name == "direct-go" {
+				h.runner.BindCore(extension.ExtensionActions{
+					GetThinkingLevel: func() extension.ThinkingLevel { return extension.ThinkingLevel(level) },
+					SetModel: func(_ context.Context, model extension.Model) (bool, error) {
+						mu.Lock()
+						defer mu.Unlock()
+						models = append(models, model.Provider.ID()+"/"+model.ID)
+						return false, nil
+					},
+					SetThinkingLevel: func(set extension.ThinkingLevel) {
+						mu.Lock()
+						defer mu.Unlock()
+						levels = append(levels, string(set))
+					},
+				}, extension.ContextActions{}, nil)
+			} else {
+				h.bridge.SetHostAction("getThinkingLevel", func() string {
+					mu.Lock()
+					defer mu.Unlock()
+					return level
+				})
+				h.bridge.SetHostAction("setModel", func(_ context.Context, model string) (bool, error) {
+					mu.Lock()
+					defer mu.Unlock()
+					models = append(models, model)
+					return false, nil
+				})
+				h.bridge.SetHostAction("setThinkingLevel", func(set string) {
+					mu.Lock()
+					defer mu.Unlock()
+					levels = append(levels, set)
+				})
+			}
 			command, ok := findCommand(h.runner, "thinking-model")
 			if !ok {
 				t.Fatal("thinking-model command missing")
@@ -89,7 +106,7 @@ func TestExtensionAPIGetCommandsAcrossSDKs(t *testing.T) {
 	t.Parallel()
 	for _, tc := range allHarnessCases() {
 		t.Run(tc.name, func(t *testing.T) {
-			h := tc.make(t)
+			h := makeAPIProbeHarness(t, tc)
 			t.Cleanup(func() {
 				if h.cleanup != nil {
 					h.cleanup()
@@ -98,7 +115,7 @@ func TestExtensionAPIGetCommandsAcrossSDKs(t *testing.T) {
 					h.host.Shutdown("test complete")
 				}
 			})
-			if h.bridge == nil {
+			if h.bridge == nil && tc.name != "direct-go" {
 				t.Skip("the in-process harness has no ExtensionAPI implementer; getCommands is an SDK call")
 			}
 			command, ok := findCommand(h.runner, "commands-probe")

@@ -104,13 +104,14 @@ type recording struct {
 var conformanceHostInfo subprocess.HostInfo
 
 type harness struct {
-	runner  *inproc.Runner
-	host    *subprocess.Host
-	notify  *[]string
-	status  *[]string
-	actions *[]string
-	ui      *recordingUI
-	bridge  *subprocess.UIBridge
+	runner      *inproc.Runner
+	host        *subprocess.Host
+	notify      *[]string
+	status      *[]string
+	actions     *[]string
+	ui          *recordingUI
+	bridge      *subprocess.UIBridge
+	directProbe *directStateProbe
 	// wire records the calls the extension sends while recording is on;
 	// nil for inproc-go.
 	wire    *wireTap

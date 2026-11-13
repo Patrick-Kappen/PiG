@@ -23,7 +23,7 @@ func TestHostStateChangeReachesABackgroundReaderAcrossSDKs(t *testing.T) {
 	cases := append(allHarnessCases(), packedSDKHarnessCases()...)
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			h := tc.make(t)
+			h := makeAPIProbeHarness(t, tc)
 			t.Cleanup(func() {
 				if h.cleanup != nil {
 					h.cleanup()
@@ -32,6 +32,10 @@ func TestHostStateChangeReachesABackgroundReaderAcrossSDKs(t *testing.T) {
 					h.host.Shutdown("state push conformance complete")
 				}
 			})
+			if tc.name == "direct-go" {
+				runDirectBackgroundState(t, h, newStatePushRig(t, h))
+				return
+			}
 			if h.bridge == nil {
 				t.Skip("the in-process harness has no replicated state; there is no runtime to push it to")
 			}
@@ -109,6 +113,16 @@ func newStatePushRig(t *testing.T, h *harness) *statePushRig {
 	}
 	session.DiscardEvents()
 	t.Cleanup(func() { _ = session.Close() })
+
+	if h.directProbe != nil {
+		h.runner.BindCore(extension.ExtensionActions{
+			GetSessionName:   session.SessionName,
+			GetSettings:      services.SettingsManager().ExtensionSettings,
+			GetThinkingLevel: func() extension.ThinkingLevel { return session.Agent().ThinkingLevel() },
+		}, extension.ContextActions{GetModel: func() extension.Model { return session.Model() }}, nil)
+		h.runner.SetUIContext(directStateUI{h.ui}, extension.ExtensionMode(conformanceMode))
+		return &statePushRig{session: session, services: services, runtime: h.runner.Runtime(), small: small, large: large}
+	}
 
 	// The host's accessors read the Session, as the binary's do (internal/codingagent/interactive_extensions.go, coding/cli).
 	codingagent.WireModelOperations(h.bridge, codingagent.ModelOperationBindings{CurrentModel: session.Model})
