@@ -1332,6 +1332,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-d7fbf00](#bf-d7fbf00) | Stored assistant messages of a durable conversation now carry `thinkingLevel`: a generation records the… | PiG's own defect | All platforms | 0.7.0 |
 | [BF-d80425c](#bf-d80425c) | fix(train): gate repairs after merging train 3 and the ordering stack | PiG's own defect | All platforms | Unreleased |
 | [BF-d80c1cd](#bf-d80c1cd) | Where Pi calls `new URL(value)`, Pig now parses a `ws:`, `wss:`, `ftp:` or `file:` URL, and a bracketed IPv6… | PiG's own defect | All platforms | 0.5.0 |
+| [BF-d82319e](#bf-d82319e) | Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`… | PiG's own defect | All platforms | Unreleased |
 | [BF-d8357e2](#bf-d8357e2) | Cache warmer pure functions against live Pi: new `TestCacheWarmerPureFunctionsMatchPi`… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-d856f4a](#bf-d856f4a) | `host.Registry` with a short `ReadyTimeout` no longer fails "did not become live" when the machine delays the… | PiG's own defect | All platforms | Unreleased |
 | [BF-d87b70c](#bf-d87b70c) | A second `ctx.ui.custom` component opened while one is shown now opens over it at once, as in Pi, whether it… | PiG's own defect | All platforms | 0.5.0 |
@@ -19817,6 +19818,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Fix commits:** `056bbfb74e` (2026-10-09), `15a5c0b670` (2026-10-09), `23aa78b173` (2026-10-09), `2c04c1445a` (2026-10-09), `7c4d874438` (2026-10-09), `97e178f7f6` (2026-10-09), `c4d51d5c1a` (2026-10-09), `d80c1cd150` (2026-10-09), `da99854d1b` (2026-10-09)
 - **Tests:** `ai/authorization_input_oracle_test.go::TestAuthorizationInputParsersMatchPi`, `ai/codex_account_id_oracle_test.go::TestCodexAccountIDMatchesPi`, `ai/githubcopilot_oracle_test.go::TestGitHubCopilotHelpersMatchPi`, `ai/streaming_json_oracle_test.go::TestStreamingJSONMatchesPiOnSeededInput`, `ai/trusted_url_oracle_test.go::TestTrustedVerificationURLsMatchPi`, `coding/cli/strip_app_features_test.go::TestStripExportHTMLBuildOmitsExportPackage`, `internal/nodeurl/genericurl_oracle_test.go::TestParseURLMatchesNode`, `internal/nodeurl/url_oracle_test.go::TestParseMatchesNodeURL` and 1 more in docs/bug-ledger.json
 - **Release note:** Where Pi calls `new URL(value)`, Pig now parses a `ws:`, `wss:`, `ftp:` or `file:` URL, and a bracketed IPv6 host of any other scheme, instead of refusing it. This affects package and repository sources (`coding/source`), the OAuth paste and GitHub Copilot enterprise-domain inputs.
+
+### BF-d82319e
+
+**Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`…**
+
+- **Source:** PiG's own defect
+- **Symptom:** Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`, including nested objects, number-like keys and lone UTF-16 surrogate halves.
+- **Root cause:** Pi passes prepared.args to afterToolCall, the same validated object passed to beforeToolCall and execute. The Go host already sends those arguments as ordered JSON in tool_result, but the SDK populated ctx.toolInput only for tool_call, so a result handler could read only an unordered map.
+- **User impact:** Wrong output or ordering
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `d82319e331` (2026-11-13)
+- **Tests:** `extensions/sdk/tool_prepare_arguments_text_test.go::TestToolCallEventHandlerReadsTheInputInOrder`, `extensions/sdk/tool_result_input_test.go::TestToolResultHandlerReadsOrderedInputAndParams`, `test/extension-conformance/tool_result_input_test.go::TestToolResultInputThroughSession`
+- **Release note:** Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`, including nested objects, number-like keys and lone UTF-16 surrogate halves. The input includes prepare-hook replacements and earlier `tool_call` handlers' edits. The host and wire contract are unchanged.
 
 ### BF-d8357e2
 
