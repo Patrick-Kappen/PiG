@@ -122,9 +122,13 @@ func TestRegisterToolSendsFullDefinition(t *testing.T) {
 		},
 		RenderShell:   ToolRenderShellSelf,
 		ExecutionMode: "sequential",
-		PrepareArguments: func(params map[string]any) (map[string]any, error) {
+		PrepareArguments: func(args json.RawMessage) (json.RawMessage, error) {
+			var params map[string]any
+			if err := json.Unmarshal(args, &params); err != nil {
+				return nil, err
+			}
 			params["prepared"] = true
-			return params, nil
+			return json.Marshal(params)
 		},
 		Execute: func(_ Context, params map[string]any) (any, error) {
 			if params["prepared"] != nil {

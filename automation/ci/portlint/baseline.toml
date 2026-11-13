@@ -2935,18 +2935,6 @@ snippet = "return json.Marshal(map[string]int{\"top\": m.Top, \"right\": m.Right
 
 [[hit]]
 check = "mapkeyorder"
-file = "coding/session_extension_hooks.go"
-func = "Session.toolCallHook"
-snippet = "beforeValues, _ := json.Marshal(input)"
-
-[[hit]]
-check = "mapkeyorder"
-file = "coding/session_extension_hooks.go"
-func = "Session.toolCallHook"
-snippet = "if afterValues, err := json.Marshal(input); err == nil && (!bytes.Equal(beforeValues, afterValues) || (wireInput != nil && string(*wireInput) != before)) {"
-
-[[hit]]
-check = "mapkeyorder"
 file = "durable/durabletest/storage_conformance.go"
 func = "CreateStorageConformance"
 snippet = "encoded := must(json.Marshal(*first.Next))"

@@ -20,11 +20,15 @@ func TestToolPrepareArgumentsRunsInTheExtensionBeforeTheHostValidates(t *testing
 	var executed []map[string]any
 	ext.RegisterTool(ToolDefinition{
 		Name: "legacy", Label: "legacy", Description: "Echo", Parameters: Schema{"type": "object", "required": []string{"text"}},
-		PrepareArguments: func(params map[string]any) (map[string]any, error) {
+		PrepareArguments: func(args json.RawMessage) (json.RawMessage, error) {
+			var params map[string]any
+			if err := json.Unmarshal(args, &params); err != nil {
+				return nil, err
+			}
 			if params["fail"] == true {
 				return nil, errors.New("prepare exploded")
 			}
-			return map[string]any{"text": params["legacy"]}, nil
+			return json.MarshalJS(map[string]any{"text": params["legacy"]})
 		},
 		Execute: func(_ Context, params map[string]any) (any, error) {
 			executed = append(executed, params)
