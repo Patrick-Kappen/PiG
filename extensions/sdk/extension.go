@@ -1591,12 +1591,14 @@ func (e *Extension) handleArmedRequest(id string, req *requestMsg, ctx Context) 
 		if req.Event == "agent_before_settle" || req.Event == "turn_end" {
 			boundaryData = data
 		}
-		if req.Event == "tool_call" {
+		if req.Event == "tool_call" || req.Event == "tool_result" {
 			var source struct {
 				Input json.RawMessage `json:"input"`
 			}
 			_ = json.Unmarshal(req.Args, &source)
-			toolCall = newToolCallInput(data["input"], source.Input)
+			if req.Event == "tool_call" {
+				toolCall = newToolCallInput(data["input"], source.Input)
+			}
 			ctx.toolInput = &source.Input
 		}
 		if req.Event == "before_agent_start" {

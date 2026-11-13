@@ -103,5 +103,34 @@ func Extension(name string) *sdk.Extension {
 		}
 		return map[string]any{"block": true, "reason": "input=" + string(ctx.ToolInput())}, nil
 	})
+	for _, name := range []string{"result_plain", "result_prepare", "result_edit"} {
+		def := sdk.ToolDefinition{
+			Name: name, Label: name, Description: "Report tool_result input", Parameters: object,
+			Execute: func(ctx sdk.Context, _ map[string]any) (any, error) {
+				return map[string]any{"content": "execute=" + string(ctx.ToolInput())}, nil
+			},
+		}
+		if name == "result_prepare" {
+			def.PrepareArguments = func(json.RawMessage) (json.RawMessage, error) {
+				return json.RawMessage(`{"zz":true,"nested":{"y":"\ud800","b":2},"aa":[2,1]}`), nil
+			}
+		}
+		ext.RegisterTool(def)
+	}
+	ext.OnEvent("tool_call", func(_ sdk.Context, data map[string]any) (any, error) {
+		if data["toolName"] == "result_edit" {
+			input, _ := data["input"].(map[string]any)
+			delete(input, "z")
+			input["added"] = true
+		}
+		return nil, nil
+	})
+	ext.OnEvent("tool_result", func(ctx sdk.Context, data map[string]any) (any, error) {
+		name, _ := data["toolName"].(string)
+		if !strings.HasPrefix(name, "result_") {
+			return nil, nil
+		}
+		return map[string]any{"content": []any{map[string]any{"type": "text", "text": "input=" + string(ctx.ToolInput())}}}, nil
+	})
 	return ext
 }
