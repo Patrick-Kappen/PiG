@@ -254,7 +254,7 @@ jobs:
       # base and head are empty outside a merge group, which keeps the action's per-event range there; in a merge group
       # they scan the commits the queue added to the base branch.
       - name: TruffleHog verified findings
-        uses: trufflesecurity/trufflehog@31ce31ee1abbcc7dc8eee5764c17121c3044c8b2 # v3.99.7
+        uses: trufflesecurity/trufflehog@ea68ca03c865c5f324e86e849ced20ed3cf9dbbb # v3.99.8
         with:
           path: ./
           base: ${{ github.event.merge_group.base_sha }}
@@ -343,14 +343,14 @@ jobs:
           key: gocache-${{ runner.os }}-${{ hashFiles('go.sum') }}-${{ github.sha }}
           restore-keys: |
             gocache-${{ runner.os }}-${{ hashFiles('go.sum') }}-
-      - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+      - uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
           config: ${{ matrix.config }}
       - if: matrix.build-mode == 'manual'
         run: go build ./...
-      - uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+      - uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           category: /language:${{ matrix.language }}
       - name: Save the Go module cache
