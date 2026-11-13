@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"sync"
 
@@ -119,5 +120,5 @@ func Extension(api extension.API) error {
 			return record("command_branch", raw)
 		},
 	})
-	return record("factory", "coding/extension.API")
+	return record("factory", fmt.Sprintf("%T", api))
 }
