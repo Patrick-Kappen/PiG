@@ -14,7 +14,7 @@ RUN --mount=type=bind,source=.,target=/src,rw \
     && CGO_ENABLED=0 go build -o /opt/pig-evals/pig-eval-extension ./cmd/pig-eval-extension \
     && CGO_ENABLED=0 go build -o /opt/pig-evals/pig-evals ./cmd/pig-evals
 
-FROM debian:bookworm-slim@sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3 AS evaluator
+FROM debian:bookworm-slim@sha256:734a72b3d6142a71993b4bc580ca01d8ca687f77a2c422d96a961d3376b179bc AS evaluator
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates tmux coreutils \
     && rm -rf /var/lib/apt/lists/*
