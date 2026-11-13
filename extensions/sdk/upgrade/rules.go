@@ -66,6 +66,7 @@ const (
 	RuleModelRegistryFind   = "model-registry-find-returns-error"
 	RuleDialogResults       = "dialog-results-are-json-values"
 	RuleHostHighlightCode   = "host-helpers-highlight-code-no-markdown"
+	RulePrepareArguments    = "prepare-arguments-json-text"
 )
 
 // getter is one Context method that gained an error result. Params is the
@@ -262,6 +263,14 @@ func Rules() []Rule {
 				{Symbol: "HostHelpers.HighlightCode", Old: "func(string, string, bool, []byte) ([]string, error)", New: "func(string, string, []byte) ([]string, error)", Since: "0.7.0"},
 			},
 		},
+		{
+			ID:      RulePrepareArguments,
+			Summary: "a tool's PrepareArguments takes and returns the arguments' JSON text",
+			Remedy:  "Take `args json.RawMessage` and return the JSON text of the prepared arguments: decode args with json.Unmarshal where the hook reads members, and return args itself to leave the call unchanged. The text keeps the member order the model wrote, as the object Pi hands prepareArguments does; a map returned through json.Marshal has its keys sorted. A nil return is the JSON null, as a nil map was.",
+			Changes: []Change{
+				{Symbol: "ToolPrepareArgumentsFunc", Old: "func(map[string]any) (map[string]any, error)", New: "func(json.RawMessage) (json.RawMessage, error)", Since: prepareArgumentsSince},
+			},
+		},
 	}
 }
 
@@ -275,6 +284,9 @@ func dialogResultChanges() []Change {
 	}
 	return changes
 }
+
+// prepareArgumentsSince is the SDK release whose PrepareArguments takes JSON text.
+const prepareArgumentsSince = "0.7.1"
 
 // dialogResultsSince is the SDK release whose dialogs return JSON values.
 const dialogResultsSince = "0.5.2"

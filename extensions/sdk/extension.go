@@ -25,8 +25,22 @@ import (
 // Schema is a JSON Schema object for tool parameter definitions.
 type Schema = map[string]any
 
-// ToolPrepareArgumentsFunc transforms compatibility inputs before schema validation and execution.
-type ToolPrepareArgumentsFunc func(params map[string]any) (map[string]any, error)
+// ToolPrepareArgumentsFunc transforms compatibility inputs before schema validation and execution, as Pi's prepareArguments does. args is the tool call's arguments as the JSON text the host sent, with the members in the order the model wrote them, as the object Pi hands the hook keeps them. The host validates and executes the returned text as it is, so a hook that returns args unchanged leaves the call unchanged. A nil or empty return is the JSON null, which fails validation; any other return must be one valid JSON value. A returned error is the call's error result, and the tool does not run.
+type ToolPrepareArgumentsFunc func(args json.RawMessage) (json.RawMessage, error)
+
+// preparedArguments is the response result of a prepareArguments hook's return.
+func preparedArguments(prepared json.RawMessage, err error) (any, error) {
+	if err != nil {
+		return nil, err
+	}
+	if len(prepared) == 0 {
+		return json.RawMessage("null"), nil
+	}
+	if !json.Valid(prepared) {
+		return nil, errors.New("prepareArguments returned invalid JSON")
+	}
+	return prepared, nil
+}
 
 // ToolFunc is the handler for a tool execution.
 // params is the decoded JSON params from the LLM.
@@ -1519,14 +1533,7 @@ func (e *Extension) handleArmedRequest(id string, req *requestMsg, ctx Context) 
 			_ = e.conn.respond(id, nil, fmt.Errorf("tool %s has no prepareArguments", req.Tool))
 			return
 		}
-		var params map[string]any
-		if len(req.Args) > 0 {
-			if err := json.Unmarshal(req.Args, &params); err != nil {
-				_ = e.conn.respond(id, nil, fmt.Errorf("decode tool arguments: %w", err))
-				return
-			}
-		}
-		prepared, err := prepare(params)
+		prepared, err := preparedArguments(prepare(req.Args))
 		_ = e.conn.respond(id, prepared, err)
 
 	case requestWithSession:
@@ -1590,6 +1597,7 @@ func (e *Extension) handleArmedRequest(id string, req *requestMsg, ctx Context) 
 			}
 			_ = json.Unmarshal(req.Args, &source)
 			toolCall = newToolCallInput(data["input"], source.Input)
+			ctx.toolInput = &source.Input
 		}
 		if req.Event == "before_agent_start" {
 			var err error
