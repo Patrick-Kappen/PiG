@@ -1,0 +1,79 @@
+# SPDX-License-Identifier: MIT
+name: Fork forward
+
+# Fork only (Patrick-Kappen/PiG). Run by hand: Actions → Fork forward → Run workflow, pick a pull request of this
+# repository and where it goes (.github/fork/forward.sh):
+#   main      onto this repository's main, as a pull request here (a performance patch that main takes too)
+#   upstream  onto MichaelKinsy/PiG main, as a pull request there, from forward/upstream/pr-<n>
+# The commits are cherry-picked 1:1 and signed with the fork signing key, so they stay Verified.
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Pull request number in Patrick-Kappen/PiG
+        required: true
+        type: number
+      target:
+        description: Where it goes
+        required: true
+        type: choice
+        options: [main, upstream]
+      draft:
+        description: Open the new pull request as a draft
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: fork-forward-${{ inputs.pr }}-${{ inputs.target }}
+  cancel-in-progress: false
+
+jobs:
+  forward:
+    if: github.repository == 'Patrick-Kappen/PiG'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-workflows: write
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app.outputs.token }}
+      # The commits keep their author; the committer is the fork owner, whose account holds the signing key, so GitHub
+      # shows them Verified.
+      - name: Set up signing
+        env:
+          FORK_SIGNING_KEY: ${{ secrets.FORK_SIGNING_KEY }}
+        run: |
+          if [ -z "$FORK_SIGNING_KEY" ]; then
+            echo "::error::secret FORK_SIGNING_KEY is not set"
+            exit 1
+          fi
+          key="$RUNNER_TEMP/signing_key"
+          install -m 600 /dev/null "$key"
+          printf '%s\n' "$FORK_SIGNING_KEY" > "$key"
+          git config user.name "Patrick Kappen"
+          git config user.email "patrick@kappen.io"
+          git config gpg.format ssh
+          git config user.signingkey "$key"
+      - name: Forward
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          UPSTREAM_TOKEN: ${{ secrets.UPSTREAM_PR_TOKEN }}
+          PR: ${{ inputs.pr }}
+          TARGET: ${{ inputs.target }}
+          DRAFT: ${{ inputs.draft }}
+        run: |
+          if [ "$TARGET" = upstream ] && [ -z "$UPSTREAM_TOKEN" ]; then
+            echo "::error::secret UPSTREAM_PR_TOKEN is not set"
+            exit 1
+          fi
+          bash .github/fork/forward.sh "$PR" "$TARGET" "$DRAFT"
