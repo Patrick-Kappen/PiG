@@ -41775,6 +41775,31 @@
       ]
     },
     {
+      "id": "BF-e6744a1",
+      "title": "Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does",
+      "symptom": "Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does.",
+      "rootCause": "",
+      "rootCauseSource": "",
+      "userImpact": "Behavior differed from Pi",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does. A handler that replaces a lone half with U+FFFD now changes the executed arguments.",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "e6744a1f85",
+          "date": "2026-11-13"
+        }
+      ],
+      "tests": [
+        "coding/extension/host/subprocess/tool_call_input_reply_test.go::TestToolCallReplyEditsTheEventInputInPlace",
+        "coding/session_tool_call_surrogate_test.go::TestSessionToolCallPreservesSurrogateInput",
+        "coding/session_tool_call_surrogate_test.go::TestSessionToolCallSurrogateReplacementIsAnEdit",
+        "test/extension-conformance/tool_call_surrogate_test.go::TestToolCallSurrogateInputThroughSession"
+      ]
+    },
+    {
       "id": "BF-e69d018",
       "title": "Closing an `env` connection, or losing it, now ends its daemon process with SIGTERM, as in Pi, instead of…",
       "symptom": "Closing an `env` connection, or losing it, now ends its daemon process with SIGTERM, as in Pi, instead of SIGKILL, so a daemon reached through `ssh` can close its remote side.",
