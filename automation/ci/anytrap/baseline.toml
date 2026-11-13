@@ -245,7 +245,7 @@ count = 1
 [[hit]]
 file = "coding/extension/host/subprocess/event_payload.go"
 func = "applyToolCallInput"
-call = "json.Unmarshal"
+call = "sdkjson.Unmarshal"
 dest = "*any"
 count = 1
 
@@ -441,7 +441,7 @@ count = 1
 [[hit]]
 file = "coding/session_extension_hooks.go"
 func = "Session.toolCallHook"
-call = "json.Unmarshal"
+call = "sdkjson.Unmarshal"
 dest = "*map[string]any"
 count = 1
 

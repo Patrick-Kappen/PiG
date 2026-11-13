@@ -22,6 +22,8 @@ func TestToolCallReplyEditsTheEventInputInPlace(t *testing.T) {
 	}{
 		{name: "edit and block", reply: `{"result":{"_pigToolCallInput":{"command":"git status --short","added":true},"_pigToolCallResult":{"block":true,"reason":"no"}}}`, wantInput: map[string]any{"command": "git status --short", "added": true}, wantWire: `{"command":"git status --short","added":true}`, wantResult: `{"block":true,"reason":"no"}`},
 		{name: "edit only", reply: `{"result":{"_pigToolCallInput":{"command":"x"},"_pigToolCallResult":null}}`, wantInput: map[string]any{"command": "x"}, wantWire: `{"command":"x"}`},
+		// JSON.parse in Pi keeps unpaired UTF-16 units in both keys and values; Go stores them as WTF-8.
+		{name: "surrogate input edit", reply: `{"result":{"_pigToolCallInput":{"\ud800":"\udc00","nested":{"y":"\udc00\ud800"}},"_pigToolCallResult":null}}`, wantInput: map[string]any{"\xed\xa0\x80": "\xed\xb0\x80", "nested": map[string]any{"y": "\xed\xb0\x80\xed\xa0\x80"}}, wantWire: `{"\ud800":"\udc00","nested":{"y":"\udc00\ud800"}}`},
 		{name: "no edit", reply: `{"result":{"_pigToolCallResult":{"block":false}}}`, wantInput: map[string]any{"command": "git status", "drop": "dropped", "timeout": 5.0}, wantWire: wireBefore, wantResult: `{"block":false}`},
 		{name: "edit then failure", reply: `{"result":{"_pigToolCallInput":{"command":"y"},"_pigToolCallResult":null},"error":{"message":"handler failed"}}`, wantInput: map[string]any{"command": "y"}, wantWire: `{"command":"y"}`, wantErr: "handler failed"},
 		{name: "input is not an object", reply: `{"result":{"_pigToolCallInput":null,"_pigToolCallResult":null}}`, wantInput: map[string]any{"command": "git status", "drop": "dropped", "timeout": 5.0}, wantWire: wireBefore},
