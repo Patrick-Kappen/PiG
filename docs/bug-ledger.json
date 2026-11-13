@@ -37431,6 +37431,30 @@
       ]
     },
     {
+      "id": "BF-d82319e",
+      "title": "Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`…",
+      "symptom": "Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`, including nested objects, number-like keys and lone UTF-16 surrogate halves.",
+      "rootCause": "Pi passes prepared.args to afterToolCall, the same validated object passed to beforeToolCall and execute. The Go host already sends those arguments as ordered JSON in tool_result, but the SDK populated ctx.toolInput only for tool_call, so a result handler could read only an unordered map.",
+      "rootCauseSource": "commit",
+      "userImpact": "Wrong output or ordering",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`, including nested objects, number-like keys and lone UTF-16 surrogate halves. The input includes prepare-hook replacements and earlier `tool_call` handlers' edits. The host and wire contract are unchanged.",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "d82319e331",
+          "date": "2026-11-13"
+        }
+      ],
+      "tests": [
+        "extensions/sdk/tool_prepare_arguments_text_test.go::TestToolCallEventHandlerReadsTheInputInOrder",
+        "extensions/sdk/tool_result_input_test.go::TestToolResultHandlerReadsOrderedInputAndParams",
+        "test/extension-conformance/tool_result_input_test.go::TestToolResultInputThroughSession"
+      ]
+    },
+    {
       "id": "BF-d8357e2",
       "title": "Cache warmer pure functions against live Pi: new `TestCacheWarmerPureFunctionsMatchPi`…",
       "symptom": "Cache warmer pure functions against live Pi: new `TestCacheWarmerPureFunctionsMatchPi` (`internal/codingagent/cache_warmer_format_oracle_test.go`; `getCacheWarmingDelayMs`, `getPromptCacheTtlMs`, `isReplayable`, `formatCacheWarmingStatus`, `formatCacheWarmingUsage`; 6,000 inputs under three process `PI_CACHE_RETENTION` values; TTLs around the 10 s margin, tier values 0/fractional, empty request env falling through to the process one, adaptive vs budget thinking, every status state with rounding-boundary probabilities and dollars).",
