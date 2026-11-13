@@ -1455,6 +1455,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-e63c61c](#bf-e63c61c) | fix(interactive): pump the owner loop while model selection awaits extensions (#208) (#209) | PiG's own defect | All platforms | Unreleased |
 | [BF-e64d2cf](#bf-e64d2cf) | fix(tui): a tool error result collapses like any other (Pi updateResult) | PiG's own defect | All platforms | Unreleased |
 | [BF-e65ade9](#bf-e65ade9) | `WaitForIdle` on the Harness or a Conversation no longer resumes before the `SubscribeCommits` listeners saw… | PiG's own defect | All platforms | 0.7.0 |
+| [BF-e6744a1](#bf-e6744a1) | Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does | PiG's own defect | All platforms | Unreleased |
 | [BF-e69d018](#bf-e69d018) | Closing an `env` connection, or losing it, now ends its daemon process with SIGTERM, as in Pi, instead of… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-e73e536](#bf-e73e536) | Codemode scripts no longer fail immediately when both codemode workers are busy, for example with parallel… | A fix Pi shipped that PiG ported | All platforms | 0.5.2 |
 | [BF-e75a8b9](#bf-e75a8b9) | The external editor (`ctrl+g`) now edits `prompt.md` inside a private `pi-editor-*` directory under the… | PiG's own defect | All platforms | 0.5.0 |
@@ -21515,6 +21516,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Fix commits:** `e65ade9b1b` (2026-10-27)
 - **Tests:** `durable/harness/harness_tasks_test.go::TestPublicationAtAdoption`
 - **Release note:** `WaitForIdle` on the Harness or a Conversation no longer resumes before the `SubscribeCommits` listeners saw the commit that made the work idle. The idle settle that ends a reconcile pass, and the one the context expiry timer runs, could decide on a commit another goroutine had just adopted and resolve the waits ahead of its host listeners; Pi's continuation there cannot run between an adoption and its publication, and PiG's now leaves the decision to the settle queued behind the listeners.
+
+### BF-e6744a1
+
+**Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does**
+
+- **Source:** PiG's own defect
+- **Symptom:** Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does.
+- **Root cause:** Not recorded.
+- **User impact:** Behavior differed from Pi
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `e6744a1f85` (2026-11-13)
+- **Tests:** `coding/extension/host/subprocess/tool_call_input_reply_test.go::TestToolCallReplyEditsTheEventInputInPlace`, `coding/session_tool_call_surrogate_test.go::TestSessionToolCallPreservesSurrogateInput`, `coding/session_tool_call_surrogate_test.go::TestSessionToolCallSurrogateReplacementIsAnEdit`, `test/extension-conformance/tool_call_surrogate_test.go::TestToolCallSurrogateInputThroughSession`
+- **Release note:** Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does. A handler that replaces a lone half with U+FFFD now changes the executed arguments.
 
 ### BF-e69d018
 
