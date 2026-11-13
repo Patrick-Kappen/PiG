@@ -157,6 +157,55 @@ func TestRawToolArgumentsReachTheHookAndTheToolInOrder(t *testing.T) {
 	}
 }
 
+// Pi 1.5.0 parseToolCallArguments (pi-ai utils/json-parse.ts) gives a finished call whose text is not a JSON object arguments {} and an argumentsError. agent-loop.ts prepareToolCall still runs tool.prepareArguments({}), then validateToolArguments (pi-ai utils/validation.ts:49-52) refuses the call with `Invalid arguments for tool "<name>": <argumentsError>`; execute does not run. Empty or blank text is {} without an error and runs. An extension tool, with and without a prepare hook, isolated and fused, answers the same.
+func TestToolArgumentsThatAreNoJSONObjectAreRefusedAsPiRefusesThem(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping conformance suite in short mode (builds subprocess fixtures)")
+	}
+	refused := func(name, problem, text string) string {
+		return "Invalid arguments for tool \"" + name + "\": " + problem + "\n\nReceived arguments:\n" + text
+	}
+	const notObject = "Tool arguments must be a JSON object"
+	for _, tc := range rawArgsHarnesses() {
+		t.Run(tc.name, func(t *testing.T) {
+			h := tc.make(t)
+			t.Cleanup(func() { h.host.Shutdown("test done") })
+			for _, text := range []struct{ arguments, problem string }{
+				{"[]", notObject}, {"42", notObject}, {`"text"`, notObject}, {"null", notObject},
+				{`{"a":`, "Unexpected end of JSON input"},
+			} {
+				// The hook runs with {} before the refusal; raw_plain reports the text the last hook got.
+				dispatchRawToolCall(t, h, "raw_echo", `{"seed":1}`)
+				result := dispatchRawToolCall(t, h, "raw_echo", text.arguments)
+				if want := refused("raw_echo", text.problem, text.arguments); !result.IsError || result.Text() != want {
+					t.Errorf("raw_echo %s = %q (error %t), want %q (error true)", text.arguments, result.Text(), result.IsError, want)
+				}
+				if got, want := dispatchRawToolCall(t, h, "raw_plain", `{"p":1}`).Text(), `prepare={} execute={"p":1}`; got != want {
+					t.Errorf("after raw_echo %s: %q, want the hook to have got {}: %q", text.arguments, got, want)
+				}
+				result = dispatchRawToolCall(t, h, "raw_plain", text.arguments)
+				if want := refused("raw_plain", text.problem, text.arguments); !result.IsError || result.Text() != want {
+					t.Errorf("raw_plain %s = %q (error %t), want %q (error true)", text.arguments, result.Text(), result.IsError, want)
+				}
+			}
+			// Text Pi accepts runs as before.
+			dispatchRawToolCall(t, h, "raw_echo", `{"seed":1}`)
+			for _, accepted := range []struct{ tool, arguments, want string }{
+				{"raw_plain", "", `prepare={"seed":1} execute={}`},
+				{"raw_plain", "   ", `prepare={"seed":1} execute={}`},
+				{"raw_plain", `{"a":1}`, `prepare={"seed":1} execute={"a":1}`},
+				{"raw_echo", "", `prepare={} execute={}`},
+				{"raw_echo", `{"a":1}`, `prepare={"a":1} execute={"a":1}`},
+			} {
+				result := dispatchRawToolCall(t, h, accepted.tool, accepted.arguments)
+				if result.IsError || result.Text() != accepted.want {
+					t.Errorf("%s %q = %q (error %t), want %q", accepted.tool, accepted.arguments, result.Text(), result.IsError, accepted.want)
+				}
+			}
+		})
+	}
+}
+
 // Upstream runner.ts emitToolCall hands a tool_call handler event.input, the object in the model's member order. A Go handler reads it with ctx.ToolInput.
 func TestToolCallHandlerToolInputKeepsTheOrder(t *testing.T) {
 	if testing.Short() {

@@ -1,4 +1,4 @@
-// Package rawargs is the Go extension of the raw tool-argument conformance row: tools whose prepareArguments returns the arguments' JSON text unchanged, other text, an error or nothing, and a tool_call handler that reports the input it reads.
+// Package rawargs is the Go extension of the raw tool-argument conformance row: tools whose prepareArguments returns the arguments' JSON text unchanged, other text, an error or nothing, a tool without the hook, and a tool_call handler that reports the input it reads.
 package rawargs
 
 import (
@@ -60,6 +60,11 @@ func Extension(name string) *sdk.Extension {
 		Name: "prepare_nil", Label: "prepare_nil", Description: "Prepare with a hook that returns nothing", Parameters: object,
 		PrepareArguments: func(json.RawMessage) (json.RawMessage, error) { return nil, nil },
 		Execute:          func(sdk.Context, map[string]any) (any, error) { return map[string]any{"content": "executed"}, nil },
+	})
+	// raw_plain has no hook; it reports the text the last raw hook got and its own arguments.
+	ext.RegisterTool(sdk.ToolDefinition{
+		Name: "raw_plain", Label: "raw_plain", Description: "No prepare hook", Parameters: object,
+		Execute: func(ctx sdk.Context, _ map[string]any) (any, error) { return report(ctx) },
 	})
 	// The handler blocks calls of tool_call_probe with the input it read as the reason.
 	ext.OnEvent("tool_call", func(ctx sdk.Context, data map[string]any) (any, error) {
