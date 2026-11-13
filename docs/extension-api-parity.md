@@ -22,6 +22,12 @@ The wire handler declarations require a positive `handler_id` so multiple regist
 
 When a row is impossible or intentionally non-parity, record a numbered entry in `docs/parity/DIVERGENCES.md` and link it from the Status column.
 
+### Direct Piglet Go realization (D234, fork experiment)
+
+An explicit per-member `realization: direct` uses the native `extension.API` through `factoryload`, not the SDK wire. `fused` remains D31. The common `allHarnessCases` table includes `direct-go`; `makeDirectGoHarness` registers the native reference fixture through the production factory API. `TestDirectMemberBuildsBesideFusedWithoutSDKFactory` separately proves generated Piglet linkage. Factory loading blocks, commits or discards registrations, and propagates errors before returning. Native handler contexts, cancellation, ordering and runtime invalidation remain those of the native reference; no new scheduler is supplied.
+
+Status: partial conformance evidence. Wire-only cases in `sdkHarnessCases` do not apply to this row. The common harness still skips background replicated-state push and a stalled host connection, and its two SDK API-call fixtures (`getCommands`, thinking-level/model actions) do not bind the native factory API. Those skips are not passes. A raw malformed `user_bash` result is rejected by the native callback type: the direct row proves compiler rejection of `json.RawMessage` where `UserBashEventResult` is required, while wire rows retain their runtime validation assertions. No SDK behavior or accepted wire assertion is weakened.
+
 ### Lisp SDK (SBCL)
 
 `extensions/sdk-lisp` targets the same wire. It runs in a cached SBCL image the host builds from the extension's ASDF system or single file and starts as a packed-cell runner (isolated cells are one-member cells; packing follows D20, with one extra rule: two members that name the same system or file stay in separate images). The conformance cell is the SDK scenario table's Lisp driver (`test/extension-conformance/testdata/scenario-driver-lisp`), isolated and packed.

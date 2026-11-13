@@ -133,12 +133,14 @@ func allHarnessCases() []harnessCase {
 		{name: "subprocess-python", make: makeSubprocessPythonHarness, extName: "python-sdk-fixture"},
 		{name: "subprocess-lisp", make: makeSubprocessLispHarness, extName: lispFixtureName},
 		{name: "fused-go", make: makeFusedGoHarness, extName: "sdk-fixture"},
+		{name: "direct-go", make: makeDirectGoHarness, extName: inprocFixtureName},
 	}
 }
 
 func sdkHarnessCases() []harnessCase {
 	cases := allHarnessCases()
-	return cases[1:]
+	// Native direct members have no subprocess host or wire; host-only rows apply only to the SDK realizations.
+	return slices.DeleteFunc(cases[1:], func(tc harnessCase) bool { return tc.name == "direct-go" })
 }
 
 // packedSDKHarnessCases are the Go, Rust, Python and Lisp SDKs loaded into one shared runtime cell beside a peer extension, through the production
