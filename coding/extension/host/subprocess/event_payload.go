@@ -7,6 +7,7 @@ import (
 	"github.com/MichaelKinsy/PiG/ai"
 
 	"github.com/MichaelKinsy/PiG/coding/extension"
+	sdkjson "github.com/MichaelKinsy/PiG/extensions/sdk/json"
 	"github.com/MichaelKinsy/PiG/internal/jsonstringify"
 )
 
@@ -42,7 +43,8 @@ func applyToolCallInput(event any, input json.RawMessage) error {
 		return nil
 	}
 	var edited any
-	if err := json.Unmarshal(input, &edited); err != nil {
+	// A handler's edit retains every UTF-16 unit in event.input, as Pi's shared object does.
+	if err := sdkjson.Unmarshal(input, &edited); err != nil {
 		return err
 	}
 	members, ok := edited.(map[string]any)

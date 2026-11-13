@@ -1,4 +1,4 @@
-// Package rawargs is the Go extension of the raw tool-argument conformance row: tools whose prepareArguments returns the arguments' JSON text unchanged, other text, an error or nothing, and a tool_call handler that reports the input it reads.
+// Package rawargs is the Go extension of the raw tool-argument conformance row: tools whose prepareArguments returns the arguments' JSON text unchanged, other text, an error or nothing, a tool without the hook, and a tool_call handler that reports the input it reads.
 package rawargs
 
 import (
@@ -29,6 +29,36 @@ func Extension(name string) *sdk.Extension {
 		return map[string]any{"content": "prepare=" + prepared + " execute=" + string(ctx.ToolInput())}, nil
 	}
 	object := sdk.Schema{"type": "object"}
+	var eventInput string
+	for _, name := range []string{"raw_event_plain", "raw_event_echo", "raw_event_edit"} {
+		definition := sdk.ToolDefinition{
+			Name: name, Label: name, Description: "Report the tool_call input and execution input", Parameters: object,
+			Execute: func(ctx sdk.Context, _ map[string]any) (any, error) {
+				mu.Lock()
+				prepared, seen := last, eventInput
+				mu.Unlock()
+				return map[string]any{"content": "prepare=" + prepared + " tool_call=" + seen + " execute=" + string(ctx.ToolInput())}, nil
+			},
+		}
+		if name != "raw_event_plain" {
+			definition.PrepareArguments = func(args json.RawMessage) (json.RawMessage, error) { remember(args); return args, nil }
+		}
+		ext.RegisterTool(definition)
+	}
+	ext.OnEvent("tool_call", func(ctx sdk.Context, data map[string]any) (any, error) {
+		if name, _ := data["toolName"].(string); strings.HasPrefix(name, "raw_event_") {
+			mu.Lock()
+			eventInput = string(ctx.ToolInput())
+			if name == "raw_event_plain" {
+				last = ""
+			}
+			mu.Unlock()
+			if name == "raw_event_edit" {
+				data["input"].(map[string]any)["added"] = true
+			}
+		}
+		return nil, nil
+	})
 	ext.RegisterTool(sdk.ToolDefinition{
 		Name: "raw_echo", Label: "raw_echo", Description: "Prepare with a raw hook that returns its input", Parameters: object,
 		PrepareArguments: func(args json.RawMessage) (json.RawMessage, error) {
@@ -61,12 +91,46 @@ func Extension(name string) *sdk.Extension {
 		PrepareArguments: func(json.RawMessage) (json.RawMessage, error) { return nil, nil },
 		Execute:          func(sdk.Context, map[string]any) (any, error) { return map[string]any{"content": "executed"}, nil },
 	})
+	// raw_plain has no hook; it reports the text the last raw hook got and its own arguments.
+	ext.RegisterTool(sdk.ToolDefinition{
+		Name: "raw_plain", Label: "raw_plain", Description: "No prepare hook", Parameters: object,
+		Execute: func(ctx sdk.Context, _ map[string]any) (any, error) { return report(ctx) },
+	})
 	// The handler blocks calls of tool_call_probe with the input it read as the reason.
 	ext.OnEvent("tool_call", func(ctx sdk.Context, data map[string]any) (any, error) {
 		if data["toolName"] != "tool_call_probe" {
 			return nil, nil
 		}
 		return map[string]any{"block": true, "reason": "input=" + string(ctx.ToolInput())}, nil
+	})
+	for _, name := range []string{"result_plain", "result_prepare", "result_edit"} {
+		def := sdk.ToolDefinition{
+			Name: name, Label: name, Description: "Report tool_result input", Parameters: object,
+			Execute: func(ctx sdk.Context, _ map[string]any) (any, error) {
+				return map[string]any{"content": "execute=" + string(ctx.ToolInput())}, nil
+			},
+		}
+		if name == "result_prepare" {
+			def.PrepareArguments = func(json.RawMessage) (json.RawMessage, error) {
+				return json.RawMessage(`{"zz":true,"nested":{"y":"\ud800","b":2},"aa":[2,1]}`), nil
+			}
+		}
+		ext.RegisterTool(def)
+	}
+	ext.OnEvent("tool_call", func(_ sdk.Context, data map[string]any) (any, error) {
+		if data["toolName"] == "result_edit" {
+			input, _ := data["input"].(map[string]any)
+			delete(input, "z")
+			input["added"] = true
+		}
+		return nil, nil
+	})
+	ext.OnEvent("tool_result", func(ctx sdk.Context, data map[string]any) (any, error) {
+		name, _ := data["toolName"].(string)
+		if !strings.HasPrefix(name, "result_") {
+			return nil, nil
+		}
+		return map[string]any{"content": []any{map[string]any{"type": "text", "text": "input=" + string(ctx.ToolInput())}}}, nil
 	})
 	return ext
 }

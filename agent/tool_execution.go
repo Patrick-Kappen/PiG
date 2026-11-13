@@ -371,6 +371,10 @@ func prepareToolCall(ctx context.Context, tools []AgentTool, hooks ToolCallHooks
 			args = prepared
 		}
 	}
+	// Pi's prepared call keeps the provider's argumentsError, and validateToolArguments refuses it before the schema (validation.ts:49-52).
+	if call.argumentsError != "" {
+		return immediateOutcome(call, errorToolResult("Invalid arguments for tool \""+call.name+"\": "+call.argumentsError))
+	}
 	// Pi validates tool.parameters itself, in the member order the tool authored them (validation.ts:59: getValidator(tool.parameters).parse).
 	var parameters json.RawMessage
 	if schemaTool, ok := tool.(interface{ ArgumentSchema() json.RawMessage }); ok {
