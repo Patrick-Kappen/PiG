@@ -61,6 +61,9 @@ func DirectExtension(api extension.API) error {
 	if code := runBuild([]string{path, "--format", "binary", "--builder", "native", "--out", out}, &stdout, &stderr); code != 0 {
 		t.Fatalf("build exit %d\n%s\n%s", code, &stdout, &stderr)
 	}
+	if !strings.Contains(stderr.String(), "Preparing direct Go members") || !strings.Contains(stderr.String(), "Checking linked Go members") {
+		t.Fatalf("mixed build mislabels native members as fused: %s", &stderr)
+	}
 	home := t.TempDir()
 	cmd := exec.CommandContext(t.Context(), out, "--mode", "rpc", "--offline", "--no-session")
 	cmd.Dir = root

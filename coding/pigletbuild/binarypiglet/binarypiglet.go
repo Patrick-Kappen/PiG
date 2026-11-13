@@ -220,7 +220,7 @@ func sha256Sum(data []byte) []byte {
 	return sum[:]
 }
 
-// VerifyRegisteredClosure checks that the fused and binary-packed extension
+// VerifyRegisteredClosure checks that the direct, fused and binary-packed extension
 // components a built Piglet Binary actually registers at startup match its
 // baked plan. A tampered fuse registry or cell manifest, or a PATH/ambient
 // substitute for a component the plan says was built in, fails closed. Stock

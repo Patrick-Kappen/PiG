@@ -1,6 +1,4 @@
-// Package pigletbuild hosts Piglet Binary planning while orchestration is
-// moved to the final Piglet artifact package. The planner is factual: compatible
-// Go factories fuse; every other extension is an exact subprocess component.
+// Package pigletbuild plans and builds Piglet Binaries. Explicit direct Go members link natively; compatible SDK factories fuse, and other extensions remain exact subprocess components.
 package pigletbuild
 
 import (

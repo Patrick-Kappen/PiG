@@ -48,6 +48,7 @@ func buildNativeArtifact(ctx context.Context, source pigSource, p *piglet.Piglet
 	host := Target{OS: runtime.GOOS, Arch: runtime.GOARCH}
 	var built []stagedCell
 	var fused []fusedEntry
+	directCount := 0
 	for _, cell := range cells {
 		realization, _, err := cellComponentDisposition(cell, componentPlan)
 		if err != nil {
@@ -61,10 +62,12 @@ func buildNativeArtifact(ctx context.Context, source pigSource, p *piglet.Piglet
 		cellCtx := buildprogress.Member(ctx, members)
 		// pig additive (D234): explicit native members are linked separately from SDK factories.
 		if realization == pigletartifact.RealizationDirect {
+			buildprogress.Phase(ctx, "Preparing direct Go members", members)
 			entries, err := collectDirect(cell)
 			if err != nil {
 				return nil, err
 			}
+			directCount += len(entries)
 			fused = append(fused, entries...)
 			continue
 		}
@@ -140,7 +143,11 @@ func buildNativeArtifact(ctx context.Context, source pigSource, p *piglet.Piglet
 	// pig additive (D31): linked extensions must not invoke process-global
 	// operations that are isolated by the normal subprocess realization.
 	if len(vetted) > 0 {
-		buildprogress.Phase(ctx, "Checking fused Go members", "Process-global safety checks")
+		phase := "Checking fused Go members"
+		if directCount > 0 {
+			phase = "Checking linked Go members"
+		}
+		buildprogress.Phase(ctx, phase, "Process-global safety checks")
 	}
 	if err := vetFusedPackages(ctx, vetted); err != nil {
 		return nil, err
@@ -171,7 +178,11 @@ func buildNativeArtifact(ctx context.Context, source pigSource, p *piglet.Piglet
 	}
 	buildprogress.Phase(ctx, "Compiling and linking Go binary", p.Name+" → "+abary)
 	if !buildprogress.Enabled(ctx) {
-		_, _ = fmt.Fprintf(stdout, "building Piglet Binary %s (%d embedded cell(s), %d fused, target %s)...\n", p.Name, len(built), len(fused), host)
+		if directCount == 0 {
+			_, _ = fmt.Fprintf(stdout, "building Piglet Binary %s (%d embedded cell(s), %d fused, target %s)...\n", p.Name, len(built), len(fused), host)
+		} else {
+			_, _ = fmt.Fprintf(stdout, "building Piglet Binary %s (%d embedded cell(s), %d fused, %d direct, target %s)...\n", p.Name, len(built), len(fused)-directCount, directCount, host)
+		}
 	}
 	// pig additive (D92): the effective strip list's build tags compile its
 	// shimmed built-ins out of the Binary.

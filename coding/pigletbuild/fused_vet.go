@@ -196,8 +196,7 @@ func fusedHazardSymbol(expression ast.Expr, aliases map[string]string, dotImport
 		{path: "os", names: []string{"Exit", "Chdir", "Stdout"}},
 		{path: "log", names: []string{"Fatal", "Fatalf", "Fatalln"}},
 		{path: "fmt", names: []string{"Print", "Printf", "Println"}},
-		// A fused member keeps the wire contract: the compiled-in factory form belongs to the binary's own main package, never to a Piglet
-		// (docs/specs/extension-factory-trust.md, property 4).
+		// Fused members keep the wire contract. Only explicit direct members receive the native factory exemptions in inspectFusedPackage.
 		{path: "github.com/MichaelKinsy/PiG/coding/extension", names: []string{"ExtensionFactory", "InlineExtension"}},
 		{path: "github.com/MichaelKinsy/PiG/coding/extension/factoryload", names: []string{"LoadExtensionFromFactory", "WithSourceInfo"}},
 		{path: "github.com/MichaelKinsy/PiG/coding/extension/builtin", names: []string{"All", "Resolve"}},
