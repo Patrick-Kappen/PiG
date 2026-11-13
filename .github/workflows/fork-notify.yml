@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: MIT
+name: Fork notify
+
+# Fork only (Patrick-Kappen/PiG). Tells MyPiglets that a line it builds moved: its `pig` follows main and its `pig-test`
+# follows performance. MyPiglets' "Update PiG" workflow listens for the repository_dispatch event `pig-updated`.
+on:
+  push:
+    branches: [main, performance]
+
+permissions: {}
+
+jobs:
+  notify:
+    if: github.repository == 'Patrick-Kappen/PiG'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: Patrick-Kappen
+          repositories: MyPiglets
+          permission-contents: write
+      - name: Dispatch pig-updated to MyPiglets
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          BRANCH: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: |
+          gh api -X POST repos/Patrick-Kappen/MyPiglets/dispatches \
+            -f event_type=pig-updated -f "client_payload[branch]=$BRANCH" -f "client_payload[sha]=$SHA"

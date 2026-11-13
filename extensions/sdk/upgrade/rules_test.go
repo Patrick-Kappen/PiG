@@ -609,6 +609,33 @@ func TestHostHelpersHighlightCodeChangeIsNamed(t *testing.T) {
 	}
 }
 
+// A PrepareArguments hook written for the map shape is named with its old and new shape, in a ToolDefinition and in ToolWithPrepareArguments; the change has no mechanical rewrite.
+func TestPrepareArgumentsChangeIsNamed(t *testing.T) {
+	for name, source := range map[string]string{
+		"definition": `var tool = sdk.ToolDefinition{
+	PrepareArguments: func(params map[string]any) (map[string]any, error) {
+		return params, nil
+	},
+}
+`,
+		"function": `func register(ext *sdk.Extension) {
+	ext.ToolWithPrepareArguments("t", "t", sdk.Schema{}, func(params map[string]any) (map[string]any, error) { return params, nil }, nil)
+}
+`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			result, _ := planSource(t, source)
+			if result.Changed() || len(result.Remaining) != 1 {
+				t.Fatalf("result = %+v", result)
+			}
+			drift := result.Remaining[0]
+			if drift.Rule != upgrade.RulePrepareArguments || drift.Symbol != "ToolPrepareArgumentsFunc" || drift.Rewrites || drift.Old != "func(map[string]any) (map[string]any, error)" || drift.New != "func(json.RawMessage) (json.RawMessage, error)" {
+				t.Fatalf("drift = %+v", drift)
+			}
+		})
+	}
+}
+
 // A provider object written for map[string]any credentials names each changed field with its old and new shape; the change has no mechanical rewrite.
 func TestProviderCredentialChangesAreNamed(t *testing.T) {
 	result, _ := planSource(t, `var provider = sdk.Provider{

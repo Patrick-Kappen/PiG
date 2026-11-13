@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: MIT
+name: Fork sync
+
+# Fork only (Patrick-Kappen/PiG). Keeps the fork's two lines following their source, each through a pull request
+# that merges itself once the required checks pass (.github/fork/sync.sh):
+#   upstream     MichaelKinsy/PiG main  ->  main         (sync/upstream)
+#   performance  this repository's main ->  performance  (sync/performance)
+# A conflict opens an issue instead, to resolve on the sync branch. Runs every 30 minutes and by hand; on the
+# upstream repository it does nothing.
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: fork-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'Patrick-Kappen/PiG'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      # The release App: a pull request it opens starts CI (one opened with the workflow token would not), and it may
+      # push merges that change workflow files.
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+          permission-workflows: write
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app.outputs.token }}
+      - name: Upstream main into main
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: bash .github/fork/sync.sh upstream MichaelKinsy/PiG main main
+      - name: Main into performance
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: bash .github/fork/sync.sh performance "$GITHUB_REPOSITORY" main performance

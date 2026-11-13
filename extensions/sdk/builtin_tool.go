@@ -472,10 +472,9 @@ type builtinPrepareCall struct {
 
 // prepareArguments is `prepareArguments(args)` of a built-in tool's definition, which the host runs: edit's accepts `edits` as a JSON string or as a single edit and
 // the legacy top-level `oldText` and `newText`. Like Pi's synchronous hook it takes no signal.
-func (s builtinSpec) prepareArguments(params map[string]any) (map[string]any, error) {
-	rawParams, err := json.MarshalJS(params)
-	if err != nil {
-		return nil, fmt.Errorf("encode arguments of %s: %w", s.name, err)
+func (s builtinSpec) prepareArguments(rawParams json.RawMessage) (json.RawMessage, error) {
+	if len(rawParams) == 0 {
+		rawParams = json.RawMessage("null")
 	}
 	args := builtinPrepareCall{s.name, s.cwd, &s.options, rawParams}
 	var encoded []byte
@@ -501,11 +500,10 @@ func (s builtinSpec) prepareArguments(params map[string]any) (map[string]any, er
 		}
 		encoded = result.Result
 	}
-	var prepared map[string]any
-	if err := json.Unmarshal(encoded, &prepared); err != nil {
-		return nil, fmt.Errorf("host reply to builtinTool.prepareArguments: %w", err)
+	if !json.Valid(encoded) {
+		return nil, errors.New("host reply to builtinTool.prepareArguments is not JSON")
 	}
-	return prepared, nil
+	return json.RawMessage(encoded), nil
 }
 
 func (s builtinSpec) toolDefinition() (BuiltinToolDefinition, error) {

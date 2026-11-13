@@ -193,6 +193,8 @@ func classifyDiagnostic(diagnostic Diagnostic, source FileSource, files map[stri
 		return RuleNotComparable, "OAuthCredentials", true
 	case highlightCodeTarget().MatchString(message) && importsSDK(diagnostic, source, files):
 		return RuleHostHighlightCode, "HostHelpers.HighlightCode", true
+	case strings.Contains(message, "ToolPrepareArgumentsFunc") && importsSDK(diagnostic, source, files):
+		return RulePrepareArguments, "ToolPrepareArgumentsFunc", true
 	case strings.Contains(message, "TransformHeaders") && strings.Contains(message, "ProviderStreamOptions"):
 		return RuleTransformHeaders, "ProviderStreamOptions.TransformHeaders", true
 	case credentialType().MatchString(message) && importsSDK(diagnostic, source, files):
