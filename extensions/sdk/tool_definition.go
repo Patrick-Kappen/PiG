@@ -52,8 +52,8 @@ type ToolDefinition struct {
 	// RenderShell is upstream renderShell: [ToolRenderShellSelf] when the
 	// renderers draw their own framing, else the default tool card.
 	RenderShell ToolRenderShell
-	// PrepareArguments transforms raw arguments before schema validation and
-	// execution.
+	// PrepareArguments transforms the arguments' JSON text before schema
+	// validation and execution; see [ToolPrepareArgumentsFunc].
 	PrepareArguments ToolPrepareArgumentsFunc
 	// ExecutionMode is upstream executionMode: "sequential" or "parallel";
 	// empty uses the agent default.

@@ -264,7 +264,7 @@ func builtinProbe(ctx sdk.Context, c builtinProbeCase) (map[string]any, error) {
 		}
 		report["has"] = def.PrepareArguments != nil
 		if def.PrepareArguments != nil {
-			if prepared, err := def.PrepareArguments(params); err != nil {
+			if prepared, err := def.PrepareArguments(c.Params); err != nil {
 				report["error"] = err.Error()
 			} else {
 				report["prepared"] = prepared

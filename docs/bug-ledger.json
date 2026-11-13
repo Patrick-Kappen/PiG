@@ -30970,6 +30970,29 @@
       ]
     },
     {
+      "id": "BF-ad7ab4c",
+      "title": "A tool call whose arguments are not a JSON object (`[]`, `42`, `\"text\"`, `null`, or text that is no JSON) is…",
+      "symptom": "A tool call whose arguments are not a JSON object (`[]`, `42`, `\"text\"`, `null`, or text that is no JSON) is refused with Pi's `Invalid arguments for tool \"\u003cname\u003e\": …` result; the tool no longer runs with `{}`.",
+      "rootCause": "Pi's parseToolCallArguments gives a finished call whose text is not a JSON object arguments {} and an argumentsError; validateToolArguments refuses the call with `Invalid arguments for tool \"\u003cname\u003e\": \u003cargumentsError\u003e` before execute. PiG kept ArgumentsError on the ai.ToolCall but newPendingToolCall dropped it and prepareToolCall validated only the bytes, so the tool ran with {}.",
+      "rootCauseSource": "commit",
+      "userImpact": "An operation failed or was rejected",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "A tool call whose arguments are not a JSON object (`[]`, `42`, `\"text\"`, `null`, or text that is no JSON) is refused with Pi's `Invalid arguments for tool \"\u003cname\u003e\": …` result; the tool no longer runs with `{}`.",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "ad7ab4cc8a",
+          "date": "2026-11-13"
+        }
+      ],
+      "tests": [
+        "agent/tool_arguments_error_test.go::TestToolCallWithArgumentsErrorIsRefusedBeforeExecute",
+        "test/extension-conformance/raw_tool_arguments_test.go::TestToolArgumentsThatAreNoJSONObjectAreRefusedAsPiRefusesThem"
+      ]
+    },
+    {
       "id": "BF-ad9ed64",
       "title": "Appending a tool result whose details are a tool's own value (a truncated `read`, `bash` output details, an…",
       "symptom": "Appending a tool result whose details are a tool's own value (a truncated `read`, `bash` output details, an extension's details object) no longer parses the session record it has just written.",
