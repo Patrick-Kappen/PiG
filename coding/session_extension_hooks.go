@@ -15,6 +15,7 @@ import (
 	"github.com/MichaelKinsy/PiG/ai"
 	"github.com/MichaelKinsy/PiG/coding/extension"
 	"github.com/MichaelKinsy/PiG/coding/extension/host/inproc"
+	sdkjson "github.com/MichaelKinsy/PiG/extensions/sdk/json"
 	icodingagent "github.com/MichaelKinsy/PiG/internal/codingagent"
 	"github.com/MichaelKinsy/PiG/internal/jsonstringify"
 )
@@ -59,7 +60,8 @@ func (s *Session) toolCallHook(ctx context.Context, toolCallID, parentToolCallID
 	}
 	var input map[string]any
 	if len(args) > 0 {
-		_ = json.Unmarshal(args, &input) // invalid JSON yields a nil input, as validation already ran
+		// Pi's event.input retains unpaired UTF-16 units, including in keys.
+		_ = sdkjson.Unmarshal(args, &input) // invalid JSON yields a nil input, as validation already ran
 	}
 	// The event carries the members in the order the model wrote them (JSON.stringify of Pi's input), and a subprocess handler's edit replaces these bytes. The agent loop runs the tool with whatever order they hold afterwards.
 	var wireInput *json.RawMessage
@@ -71,7 +73,8 @@ func (s *Session) toolCallHook(ctx context.Context, toolCallID, parentToolCallID
 	if wireInput != nil {
 		before = string(*wireInput)
 	}
-	beforeValues, _ := json.Marshal(input)
+	//portlint:allow mapkeyorder sorted snapshots detect value edits only; WireInput and InputJSON separately retain the observable member order
+	beforeValues, _ := sdkjson.Marshal(input)
 	event := extension.CustomToolCallEvent{
 		ToolCallEventBase: extension.ToolCallEventBase{Type: icodingagent.EventToolCall, ToolCallID: toolCallID, ParentToolCallID: parentToolCallID, WireInput: wireInput},
 		ToolName:          toolName,
@@ -82,7 +85,8 @@ func (s *Session) toolCallHook(ctx context.Context, toolCallID, parentToolCallID
 		return agent.ToolCallHookResult{Err: err}
 	}
 	var hook agent.ToolCallHookResult
-	if afterValues, err := json.Marshal(input); err == nil && (!bytes.Equal(beforeValues, afterValues) || (wireInput != nil && string(*wireInput) != before)) {
+	//portlint:allow mapkeyorder compare with the sorted value snapshot, not the event's insertion-ordered wire encoding
+	if afterValues, err := sdkjson.Marshal(input); err == nil && (!bytes.Equal(beforeValues, afterValues) || (wireInput != nil && string(*wireInput) != before)) {
 		if after, err := event.InputJSON(); err == nil {
 			hook.Args = after
 		}

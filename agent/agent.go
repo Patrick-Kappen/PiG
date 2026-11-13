@@ -2026,6 +2026,8 @@ type pendingToolCall struct {
 	name             string
 	args             toolCallArguments
 	thoughtSignature string // encrypted reasoning context for replay
+	// argumentsError is the call's ai.ToolCall.ArgumentsError: the model's text was not a JSON object, args is {}, and validation refuses the call.
+	argumentsError string
 }
 
 // Ports packages/agent/src/agent-loop.ts (the stream consumption of streamAssistantResponse).
@@ -2309,7 +2311,7 @@ func newPendingToolCall(call ai.ToolCall) pendingToolCall {
 	if err != nil {
 		arguments = []byte("{}")
 	}
-	pending := pendingToolCall{id: call.ID, name: call.Name, thoughtSignature: call.ThoughtSignature}
+	pending := pendingToolCall{id: call.ID, name: call.Name, thoughtSignature: call.ThoughtSignature, argumentsError: call.ArgumentsError}
 	// ArgumentsJSON returns bytes the call owns; the pending call keeps them, clipped so an append by a reader of the shared bytes copies.
 	pending.args = slices.Clip(arguments)
 	return pending
