@@ -17,6 +17,11 @@ func TestDirectComponentIsGoBinaryOnly(t *testing.T) {
 	if err := ValidatePlan(plan); err != nil {
 		t.Fatal(err)
 	}
+	invalid := plan.Components[0]
+	invalid.Kind = ComponentKindMCP
+	if err := validateResolvedComponent(invalid); err == nil {
+		t.Fatal("decoded direct component accepted a non-extension kind")
+	}
 	for _, change := range []func(*ComponentInput){
 		func(c *ComponentInput) { c.Language = "python" },
 		func(c *ComponentInput) { c.IsolationRequired = true },

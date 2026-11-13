@@ -201,8 +201,8 @@ func validateResolvedComponent(component Component) error {
 	}
 	switch component.Realization {
 	case RealizationDirect, RealizationFused:
-		if component.Language != "go" || component.Materialization != MaterializationBinary || component.Runtime != nil {
-			return fmt.Errorf("component %q has invalid fused realization", identity)
+		if (component.Realization == RealizationDirect && component.Kind != ComponentKindExtension) || component.Language != "go" || component.Materialization != MaterializationBinary || component.Runtime != nil {
+			return fmt.Errorf("component %q has invalid %s realization", identity, component.Realization)
 		}
 	case RealizationSubprocess:
 		switch component.Materialization {
