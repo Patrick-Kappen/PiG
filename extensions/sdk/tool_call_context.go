@@ -14,7 +14,7 @@ func (c Context) ToolCallIndex() (index int, ok bool) {
 	return *c.toolIndex, true
 }
 
-// ToolInput is the running tool call's arguments as the JSON text JSON.stringify gives for the object Pi hands execute: members in the order the model wrote them (array-index keys first, ascending, as JavaScript orders them), numbers as JavaScript prints them. The arguments are the ones the host sent the handler, after the tool's prepareArguments. In a tool_call event handler it is the event's input, in the same form. Nil outside a tool handler and a tool_call event handler. A [ToolFunc]'s params map has no order; this is the text to read it from.
+// ToolInput is the running tool call's arguments as the JSON text JSON.stringify gives for the object Pi hands execute: members in the order the model wrote them (array-index keys first, ascending, as JavaScript orders them), numbers as JavaScript prints them. The arguments are the ones the host sent the handler, after the tool's prepareArguments. In a tool_call or tool_result event handler it is the event's input, in the same form, including the prepared arguments and earlier tool_call handlers' edits. Nil outside a tool handler and these event handlers. A [ToolFunc]'s params map has no order; this is the text to read it from.
 func (c Context) ToolInput() json.RawMessage {
 	if c.toolInput == nil || len(*c.toolInput) == 0 {
 		return nil
@@ -26,7 +26,7 @@ func (c Context) ToolInput() json.RawMessage {
 	return json.RawMessage(jsonStringify(value))
 }
 
-// ToolParams is the running tool call's arguments as a JavaScript object keeps them: every object, at any depth, is an [*OrderedObject] whose members are in the order Object.keys gives (array-index keys ascending, then the others in insertion order), arrays are []any, numbers float64. Pi hands execute that object, and an extension that writes the arguments back out (JSON.stringify(params.metadata)) relies on the order. In a tool_call event handler they are the event's input. Nil outside a tool handler and a tool_call event handler, or when the arguments are not an object.
+// ToolParams is the running tool call's arguments as a JavaScript object keeps them: every object, at any depth, is an [*OrderedObject] whose members are in the order Object.keys gives (array-index keys ascending, then the others in insertion order), arrays are []any, numbers float64. Pi hands execute that object, and an extension that writes the arguments back out (JSON.stringify(params.metadata)) relies on the order. In a tool_call or tool_result event handler they are the event's input, including the prepared arguments and earlier tool_call handlers' edits. Nil outside a tool handler and these event handlers, or when the arguments are not an object.
 func (c Context) ToolParams() *OrderedObject {
 	if c.toolInput == nil || len(*c.toolInput) == 0 {
 		return nil

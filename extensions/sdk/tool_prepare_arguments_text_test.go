@@ -77,7 +77,7 @@ func TestToolPrepareArgumentsGetsAndAnswersTheHostsBytes(t *testing.T) {
 	}
 }
 
-// A tool_call event handler reads the event's input as text in the order the host wrote it, as a JavaScript handler reads event.input.
+// A tool_call or tool_result event handler reads the event's input as text in the order the host wrote it, as a JavaScript handler reads event.input.
 func TestToolCallEventHandlerReadsTheInputInOrder(t *testing.T) {
 	ext := New("tool-call-input")
 	inputs := make(chan string, 2)
@@ -103,8 +103,8 @@ func TestToolCallEventHandlerReadsTheInputInOrder(t *testing.T) {
 	if resp.Error != nil {
 		t.Fatal(resp.Error)
 	}
-	if got := <-inputs; got != "" {
-		t.Errorf("tool_result ToolInput = %s, want none outside tool_call", got)
+	if got := <-inputs; got != input {
+		t.Errorf("tool_result ToolInput = %s, want %s", got, input)
 	}
 }
 
