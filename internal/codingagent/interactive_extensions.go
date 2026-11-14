@@ -156,6 +156,15 @@ func (m *InteractiveMode) extensionContextUsage() *extension.ContextUsage {
 	return usage
 }
 
+// extensionSessionCacheObservation reads the Session the mode shows at the time of the call; a mode without one reports unknown.
+func (m *InteractiveMode) extensionSessionCacheObservation() *extension.SessionCacheObservation {
+	// pig additive (D616): the mode owns its bridge and runner bindings, so it supplies the Session diagnostic to both.
+	if m.opts.SessionHandle == nil {
+		return nil
+	}
+	return m.opts.SessionHandle.SessionCacheObservation()
+}
+
 // wireInprocContextActions binds the same session state as wireSubprocessHostCallbacks to direct extension context calls.
 func (m *InteractiveMode) wireInprocContextActions() {
 	m.bindEditorSnapshot()
@@ -234,6 +243,8 @@ func (m *InteractiveMode) wireInprocContextActions() {
 		},
 		Shutdown:        m.requestExtensionShutdown,
 		GetContextUsage: m.extensionContextUsage,
+		// pig additive (D616)
+		GetSessionCacheObservation: m.extensionSessionCacheObservation,
 		GetSystemPrompt: func() string {
 			return m.currentSystemPrompt()
 		},
@@ -644,6 +655,8 @@ func (m *InteractiveMode) wireSubprocessHostCallbacks() func() {
 	})
 
 	b.SetHostAction("getContextUsage", m.extensionContextUsage)
+	// pig additive (D616)
+	b.SetHostAction(subprocess.CallGetSessionCacheObservation, m.extensionSessionCacheObservation)
 
 	// System prompt.
 	b.SetHostAction("getSystemPrompt", func() string {

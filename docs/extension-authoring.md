@@ -538,6 +538,10 @@ Prefer the context branch (what the model will see, trimmed at the last compacti
 
 Compute incrementally: keep running totals and update them from each new entry instead of rescanning the branch. Stream or peek (read only the fields you need, skip entries you do not care about) rather than materializing every entry. Before shipping, measure the handler on a large synthetic session (hundreds of MB, tens of thousands of entries, many compactions) and check both latency and peak memory.
 
+## Read the Session's prompt-cache lifetime
+
+PiG's separate passive diagnostic (D616) exposes the effective lifetime and dispatch time, including with warming off. Use `ctx.GetSessionCacheObservation()` in Go, `ctx.get_session_cache_observation()` in Rust/Python, `ctx.getSessionCacheObservation()` in Node, or `pig:ctx-get-session-cache-observation` in Lisp. Null is unknown, not expired. Compare elapsed milliseconds from `startedAt` with `ttlMs`. Do not infer lifetime from an answer timestamp or assume five minutes. The getter starts no provider call or timer. See [Session cache observation](session-cache-observation.md) for the full contract.
+
 ## Pricing what compaction would drop
 
 An extension that needs Pi's own answer to "where would compaction cut, and how many tokens lie before the cut" imports Pi's three helpers from its SDK. The helpers take the entries `getBranch()` returns, so no host call and no copy of Pi's logic is needed. Node re-exports Pi's `findCutPoint`, `sessionEntryToContextMessages` and `estimateTokens`. Go has `sdk.FindCutPoint`, `sdk.SessionEntryToContextMessages` and `sdk.EstimateTokens` in `github.com/MichaelKinsy/PiG/extensions/sdk` (a separate module: importing it does not pull in the host). Rust has `find_cut_point`, `session_entry_to_context_messages` and `estimate_tokens`. Python has the same snake_case names in `pig_sdk`.

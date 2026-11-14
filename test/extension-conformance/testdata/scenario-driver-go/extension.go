@@ -307,6 +307,8 @@ func query(ctx sdk.Context, name string) (any, error) {
 		return ctx.IsIdle()
 	case "pending":
 		return ctx.HasPendingMessages()
+	case "session-cache":
+		return ctx.GetSessionCacheObservation()
 	case "system-prompt":
 		return ctx.GetSystemPrompt()
 	case "thinking":

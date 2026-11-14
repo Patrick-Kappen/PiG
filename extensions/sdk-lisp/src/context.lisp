@@ -389,6 +389,9 @@ function of the call's input (a hash-table) returning \"all\" or the words that 
 (defun ctx-set-active-tools (ctx tool-names)
   (ctx-call-host ctx "setActiveTools" (obj "tools" (coerce tool-names 'vector))) nil)
 (defun ctx-get-commands (ctx) (reply-field ctx "getCommands" "commands"))
+;; pig additive (D616): null is unknown; an elapsed observation stays an object.
+(defun ctx-get-session-cache-observation (ctx) (nonempty-object (call-result ctx "getSessionCacheObservation")))
+
 (defun ctx-get-context-usage (ctx) (nonempty-object (call-result ctx "getContextUsage")))
 (defun ctx-get-system-prompt-options (ctx)
   (let ((result (call-result ctx "getSystemPromptOptions")))

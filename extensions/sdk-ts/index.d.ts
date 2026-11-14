@@ -100,6 +100,8 @@ declare module "@earendil-works/pi-coding-agent" {
     onLoaded(handler: (ctx: ExtensionContext) => void | Promise<void>): void;
   }
   interface ExtensionContext {
+    /** PiG-only passive diagnostic (D616). Null is unknown, not expired. No cache refresh is sent. */
+    getSessionCacheObservation(): { startedAt: number; ttlMs: number; provider: string; model: string } | null;
     /** The provenance the loader stamped on this extension; undefined when the host holds none. */
     extensionSourceInfo(): PiGExtensionSourceInfo | undefined;
     /**

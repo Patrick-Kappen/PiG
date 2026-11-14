@@ -317,6 +317,10 @@ type ProviderObjectCall struct {
 	CallbackID string          `json:"callbackId,omitempty"`
 }
 
+// CallGetSessionCacheObservation has no arguments and returns a SessionCacheObservation or null (unknown). An elapsed lifetime remains an observation, not null.
+// pig additive (D616): read-only session-cache diagnostics, independent of warming mode.
+const CallGetSessionCacheObservation = "getSessionCacheObservation"
+
 const CallProviderObject = "provider.object"
 const MethodProviderSync = "provider_sync"
 const MethodProviderObjectCallback = "provider_object_callback"

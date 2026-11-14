@@ -2029,4 +2029,28 @@ Locked by: `TestStoreAPluginsPersistedDocumentsAndTableSurviveClosingTheNodeHost
 Remove when: Pi evaluates plugins in a runtime PiG does not start, or the program embedding the evaluator drops them.
 
 Approval: owner decision relayed 2026-11-01 for the plugins' Node evaluator (plugfull lane), the same as D221.
+
+## D616 Passive Session prompt-cache observations
+
+Summary: an extension can read the effective lifetime and dispatch time of the Session's last request or successful warmer refresh without selecting a cache policy.
+
+Audience: author
+
+Stock disposition: product-neutral diagnostics. The read is inert unless an extension calls it. Stock PiG selects no new cache, summary or workflow policy.
+
+What: the separate `getSessionCacheObservation` host call returns null (unknown) or `{startedAt, ttlMs, provider, model}`. It observes dispatch before streaming, even with warming off, and uses `GetPromptCacheTtlMs` for effective request retention and environment. A successful current refresh renews from dispatch, not completion. Failed or aborted real responses become unknown; failed, aborted and retired refreshes do not renew. Expired observations remain available. Replacement, resume before the first request, model mismatch, absent metadata and unsupported caller-supplied Agent/warmer ownership are unknown. The result is a model-based lifetime, not proof against provider eviction. See [Session cache observation](session-cache-observation.md).
+
+Why: extensions need the host's request clock and effective lifetime to make cache-sensitive decisions. Answer timestamps, warming status, nominal tiers and a fixed five-minute assumption cannot supply that information. No field or behavior of a ported Pi event changes.
+
+Async contract: Node reads synchronously through the existing host bridge; Go, Rust, Python and Lisp block for the bounded scalar host response and propagate ordinary errors/cancellation. No provider I/O, timer, history scan or background task is started by a read. Context invalidation and connection ownership are unchanged.
+
+Resource disposition: one scalar snapshot per warmer, replaced rather than accumulated. Closing rejects observation; a replacement owns a new warmer. Reads return independent snapshots. No additional conversation, model object, request environment or secret is retained. A local linux/amd64 getter benchmark measured 18.69 ns/op, 48 B/op, one allocation (Go 1.27.4, Ryzen 9 9950X); the profile identifies the bounded snapshot allocation and mutex, not history traversal. This is a mechanism cost, not an end-to-end speed claim.
+
+Tests: `TestSessionCacheObservation*` in `internal/codingagent` and `coding` cover effective retention/environment, warming off, expired versus unknown, dispatch versus delayed completion, stale refreshes, failure, model switch, replacement, snapshots and stale contexts. The `context/session-cache-observation-known-and-unknown` SDK scenario checks live known/null/expired values in every SDK. `TestSessionCacheObservationTopologies` reuses it for packed runtimes and fused Go. Interactive mode binds its own bridge and runner: `TestInteractiveModeReadsTheCurrentSessionsCacheObservation` reads both through a replacement, and `TestInteractiveModeBindsEveryHostCallback` and `TestRPCModeBindsEveryHostCallback` fail on an unbound host callback. `TestSessionCacheObservationThroughTheSessionBoundRunner` covers a Session without a CLI mode.
+
+Call-site markers: `coding/session_cache_observation.go`, `coding/session_boundaries.go`, `coding/session_bind.go`, `coding/session_extension_host.go`, `coding/extension/session_cache_observation.go`, `coding/extension/context_actions.go`, `coding/extension/host/inproc/runner.go`, `coding/extension/host/subprocess/protocol.go`, `coding/extension/host/subprocess/ui_bridge.go`, `coding/extension/host/subprocess/runtime-node/runtime.mjs`, `internal/codingagent/cache_warmer.go`, `internal/codingagent/session_cache_observation.go`, `internal/codingagent/session_handle.go`, `internal/codingagent/interactive_extensions.go`, and the SDK context implementations.
+
+Remove when: Pi exposes an equivalent read-only Session diagnostic, or no extension needs the observation.
+
+Approval: owner decision relayed 2026-11-14 for the product-neutral mechanism required by MyPiglets issue 439.
 SCRUTINIZED:approved
