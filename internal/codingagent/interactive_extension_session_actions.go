@@ -93,15 +93,30 @@ func (m *InteractiveMode) switchExtensionModel(ctx context.Context, model *ai.Mo
 	return true, nil
 }
 
-// appendExtensionEntry is the appendEntry action: it writes the custom entry to the session log and renders it into the transcript, as the wire action does for pi.appendEntry.
+// appendExtensionEntry records the custom entry through the Session, which publishes entry_appended, and posts its transcript rendering to the owner loop.
 func (m *InteractiveMode) appendExtensionEntry(customType string, data any) error {
 	session := m.currentSession()
 	if session == nil {
 		return fmt.Errorf("session not available")
 	}
-	entry, err := AppendExtensionEntry(session, customType, data, nil)
-	if err != nil {
-		return err
+	var entry CustomEntry
+	if m.opts.SessionHandle != nil {
+		id, err := m.opts.SessionHandle.AppendCustomEntry(customType, data)
+		if err != nil {
+			return err
+		}
+		stored, ok := session.GetEntry(id)
+		if !ok {
+			return nil
+		}
+		// The renderer receives the extension's data object, not the log's decoded copy.
+		entry = CustomEntry{SessionEntryBase: stored.Base(), CustomType: customType, Data: data}
+	} else {
+		var err error
+		entry, err = AppendExtensionEntry(session, customType, data, nil)
+		if err != nil {
+			return err
+		}
 	}
 	// The action runs off the owner loop, which owns the transcript.
 	m.runOnMain(m.runCtx, func() {

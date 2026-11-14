@@ -1690,6 +1690,10 @@ func (h *recordingCompactHandle) ExtensionSetModel(_ context.Context, model *ai.
 func (h *recordingCompactHandle) SetModelOnMain(_ context.Context, model *ai.Model, options ModelMutationOptions, dispatch func(func() error) error) error {
 	return dispatch(func() error { return h.SetModel(model, options) })
 }
+func (h *recordingCompactHandle) AppendCustomEntry(customType string, data any) (string, error) {
+	return h.inner.AppendCustomEntry(customType, data)
+}
+
 func (h *recordingCompactHandle) SetSessionName(name string) error {
 	_, err := h.inner.AppendSessionInfo(name)
 	return err
