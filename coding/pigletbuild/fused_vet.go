@@ -80,7 +80,7 @@ func inspectFusedEntry(ctx context.Context, entry fusedEntry) ([]fusedHazard, er
 		if !ok {
 			continue
 		}
-		packageHazards, imports, err := inspectFusedPackage(entry.Name, dir)
+		packageHazards, imports, err := inspectFusedPackage(entry.Name, dir, entry.Direct)
 		if err != nil {
 			return nil, err
 		}
@@ -130,7 +130,7 @@ func fusedPackageDir(importPath string, modules []fusedModule) (string, bool) {
 	return "", false
 }
 
-func inspectFusedPackage(extensionName, dir string) ([]fusedHazard, []string, error) {
+func inspectFusedPackage(extensionName, dir string, direct bool) ([]fusedHazard, []string, error) {
 	buildContext := build.Default
 	pkg, err := buildContext.ImportDir(dir, 0)
 	if err != nil {
@@ -176,6 +176,10 @@ func inspectFusedPackage(extensionName, dir string) ([]fusedHazard, []string, er
 				return true
 			}
 			if symbol := fusedHazardSymbol(expression, aliases, dotImports); symbol != "" {
+				// pig additive (D234): native member factories may use the native factory type and loader, not built-in table mutation or process-global hazards.
+				if direct && (symbol == "github.com/MichaelKinsy/PiG/coding/extension.ExtensionFactory" || strings.HasPrefix(symbol, "github.com/MichaelKinsy/PiG/coding/extension/factoryload.")) {
+					return true
+				}
 				hazards = append(hazards, fusedHazard{extension: extensionName, position: fset.Position(expression.Pos()), symbol: symbol})
 			}
 			return true
@@ -192,8 +196,7 @@ func fusedHazardSymbol(expression ast.Expr, aliases map[string]string, dotImport
 		{path: "os", names: []string{"Exit", "Chdir", "Stdout"}},
 		{path: "log", names: []string{"Fatal", "Fatalf", "Fatalln"}},
 		{path: "fmt", names: []string{"Print", "Printf", "Println"}},
-		// A fused member keeps the wire contract: the compiled-in factory form belongs to the binary's own main package, never to a Piglet
-		// (docs/specs/extension-factory-trust.md, property 4).
+		// Fused members keep the wire contract. Only explicit direct members receive the native factory exemptions in inspectFusedPackage.
 		{path: "github.com/MichaelKinsy/PiG/coding/extension", names: []string{"ExtensionFactory", "InlineExtension"}},
 		{path: "github.com/MichaelKinsy/PiG/coding/extension/factoryload", names: []string{"LoadExtensionFromFactory", "WithSourceInfo"}},
 		{path: "github.com/MichaelKinsy/PiG/coding/extension/builtin", names: []string{"All", "Resolve"}},

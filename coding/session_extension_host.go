@@ -20,6 +20,12 @@ import (
 // ExtensionHostSessionActions is the Session-owned messages, names, and context actions in every mode. The current getter supplies the live Session, or nil while it is being created. stage, when non-nil, returns the stage of a run an extension sends at that moment, or nil to start it as the Session does.
 func ExtensionHostSessionActions(current func() *Session, stage func() *ExtensionRunStage) (extension.ExtensionActions, extension.ContextActions) {
 	actions := extension.ExtensionActions{
+		AppendEntry: func(customType string, data any) error {
+			if sess := current(); sess != nil {
+				return sess.appendExtensionEntry(customType, data)
+			}
+			return ErrSessionNotReady
+		},
 		SetSessionName: func(name string) error {
 			if sess := current(); sess != nil {
 				return sess.SetSessionName(name)

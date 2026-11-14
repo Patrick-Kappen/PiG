@@ -22,6 +22,19 @@ The wire handler declarations require a positive `handler_id` so multiple regist
 
 When a row is impossible or intentionally non-parity, record a numbered entry in `docs/parity/DIVERGENCES.md` and link it from the Status column.
 
+### Direct Piglet Go realization (D234, fork experiment)
+
+An explicit per-member `realization: direct` uses the native `extension.API` through `factoryload`, not the SDK wire. `fused` remains D31. The common `allHarnessCases` table includes `direct-go`; `makeDirectGoHarness` registers the native reference fixture through the production factory API. `TestDirectMemberBuildsBesideFusedWithoutSDKFactory` separately proves generated Piglet linkage. Factory loading blocks, commits or discards registrations, and propagates errors before returning. Native handler contexts, cancellation, ordering and runtime invalidation remain those of the native reference; no new scheduler is supplied.
+
+Status: 40 of the 41 common cases have direct-row evidence; one is n/a. Wire-only cases in `sdkHarnessCases` do not apply to this row. The native API probes use the same production factory loader and runtime as the ordinary direct fixture. The background reader retains its Context after its command returns, then reads the live Session after a host change without another extension call or event. Its goroutine is cancelled and joined at cleanup. A raw malformed `user_bash` result is rejected by the native callback type: the direct row proves compiler rejection of `json.RawMessage` where `UserBashEventResult` is required, while wire rows retain their runtime validation assertions. No SDK behavior or accepted wire assertion is weakened.
+
+| Common case (`/direct-go`) | Status | Native observable or applicability rationale |
+| --- | --- | --- |
+| `TestHostStateChangeReachesABackgroundReaderAcrossSDKs` | complete | A background reader sees changed model, settings, session name, thinking level, MCP registry and theme without an event or request that refreshes state. Native accessors read the current values rather than a replicated SDK copy. |
+| `TestConformance_UIPromptStartIsAppliedBeforeTheDialogsAnswerSettles` | n/a | D234 native callbacks have no host connection on which notification application can stall. This case injects a stall through `UIBridge.SetNotifyFunc`; the direct route has no UIBridge. The test reports an explicit n/a skip, not a pass. This does not exempt native prompt ordering from the other common UI cases. |
+| `TestExtensionAPIGetCommandsAcrossSDKs` | complete | The factory-bound `extension.API.GetCommands` returns the host's sentinel command name, source and description, not fixture registrations. |
+| `TestExtensionAPIThinkingLevelAndSetModelAcrossSDKs` | complete | The factory-bound API reads `xhigh`, sends `high` and `probe/model` to the host, and returns the host's false model-selection verdict. |
+
 ### Lisp SDK (SBCL)
 
 `extensions/sdk-lisp` targets the same wire. It runs in a cached SBCL image the host builds from the extension's ASDF system or single file and starts as a packed-cell runner (isolated cells are one-member cells; packing follows D20, with one extra rule: two members that name the same system or file stay in separate images). The conformance cell is the SDK scenario table's Lisp driver (`test/extension-conformance/testdata/scenario-driver-lisp`), isolated and packed.

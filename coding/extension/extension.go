@@ -10,7 +10,7 @@ import (
 // flags, shortcuts, providers and event handlers on it, and returns the error upstream's factory throws.
 //
 // Only the source of a binary's own main package supplies one, by value, to the loader in package factoryload
-// (docs/specs/extension-factory-trust.md). No run-time input, Package, Piglet or wire peer can produce one. The subprocess SDKs keep upstream's
+// (docs/specs/extension-factory-trust.md). No run-time input, Package or wire peer can produce one. The explicit Piglet build-time direct selection (D234) supplies a factory by value from generated main-package code. The subprocess SDKs keep upstream's
 // `pi` argument on their own side of the wire.
 //
 // upstream: core/extensions/types.ts:2017 (ExtensionFactory)

@@ -48,6 +48,7 @@ func buildNativeArtifact(ctx context.Context, source pigSource, p *piglet.Piglet
 	host := Target{OS: runtime.GOOS, Arch: runtime.GOARCH}
 	var built []stagedCell
 	var fused []fusedEntry
+	directCount := 0
 	for _, cell := range cells {
 		realization, _, err := cellComponentDisposition(cell, componentPlan)
 		if err != nil {
@@ -59,6 +60,17 @@ func buildNativeArtifact(ctx context.Context, source pigSource, p *piglet.Piglet
 		}
 		members := strings.Join(names, ", ")
 		cellCtx := buildprogress.Member(ctx, members)
+		// pig additive (D234): explicit native members are linked separately from SDK factories.
+		if realization == pigletartifact.RealizationDirect {
+			buildprogress.Phase(ctx, "Preparing direct Go members", members)
+			entries, err := collectDirect(cell)
+			if err != nil {
+				return nil, err
+			}
+			directCount += len(entries)
+			fused = append(fused, entries...)
+			continue
+		}
 		if realization == pigletartifact.RealizationFused {
 			buildprogress.Phase(ctx, "Preparing fused Go members", members)
 			if !isGoFactoryCell(cell) {
@@ -131,7 +143,11 @@ func buildNativeArtifact(ctx context.Context, source pigSource, p *piglet.Piglet
 	// pig additive (D31): linked extensions must not invoke process-global
 	// operations that are isolated by the normal subprocess realization.
 	if len(vetted) > 0 {
-		buildprogress.Phase(ctx, "Checking fused Go members", "Process-global safety checks")
+		phase := "Checking fused Go members"
+		if directCount > 0 {
+			phase = "Checking linked Go members"
+		}
+		buildprogress.Phase(ctx, phase, "Process-global safety checks")
 	}
 	if err := vetFusedPackages(ctx, vetted); err != nil {
 		return nil, err
@@ -162,7 +178,11 @@ func buildNativeArtifact(ctx context.Context, source pigSource, p *piglet.Piglet
 	}
 	buildprogress.Phase(ctx, "Compiling and linking Go binary", p.Name+" → "+abary)
 	if !buildprogress.Enabled(ctx) {
-		_, _ = fmt.Fprintf(stdout, "building Piglet Binary %s (%d embedded cell(s), %d fused, target %s)...\n", p.Name, len(built), len(fused), host)
+		if directCount == 0 {
+			_, _ = fmt.Fprintf(stdout, "building Piglet Binary %s (%d embedded cell(s), %d fused, target %s)...\n", p.Name, len(built), len(fused), host)
+		} else {
+			_, _ = fmt.Fprintf(stdout, "building Piglet Binary %s (%d embedded cell(s), %d fused, %d direct, target %s)...\n", p.Name, len(built), len(fused)-directCount, directCount, host)
+		}
 	}
 	// pig additive (D92): the effective strip list's build tags compile its
 	// shimmed built-ins out of the Binary.
@@ -535,6 +555,7 @@ type fusedEntry struct {
 	ModulePath       string
 	Package          string
 	WorkspaceModules []string
+	Direct           bool
 }
 
 // isGoFactoryCell reports whether a planned cell is a Go SDK-factory cell, the
@@ -647,7 +668,24 @@ func overlayFuse(o *buildOverlay, sourceRoot string, fused []fusedEntry, fronten
 	if len(fused) == 0 {
 		return graph, nil
 	}
-	return graph, o.bytes(genPath, []byte(renderFuseRegistry(fused)))
+	var sdkEntries, directEntries []fusedEntry
+	for _, entry := range fused {
+		if entry.Direct {
+			directEntries = append(directEntries, entry)
+		} else {
+			sdkEntries = append(sdkEntries, entry)
+		}
+	}
+	// pig additive (D234): main receives native factories by value; no mutable native registry or SDK resolver is installed.
+	if len(directEntries) > 0 {
+		if err := o.bytes(filepath.Join(sourceRoot, "cmd", "pig", "direct_factories.go"), []byte(renderDirectRegistry(directEntries))); err != nil {
+			return fusedModuleGraph{}, err
+		}
+	}
+	if len(sdkEntries) == 0 {
+		return graph, nil
+	}
+	return graph, o.bytes(genPath, []byte(renderFuseRegistry(sdkEntries)))
 }
 
 func renderFrontendRegistry(member fusedEntry) string {
