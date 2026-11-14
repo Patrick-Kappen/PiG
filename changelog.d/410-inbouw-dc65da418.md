@@ -1,6 +1,6 @@
 ### Added
 
-- Piglet Binary builds accept an explicit per-extension `realization: direct` for native Go factories through `coding/extension.API` (D234). Other members retain the fused SDK path.
+- Piglet Binary builds accept an explicit per-extension `realization: direct` for native Go factories through `coding/extension.API` (D237). Other members retain the fused SDK path.
 
 ### Fixed
 

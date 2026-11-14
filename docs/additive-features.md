@@ -2031,7 +2031,7 @@ Remove when: Pi evaluates plugins in a runtime PiG does not start, or the progra
 Approval: owner decision relayed 2026-11-01 for the plugins' Node evaluator (plugfull lane), the same as D221.
 SCRUTINIZED:approved
 
-## D234 Explicit direct native Go members in Piglet Binaries
+## D237 Explicit direct native Go members in Piglet Binaries
 
 Summary: A Piglet author can explicitly select `realization: direct` on one Go extension while other members remain fused SDK factories.
 

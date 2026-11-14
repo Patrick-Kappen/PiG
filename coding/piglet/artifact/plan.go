@@ -283,7 +283,7 @@ func buildComponent(input ComponentInput) (Component, error) {
 }
 
 func chooseRealization(input ComponentInput) (Realization, Materialization, error) {
-	// pig additive (D234): native linkage is explicit and binary-only, never an isolation fallback.
+	// pig additive (D237): native linkage is explicit and binary-only, never an isolation fallback.
 	if input.Direct {
 		if input.Kind != ComponentKindExtension || input.Language != "go" || input.IsolationRequired || input.External || input.Runtime != nil || (input.Materialization != "" && input.Materialization != MaterializationBinary) {
 			return "", "", fmt.Errorf("direct realization requires a non-isolated Go extension in the binary without a language runtime")

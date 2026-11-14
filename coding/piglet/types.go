@@ -237,7 +237,7 @@ func (p *Piglet) ValidateAgentEnvironmentLaunch() error {
 // none.
 type ExtensionEntry struct {
 	// Realization selects direct native linkage explicitly; empty retains fused planning.
-	// pig additive (D234): only a Piglet Binary build can supply native member code.
+	// pig additive (D237): only a Piglet Binary build can supply native member code.
 	Realization string    `yaml:"realization,omitempty"`
 	Name        string    `yaml:"name"`
 	Origins     []string  `yaml:"origins,omitempty"`

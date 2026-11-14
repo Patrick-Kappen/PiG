@@ -331,7 +331,7 @@ func TestConformance_UIPromptStartIsAppliedBeforeTheDialogsAnswerSettles(t *test
 			})
 			if h.bridge == nil {
 				if tc.name == "direct-go" {
-					t.Skip("n/a: D234 direct native callbacks have no host connection whose notification application can stall; see docs/extension-api-parity.md direct conformance table")
+					t.Skip("n/a: D237 direct native callbacks have no host connection whose notification application can stall; see docs/extension-api-parity.md direct conformance table")
 				}
 				t.Skip("the in-process runner has no host connection to stall")
 			}

@@ -5,7 +5,7 @@ import (
 	"github.com/MichaelKinsy/PiG/coding/piglet"
 )
 
-// pig additive (D234): only members retained by the effective Piglet may load. The generated list is code supplied by main, never by YAML at run time.
+// pig additive (D237): only members retained by the effective Piglet may load. The generated list is code supplied by main, never by YAML at run time.
 func selectedDirectFactories(p *piglet.Piglet, factories []extension.NamedInlineExtension, disabled bool) []extension.InlineExtension {
 	if disabled || p == nil {
 		return nil

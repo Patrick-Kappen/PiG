@@ -176,7 +176,7 @@ func inspectFusedPackage(extensionName, dir string, direct bool) ([]fusedHazard,
 				return true
 			}
 			if symbol := fusedHazardSymbol(expression, aliases, dotImports); symbol != "" {
-				// pig additive (D234): native member factories may use the native factory type and loader, not built-in table mutation or process-global hazards.
+				// pig additive (D237): native member factories may use the native factory type and loader, not built-in table mutation or process-global hazards.
 				if direct && (symbol == "github.com/MichaelKinsy/PiG/coding/extension.ExtensionFactory" || strings.HasPrefix(symbol, "github.com/MichaelKinsy/PiG/coding/extension/factoryload.")) {
 					return true
 				}

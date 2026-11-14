@@ -451,7 +451,7 @@ func resolvePigletExtConfigs(p *piglet.Piglet) []subprocess.ExtConfig {
 		if len(ext.Origins) == 0 {
 			continue
 		}
-		// pig additive (D234): direct is a build-time selection; an ordinary --piglet cannot load native code from a path.
+		// pig additive (D237): direct is a build-time selection; an ordinary --piglet cannot load native code from a path.
 		if ext.Realization == "direct" {
 			configs = append(configs, unresolvedPigletExtConfig(p, ext.Name, fmt.Errorf("direct member requires pig piglet build")))
 			if len(resolved) > 0 && resolved[0].Entry.Name == ext.Name {

@@ -22,7 +22,7 @@ The wire handler declarations require a positive `handler_id` so multiple regist
 
 When a row is impossible or intentionally non-parity, record a numbered entry in `docs/parity/DIVERGENCES.md` and link it from the Status column.
 
-### Direct Piglet Go realization (D234, fork experiment)
+### Direct Piglet Go realization (D237, fork experiment)
 
 An explicit per-member `realization: direct` uses the native `extension.API` through `factoryload`, not the SDK wire. `fused` remains D31. The common `allHarnessCases` table includes `direct-go`; `makeDirectGoHarness` registers the native reference fixture through the production factory API. `TestDirectMemberBuildsBesideFusedWithoutSDKFactory` separately proves generated Piglet linkage. Factory loading blocks, commits or discards registrations, and propagates errors before returning. Native handler contexts, cancellation, ordering and runtime invalidation remain those of the native reference; no new scheduler is supplied.
 
@@ -31,7 +31,7 @@ Status: 40 of the 41 common cases have direct-row evidence; one is n/a. Wire-onl
 | Common case (`/direct-go`) | Status | Native observable or applicability rationale |
 | --- | --- | --- |
 | `TestHostStateChangeReachesABackgroundReaderAcrossSDKs` | complete | A background reader sees changed model, settings, session name, thinking level, MCP registry and theme without an event or request that refreshes state. Native accessors read the current values rather than a replicated SDK copy. |
-| `TestConformance_UIPromptStartIsAppliedBeforeTheDialogsAnswerSettles` | n/a | D234 native callbacks have no host connection on which notification application can stall. This case injects a stall through `UIBridge.SetNotifyFunc`; the direct route has no UIBridge. The test reports an explicit n/a skip, not a pass. This does not exempt native prompt ordering from the other common UI cases. |
+| `TestConformance_UIPromptStartIsAppliedBeforeTheDialogsAnswerSettles` | n/a | D237 native callbacks have no host connection on which notification application can stall. This case injects a stall through `UIBridge.SetNotifyFunc`; the direct route has no UIBridge. The test reports an explicit n/a skip, not a pass. This does not exempt native prompt ordering from the other common UI cases. |
 | `TestExtensionAPIGetCommandsAcrossSDKs` | complete | The factory-bound `extension.API.GetCommands` returns the host's sentinel command name, source and description, not fixture registrations. |
 | `TestExtensionAPIThinkingLevelAndSetModelAcrossSDKs` | complete | The factory-bound API reads `xhigh`, sends `high` and `probe/model` to the host, and returns the host's false model-selection verdict. |
 

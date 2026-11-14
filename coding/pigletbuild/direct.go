@@ -15,7 +15,7 @@ import (
 
 const directFactory = "DirectExtension"
 
-// pig additive (D234): direct selections resolve an exact Go package without consulting the SDK factory scanner. The generated assignment type-checks its native factory against the host being built.
+// pig additive (D237): direct selections resolve an exact Go package without consulting the SDK factory scanner. The generated assignment type-checks its native factory against the host being built.
 func resolveDirectConfig(name, path string) (subprocess.ExtConfig, error) {
 	path, err := filepath.Abs(path)
 	if err != nil {

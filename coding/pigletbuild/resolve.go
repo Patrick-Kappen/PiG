@@ -69,7 +69,7 @@ func resolvePigletCells(p *piglet.Piglet) ([]subprocess.CellSpec, []string) {
 	var configs []subprocess.ExtConfig
 	var direct []subprocess.CellSpec
 	for _, re := range resolved {
-		// pig additive (D234): direct members never enter SDK cell planning.
+		// pig additive (D237): direct members never enter SDK cell planning.
 		if re.Entry.Realization == "direct" {
 			cfg, err := resolveDirectConfig(re.Entry.Name, re.Path)
 			if err != nil {

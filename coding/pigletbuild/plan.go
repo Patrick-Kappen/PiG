@@ -143,7 +143,7 @@ func BuildPlan(extensions []ExtensionInput, options Options) Plan {
 	plan := Plan{Targets: targets}
 	for _, extension := range extensions {
 		entry := ExtPlan{Extension: extension.Name, Compat: make(map[string]Compat, len(options.Targets))}
-		// pig additive (D234): a direct member overrides the default fused selection.
+		// pig additive (D237): a direct member overrides the default fused selection.
 		switch {
 		case extension.Direct && extension.Language == Go:
 			entry.Decision = DecisionDirect

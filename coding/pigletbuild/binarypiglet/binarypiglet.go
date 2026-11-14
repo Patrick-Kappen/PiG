@@ -258,7 +258,7 @@ func VerifyRegisteredClosure(fusedNames, packedNames, directNames []string) erro
 	if err := equalNameSets("binary-packed", wantPacked, packedNames); err != nil {
 		return err
 	}
-	// pig additive (D234): native factory names must match the signed direct component inventory in both directions.
+	// pig additive (D237): native factory names must match the signed direct component inventory in both directions.
 	return equalNameSets("direct", wantDirect, directNames)
 }
 
