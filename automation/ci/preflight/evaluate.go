@@ -75,9 +75,12 @@ func evaluate(cfg config, d *data, env *ruleEnv) evaluation {
 		}
 		stored, had := prev[c.Name]
 		source, failed := failedSource(d, c)
+		exempt, isExempt := cfg.exemptVerdict(d, c.Name)
 		switch {
 		case d.Limit != "":
 			v.Result, v.Reason = resultFail, "the PR is too large for the pre-flight: "+d.Limit
+		case isExempt:
+			v = exempt
 		case failed:
 			v.Result, v.Reason = resultError, clip(fmt.Sprintf("source %s failed after retries: %s", source, d.SourceErrors[source]), maxReason)
 		case !slices.Contains(d.Relevant, c.Name):
