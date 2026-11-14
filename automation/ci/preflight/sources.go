@@ -213,6 +213,11 @@ type pull struct {
 	} `json:"user"`
 	Head struct {
 		SHA string `json:"sha"`
+		Ref string `json:"ref"`
+
+		Repo struct {
+			FullName string `json:"full_name"`
+		} `json:"repo"`
 	} `json:"head"`
 	Base struct {
 		SHA string `json:"sha"`
