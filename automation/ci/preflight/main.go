@@ -23,7 +23,7 @@ func main() {
 }
 
 func run(args []string, stdout, stderr io.Writer) int {
-	cfg, err := loadConfig(configYAML)
+	cfg, err := loadShipped()
 	if err != nil {
 		_, _ = fmt.Fprintln(stderr, "preflight:", err)
 		return 2

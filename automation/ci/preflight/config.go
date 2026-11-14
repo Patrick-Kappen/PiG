@@ -91,6 +91,9 @@ type config struct {
 	EngineRevision int     `yaml:"engine-revision"`
 	Tools          []tool  `yaml:"tools"`
 	Checks         []check `yaml:"checks"`
+
+	// Exempt comes from exempt.yaml, never from config.yaml (loadShipped).
+	Exempt []exemption `yaml:"-"`
 }
 
 const (
@@ -303,6 +306,7 @@ var globReplacer = strings.NewReplacer(`\*\*/`, "(?:.*/)?", `\*\*`, ".*", `\*`, 
 func bindMain(cfg *config, root string) (string, error) {
 	run := sha256.New()
 	_, _ = fmt.Fprintf(run, "engine %d\x00", cfg.EngineRevision)
+	bindExemptions(run, cfg.Exempt)
 	for i := range cfg.Checks {
 		c := &cfg.Checks[i]
 		paths := slices.Clone(c.Main)
