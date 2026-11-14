@@ -86,6 +86,8 @@ type InteractiveSessionHandle interface {
 	SetThinkingLevelOnMain(ai.ModelThinkingLevel, ModelMutationOptions, func(func() error) error) error
 	// SetSessionName persists and publishes a sanitized Session name.
 	SetSessionName(string) error
+	// AppendCustomEntry records extension-owned data and publishes entry_appended once.
+	AppendCustomEntry(customType string, data any) (string, error)
 	// StreamModel starts a mode-independent model operation through the
 	// Session-owned runtime.
 	StreamModel(context.Context, *ai.Model, ai.Context, ai.StreamOptions) *ai.AssistantMessageEventStream

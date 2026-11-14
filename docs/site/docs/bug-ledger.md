@@ -985,6 +985,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-93f8b7c](#bf-93f8b7c) | fix(agent): a listener failure at agent_start ends the run as in Pi; failure messages carry the model's api | PiG's own defect | All platforms | Unreleased |
 | [BF-94284ac](#bf-94284ac) | `pig -e git:<repo>@<branch>` no longer stays on its first checkout | A fix Pi shipped that PiG ported | All platforms | 0.7.0 |
 | [BF-942bc6c](#bf-942bc6c) | fix(coding-agent): preserve pi.exec spawn errors (Pi) | PiG's own defect | All platforms | Unreleased |
+| [BF-942ec07](#bf-942ec07) | Keep native `appendEntry` bound when a CLI mode rebinds the Session's extension actions | PiG's own defect | All platforms | Unreleased |
 | [BF-94e3498](#bf-94e3498) | On Windows, PiG no longer searches `C:\etc\pig\piglets` or `C:\opt\pig\piglet.yaml` for a Piglet | PiG's own defect | Windows | 0.5.0 |
 | [BF-94e6796](#bf-94e6796) | A Durable Harness task that went to sleep for a short time, such as the 1 ms backoff before a generation… | PiG's own defect | All platforms | 0.5.2 |
 | [BF-94f1e6f](#bf-94f1e6f) | fix(coding): a provider of only virtual models is configured with source virtual | PiG's own defect | All platforms | Unreleased |
@@ -1213,6 +1214,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-bfae6a0](#bf-bfae6a0) | Fullscreen double-click selection no longer splits paths and tokens at `~`, `.`, `\`, `+` and `_`: the word… | PiG's own defect | All platforms | 0.7.0 |
 | [BF-c019ea9](#bf-c019ea9) | A panic in a background goroutine of an interactive session no longer ends PiG with only a stderr dump | PiG's own defect | All platforms | 0.5.0 |
 | [BF-c0649a6](#bf-c0649a6) | On Windows, a chord plugin's Node host whose link had closed could be killed by the host after its… | PiG's own defect | Windows | Unreleased |
+| [BF-c0efe40](#bf-c0efe40) | Direct component verification rejects a non-extension component even when a decoded plan marks it as Go and… | PiG's own defect | All platforms | Unreleased |
 | [BF-c1055c4](#bf-c1055c4) | Package manifest globs match as Node's `fs.globSync` does in Pi: brace sets and sequences, extglobs such as… | PiG's own defect | Windows, macOS | 0.5.0 |
 | [BF-c10ae73](#bf-c10ae73) | In RPC mode, runs that an extension command's handler sends with `sendMessage` or `sendUserMessage` start in… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-c1162b4](#bf-c1162b4) | `Shift+Enter` inserts a newline instead of queueing a follow-up in Apple Terminal setups that send `ESC` +… | A fix Pi shipped that PiG ported | Windows | 0.7.0 |
@@ -1394,6 +1396,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-dc003a9-2](#bf-dc003a9-2) | Automatic retry now triggers for `stream disconnected before completion` errors that a proxy wrapping the… | PiG's own defect | All platforms | 0.5.2 |
 | [BF-dc003a9-3](#bf-dc003a9-3) | Sign in with ChatGPT: a ChatGPT Business workspace usage-limit error… | PiG's own defect | All platforms | 0.5.2 |
 | [BF-dc53412](#bf-dc53412) | A `pig_strip_bedrock_converse_stream` Piglet Binary no longer links the AWS SDK through the Bedrock retry… | PiG's own defect | All platforms | 0.5.0 |
+| [BF-dc65da4](#bf-dc65da4) | Ordinary Piglet builds no longer import the manually linked MyPiglets core demonstration from the stock entry… | PiG's own defect | All platforms | Unreleased |
 | [BF-dca5763](#bf-dca5763) | A notification, status or message that an extension queues on `setImmediate` or `setTimeout(0)` from inside a… | PiG's own defect | All platforms | 0.5.2 |
 | [BF-ddd4772](#bf-ddd4772) | fix(ai): a lone surrogate in a content block stays one code unit, as in JSON.parse | PiG's own defect | All platforms | Unreleased |
 | [BF-dde6aa6](#bf-dde6aa6) | Cache warming no longer refreshes at once when a model's promptCache lifetime is far larger than the one-hour… | PiG's own defect | All platforms | 0.5.0 |
@@ -1492,6 +1495,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-ebec8e2](#bf-ebec8e2) | A URL host with an `xn--` label that is empty after IDNA mapping (`ws://xn--。`, `https://..\ufeffxn--`) or… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-ebfeed0](#bf-ebfeed0) | `getSystemPromptOptions().hiddenTools` lists hidden tools in the order the `prepareLoadout` hooks hid them… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-ec2080a](#bf-ec2080a) | A subprocess extension's `ctx.ui.custom` component now learns when another component shown over it takes… | PiG's own defect | All platforms | 0.5.0 |
+| [BF-ecb59bd](#bf-ecb59bd) | Interactive in-process extension `appendEntry` calls now emit one `entry_appended` event through the live… | PiG's own defect | All platforms | Unreleased |
 | [BF-ecc7b76](#bf-ecc7b76) | fix(tui): an async markdown completion no longer rebuilds the assistant block off the owner loop | PiG's own defect | All platforms | Unreleased |
 | [BF-ecfaad1](#bf-ecfaad1) | The startup prompts (the project-trust and extension selectors, the extension text input and first-time… | PiG's own defect | All platforms | Unreleased |
 | [BF-ed01bf6](#bf-ed01bf6) | Resuming a very long session no longer reads and decodes every entry of the branch to restore the tool loadout | PiG's own defect | All platforms | 0.7.0 |
@@ -15011,6 +15015,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Fix commits:** `942bc6c05b` (2026-10-22)
 - **Tests:** `coding/extension/exec_test.go::TestExecCommand_SilentExitKeepsStderrEmpty`, `coding/extension/exec_test.go::TestExecCommand_SpawnFailureResolvesWithCodeOne`
 
+### BF-942ec07
+
+**Keep native `appendEntry` bound when a CLI mode rebinds the Session's extension actions**
+
+- **Source:** PiG's own defect
+- **Symptom:** Keep native `appendEntry` bound when a CLI mode rebinds the Session's extension actions.
+- **Root cause:** Not recorded.
+- **User impact:** Behavior differed from Pi
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `942ec0724c` (2026-11-13)
+- **Tests:** `coding/cli/session_extension_actions_append_test.go::TestSessionExtensionActionsKeepNativeAppendEntryAfterModeBind`
+- **Release note:** Keep native `appendEntry` bound when a CLI mode rebinds the Session's extension actions.
+
 ### BF-94e3498
 
 **On Windows, PiG no longer searches `C:\etc\pig\piglets` or `C:\opt\pig\piglet.yaml` for a Piglet**
@@ -18177,6 +18195,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Tests:** `chord/nextnode/plugins/plugins_node_test.go::TestNodeTheCompileCacheIsWrittenBeforeTheProcessExits`
 - **Release note:** On Windows, a chord plugin's Node host whose link had closed could be killed by the host after its five-second stop grace instead of exiting by itself (exit status 1, "its link closed and it did not exit within 5s"). The process had ended its channel and run its exit handlers within 50 ms; what kept it alive was Node writing the V8 compile cache of every module it compiled, one file after another, as it exited, which on a loaded Windows machine and a cold cache (a new extraction directory or new plugins) took from one to over five seconds. The host now writes the cache once it is up and after each load and reload, so its exit has none left to write.
 
+### BF-c0efe40
+
+**Direct component verification rejects a non-extension component even when a decoded plan marks it as Go and…**
+
+- **Source:** PiG's own defect
+- **Symptom:** Direct component verification rejects a non-extension component even when a decoded plan marks it as Go and binary-materialized.
+- **Root cause:** Not recorded.
+- **User impact:** Behavior differed from Pi
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `c0efe40ddf` (2026-11-13)
+- **Tests:** `coding/piglet/artifact/direct_test.go::TestDirectComponentIsGoBinaryOnly`
+- **Release note:** Direct component verification rejects a non-extension component even when a decoded plan marks it as Go and binary-materialized.
+
 ### BF-c1055c4
 
 **Package manifest globs match as Node's `fs.globSync` does in Pi: brace sets and sequences, extglobs such as…**
@@ -20687,6 +20719,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Tests:** `coding/cli/strip_providers_binary_test.go::TestStripBedrockConverseStreamBuildOmitsAWSSDK`
 - **Release note:** A `pig_strip_bedrock_converse_stream` Piglet Binary no longer links the AWS SDK through the Bedrock retry delay.
 
+### BF-dc65da4
+
+**Ordinary Piglet builds no longer import the manually linked MyPiglets core demonstration from the stock entry…**
+
+- **Source:** PiG's own defect
+- **Symptom:** Ordinary Piglet builds no longer import the manually linked MyPiglets core demonstration from the stock entry point.
+- **Root cause:** Not recorded.
+- **User impact:** Behavior differed from Pi
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `dc65da4184` (2026-11-13)
+- **Tests:** None recorded.
+- **Release note:** Ordinary Piglet builds no longer import the manually linked MyPiglets core demonstration from the stock entry point.
+
 ### BF-dca5763
 
 **A notification, status or message that an extension queues on `setImmediate` or `setTimeout(0)` from inside a…**
@@ -22036,6 +22082,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Fix commits:** `007c91dcbb` (2026-10-13), `1848633092` (2026-10-13), `2a055a7a3a` (2026-10-13), `d87b70c54c` (2026-10-13), `ec2080a75f` (2026-10-13)
 - **Tests:** `coding/extension/host/subprocess/host_calls_test.go::TestReadLoopWidgetPushOrdersAgainstQueuedSlotCalls`, `coding/extension/host/subprocess/ui_bridge_test.go::TestFocusedCustomComponentsStack`, `coding/extension/host/subprocess/ui_bridge_test.go::TestInteractiveDialogOpensOverFocusedOverlay`, `coding/extension/host/subprocess/ui_prompt_test.go::TestUIBridgePromptScopeDialogOverCustomAndNoUI`, `coding/extension/host/subprocess/view_terminal_parity_test.go::TestViewsLeaveTheTerminalBytesUnchanged`, `coding/extension/host/subprocess/widget_key_namespace_test.go::TestTwoExtensionsSettingOneWidgetKeyShareIt`, `extensions/sdk-py/tests/test_system_prompt_render.py`, `extensions/sdk/system_prompt_render_test.go::TestBeforeAgentStartSystemPromptRenderErrorIsTheReadersError` and 15 more in docs/bug-ledger.json
 - **Release note:** A subprocess extension's `ctx.ui.custom` component now learns when another component shown over it takes focus and when focus comes back, as Pi's `setFocus` tells it: the overlay handle's `isFocused()` follows, the component's `focused` flag is cleared and set again (Node, Go `SetFocused`, Python `focused`) and the component renders again. This holds for Node, Go, Rust and Python extensions. Before, the component kept reporting focus until its next key arrived.
+
+### BF-ecb59bd
+
+**Interactive in-process extension `appendEntry` calls now emit one `entry_appended` event through the live…**
+
+- **Source:** PiG's own defect
+- **Symptom:** Interactive in-process extension `appendEntry` calls now emit one `entry_appended` event through the live Session while rendering the entry once in the transcript.
+- **Root cause:** Interactive mode wrote directly to the inner log instead of calling the Session writer, so its in-process appends never published entry_appended. Expose the existing AppendCustomEntry method on InteractiveSessionHandle and use it for the append. Keep the fallback and owner-loop transcript rendering, including the original renderer data object.
+- **User impact:** Wrong display
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `ecb59bd9e2` (2026-11-14)
+- **Tests:** `coding/cli/session_extension_append_interactive_linux_test.go::TestNativeAppendEntryInteractiveModeBind`, `internal/codingagent/interactive_append_entry_session_test.go::TestInteractiveNativeAppendEntryPublishesAndRendersOnce`
+- **Release note:** Interactive in-process extension `appendEntry` calls now emit one `entry_appended` event through the live Session while rendering the entry once in the transcript.
 
 ### BF-ecc7b76
 

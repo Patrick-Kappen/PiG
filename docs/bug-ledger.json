@@ -27060,6 +27060,28 @@
       ]
     },
     {
+      "id": "BF-942ec07",
+      "title": "Keep native `appendEntry` bound when a CLI mode rebinds the Session's extension actions",
+      "symptom": "Keep native `appendEntry` bound when a CLI mode rebinds the Session's extension actions.",
+      "rootCause": "",
+      "rootCauseSource": "",
+      "userImpact": "Behavior differed from Pi",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "Keep native `appendEntry` bound when a CLI mode rebinds the Session's extension actions.",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "942ec0724c",
+          "date": "2026-11-13"
+        }
+      ],
+      "tests": [
+        "coding/cli/session_extension_actions_append_test.go::TestSessionExtensionActionsKeepNativeAppendEntryAfterModeBind"
+      ]
+    },
+    {
       "id": "BF-94e3498",
       "title": "On Windows, PiG no longer searches `C:\\etc\\pig\\piglets` or `C:\\opt\\pig\\piglet.yaml` for a Piglet",
       "symptom": "On Windows, PiG no longer searches `C:\\etc\\pig\\piglets` or `C:\\opt\\pig\\piglet.yaml` for a Piglet.",
@@ -33758,6 +33780,28 @@
       ]
     },
     {
+      "id": "BF-c0efe40",
+      "title": "Direct component verification rejects a non-extension component even when a decoded plan marks it as Go and…",
+      "symptom": "Direct component verification rejects a non-extension component even when a decoded plan marks it as Go and binary-materialized.",
+      "rootCause": "",
+      "rootCauseSource": "",
+      "userImpact": "Behavior differed from Pi",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "Direct component verification rejects a non-extension component even when a decoded plan marks it as Go and binary-materialized.",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "c0efe40ddf",
+          "date": "2026-11-13"
+        }
+      ],
+      "tests": [
+        "coding/piglet/artifact/direct_test.go::TestDirectComponentIsGoBinaryOnly"
+      ]
+    },
+    {
       "id": "BF-c1055c4",
       "title": "Package manifest globs match as Node's `fs.globSync` does in Pi: brace sets and sequences, extglobs such as…",
       "symptom": "Package manifest globs match as Node's `fs.globSync` does in Pi: brace sets and sequences, extglobs such as `*.@(md|txt)`, POSIX classes, `.` and empty path segments, and case-insensitive wildcard segments on Windows and macOS.",
@@ -40155,6 +40199,26 @@
       ]
     },
     {
+      "id": "BF-dc65da4",
+      "title": "Ordinary Piglet builds no longer import the manually linked MyPiglets core demonstration from the stock entry…",
+      "symptom": "Ordinary Piglet builds no longer import the manually linked MyPiglets core demonstration from the stock entry point.",
+      "rootCause": "",
+      "rootCauseSource": "",
+      "userImpact": "Behavior differed from Pi",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "Ordinary Piglet builds no longer import the manually linked MyPiglets core demonstration from the stock entry point.",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "dc65da4184",
+          "date": "2026-11-13"
+        }
+      ],
+      "tests": []
+    },
+    {
       "id": "BF-dca5763",
       "title": "A notification, status or message that an extension queues on `setImmediate` or `setTimeout(0)` from inside a…",
       "symptom": "A notification, status or message that an extension queues on `setImmediate` or `setTimeout(0)` from inside a tool now reaches an RPC client after `agent_settled`, as Pi's loop does, instead of before `tool_execution_end`.",
@@ -42848,6 +42912,29 @@
         "test/extension-conformance/prompt_chain_test.go::TestBeforeAgentStartChainSeesEveryEarlierEditAcrossSDKs",
         "test/extension-conformance/render_system_prompt_test.go::TestRenderCurrentSystemPromptAcrossSDKs",
         "test/extension-conformance/wire_capability_coverage_test.go::TestEverySDKCanReachEveryWireCapability"
+      ]
+    },
+    {
+      "id": "BF-ecb59bd",
+      "title": "Interactive in-process extension `appendEntry` calls now emit one `entry_appended` event through the live…",
+      "symptom": "Interactive in-process extension `appendEntry` calls now emit one `entry_appended` event through the live Session while rendering the entry once in the transcript.",
+      "rootCause": "Interactive mode wrote directly to the inner log instead of calling the Session writer, so its in-process appends never published entry_appended. Expose the existing AppendCustomEntry method on InteractiveSessionHandle and use it for the append. Keep the fallback and owner-loop transcript rendering, including the original renderer data object.",
+      "rootCauseSource": "commit",
+      "userImpact": "Wrong display",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "Interactive in-process extension `appendEntry` calls now emit one `entry_appended` event through the live Session while rendering the entry once in the transcript.",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "ecb59bd9e2",
+          "date": "2026-11-14"
+        }
+      ],
+      "tests": [
+        "coding/cli/session_extension_append_interactive_linux_test.go::TestNativeAppendEntryInteractiveModeBind",
+        "internal/codingagent/interactive_append_entry_session_test.go::TestInteractiveNativeAppendEntryPublishesAndRendersOnce"
       ]
     },
     {
