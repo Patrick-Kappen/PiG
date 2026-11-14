@@ -2029,6 +2029,7 @@ Locked by: `TestStoreAPluginsPersistedDocumentsAndTableSurviveClosingTheNodeHost
 Remove when: Pi evaluates plugins in a runtime PiG does not start, or the program embedding the evaluator drops them.
 
 Approval: owner decision relayed 2026-11-01 for the plugins' Node evaluator (plugfull lane), the same as D221.
+SCRUTINIZED:approved
 
 ## D616 Passive Session prompt-cache observations
 
