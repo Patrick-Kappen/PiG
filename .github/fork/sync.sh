@@ -247,6 +247,12 @@ rm -f "$notes"
 if [[ -n $conflict_issue ]]; then
 	gh issue close "$conflict_issue" --repo "$repo" --comment "Resolved: #$pr" >/dev/null
 fi
-gh pr merge "$pr" --repo "$repo" --auto --merge >/dev/null 2>&1 ||
-	log "auto-merge not enabled on #$pr (the repository does not allow it yet, or it is already set)"
+# Auto-merge only onto a branch that requires checks: on one that requires none, `gh pr merge --auto` merges at once.
+required=$(gh api "repos/$repo/rules/branches/$target" --jq '[.[] | select(.type == "required_status_checks")] | length' 2>/dev/null || echo 0)
+if [[ $required -gt 0 ]]; then
+	gh pr merge "$pr" --repo "$repo" --auto --merge >/dev/null 2>&1 ||
+		log "auto-merge not enabled on #$pr (the repository does not allow it, or it is already set)"
+else
+	log "$target requires no checks: auto-merge not set on #$pr; merge it by hand"
+fi
 log "sync $name: #$pr ($source_repo $source_branch $short into $target)"

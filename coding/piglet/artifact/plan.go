@@ -30,6 +30,8 @@ type Realization string
 const (
 	// RealizationFused registers a compatible Go factory in-process.
 	RealizationFused Realization = "fused"
+	// RealizationDirect links an explicitly selected native Go factory.
+	RealizationDirect Realization = "direct"
 	// RealizationSubprocess starts the component through Pig's extension host.
 	RealizationSubprocess Realization = "subprocess"
 	// RealizationExternal connects to a separately managed service.
@@ -73,6 +75,7 @@ type ComponentInput struct {
 	Origin            Origin
 	Language          string
 	Fusible           bool
+	Direct            bool
 	IsolationRequired bool
 	External          bool
 	Materialization   Materialization
@@ -197,9 +200,9 @@ func validateResolvedComponent(component Component) error {
 		}
 	}
 	switch component.Realization {
-	case RealizationFused:
-		if component.Language != "go" || component.Materialization != MaterializationBinary || component.Runtime != nil {
-			return fmt.Errorf("component %q has invalid fused realization", identity)
+	case RealizationDirect, RealizationFused:
+		if (component.Realization == RealizationDirect && component.Kind != ComponentKindExtension) || component.Language != "go" || component.Materialization != MaterializationBinary || component.Runtime != nil {
+			return fmt.Errorf("component %q has invalid %s realization", identity, component.Realization)
 		}
 	case RealizationSubprocess:
 		switch component.Materialization {
@@ -258,7 +261,7 @@ func buildComponent(input ComponentInput) (Component, error) {
 	if err != nil {
 		return Component{}, fmt.Errorf("component %q: %w", identity, err)
 	}
-	if realization == RealizationFused && input.Runtime != nil {
+	if (realization == RealizationFused || realization == RealizationDirect) && input.Runtime != nil {
 		return Component{}, fmt.Errorf("component %q fused realization cannot require a language runtime", identity)
 	}
 	if realization == RealizationSubprocess && (input.Language == "python" || input.Language == "node") && input.Runtime == nil {
@@ -280,6 +283,13 @@ func buildComponent(input ComponentInput) (Component, error) {
 }
 
 func chooseRealization(input ComponentInput) (Realization, Materialization, error) {
+	// pig additive (D237): native linkage is explicit and binary-only, never an isolation fallback.
+	if input.Direct {
+		if input.Kind != ComponentKindExtension || input.Language != "go" || input.IsolationRequired || input.External || input.Runtime != nil || (input.Materialization != "" && input.Materialization != MaterializationBinary) {
+			return "", "", fmt.Errorf("direct realization requires a non-isolated Go extension in the binary without a language runtime")
+		}
+		return RealizationDirect, MaterializationBinary, nil
+	}
 	if input.External {
 		if input.Materialization != MaterializationExternal {
 			return "", "", fmt.Errorf("external realization requires external materialization")

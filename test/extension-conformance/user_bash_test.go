@@ -45,6 +45,11 @@ func TestUserBashValidationAcrossSDKs(t *testing.T) {
 			h.runner.AddErrorListener(func(err *extension.ExtensionError) { reported = append(reported, err) })
 			for _, command := range []string{"valid", "undefined", "undefined-path", "missing", "invalid", "null-operations", "observe"} {
 				t.Run(command, func(t *testing.T) {
+					if tc.name == "direct-go" && command == "null-operations" {
+						// A native typed callback cannot return raw JSON. Prove rejection at its actual boundary, compilation, rather than fabricating a wire result in the native fixture.
+						assertDirectUserBashRawReturnDoesNotCompile(t)
+						return
+					}
 					reported = nil
 					result, err := h.runner.EmitUserBash(t.Context(), extension.UserBashEvent{Type: "user_bash", Command: command, Cwd: t.TempDir()})
 					switch command {

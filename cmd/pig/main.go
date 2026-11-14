@@ -11,5 +11,5 @@ import (
 // Ports packages/coding-agent/src/cli.ts
 
 func main() {
-	cli.Main(os.Args[1:], nil)
+	cli.Main(os.Args[1:], &cli.MainOptions{PigletFactories: directFactories()})
 }

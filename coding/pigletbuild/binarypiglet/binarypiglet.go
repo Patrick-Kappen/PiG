@@ -220,14 +220,14 @@ func sha256Sum(data []byte) []byte {
 	return sum[:]
 }
 
-// VerifyRegisteredClosure checks that the fused and binary-packed extension
+// VerifyRegisteredClosure checks that the direct, fused and binary-packed extension
 // components a built Piglet Binary actually registers at startup match its
 // baked plan. A tampered fuse registry or cell manifest, or a PATH/ambient
 // substitute for a component the plan says was built in, fails closed. Stock
 // pig (no baked closure) is a no-op. Components the plan supplies from a
 // release, agentEnv, or an external service are not carried in the binary and
 // are excluded from this check.
-func VerifyRegisteredClosure(fusedNames, packedNames []string) error {
+func VerifyRegisteredClosure(fusedNames, packedNames, directNames []string) error {
 	record, err := DefaultClosure()
 	if err != nil {
 		return err
@@ -238,12 +238,14 @@ func VerifyRegisteredClosure(fusedNames, packedNames []string) error {
 	if record.Resolution == nil {
 		return fmt.Errorf("baked Piglet closure has no resolution payload")
 	}
-	var wantFused, wantPacked []string
+	var wantFused, wantPacked, wantDirect []string
 	for _, component := range record.Resolution.ComponentPlan.Components {
 		if component.Kind != artifact.ComponentKindExtension {
 			continue
 		}
 		switch {
+		case component.Realization == artifact.RealizationDirect:
+			wantDirect = append(wantDirect, component.Name)
 		case component.Realization == artifact.RealizationFused:
 			wantFused = append(wantFused, component.Name)
 		case component.Realization == artifact.RealizationSubprocess && component.Materialization == artifact.MaterializationBinary:
@@ -253,7 +255,11 @@ func VerifyRegisteredClosure(fusedNames, packedNames []string) error {
 	if err := equalNameSets("fused", wantFused, fusedNames); err != nil {
 		return err
 	}
-	return equalNameSets("binary-packed", wantPacked, packedNames)
+	if err := equalNameSets("binary-packed", wantPacked, packedNames); err != nil {
+		return err
+	}
+	// pig additive (D237): native factory names must match the signed direct component inventory in both directions.
+	return equalNameSets("direct", wantDirect, directNames)
 }
 
 // equalNameSets fails closed when the built-in components and the planned

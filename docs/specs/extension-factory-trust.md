@@ -1,5 +1,9 @@
 # Extension factory trust split
 
+## Fork amendment: explicit direct members (D237)
+
+The owner request in MyPiglets #410 authorizes an additional build-time native realization in this fork. `extensions[].realization: direct` selects `DirectExtension(extension.API) error` in the member’s exact Go package. This reverses the rule “a Piglet is never first party” for that member only. The native factory arrives by value from an overlaid function in `cmd/pig`, with no mutable native registry or runtime registration path. The component plan records and verifies the exact direct inventory. Removing the selection restores SDK planning. D19, D20, D31, frontends, subprocess imports, dynamic-plugin prohibitions and the no-wire-factory property remain unchanged. The detailed contract, trust limits and tests are D237 in `docs/additive-features.md`. The original ruling and review below remain the baseline for every member that does not explicitly select direct. The two-registry source-write restriction below gains exactly the direct main-package function for a build that selects direct members.
+
 Status: approved with fixes by the Opus spec review of 2026-10-08 (`Review record` below). Step 2 may start under this text. The embedder entry point (`Embedder entry point`) needs the owner's confirmation before it is implemented.
 
 Owner ruling B (2026-10-08): compiled-in extensions (first-party, built into the pig binary) may use Pi's in-process `ExtensionFactory` form `func(api ExtensionAPI)`, and `createCodemodeExtension` and `createToolSearchExtension` are built on it as Pi builds them. Third-party extensions stay subprocess-only. The factory form must be unreachable from the subprocess loader, enforced in code and by a test. UI component factories: compiled-in extensions get Pi's `(tui, theme) => Component`; subprocess extensions get a declarative component description over RPC in phase 2.

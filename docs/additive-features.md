@@ -2053,3 +2053,28 @@ Remove when: Pi resolves the shell once or without a subprocess.
 
 Approval: fork owner decision 2026-11-10 for the fork's performance branch (Patrick-Kappen/PiG#1, MyPiglets #90); upstream approval pending.
 SCRUTINIZED:approved
+
+## D237 Explicit direct native Go members in Piglet Binaries
+
+Summary: A Piglet author can explicitly select `realization: direct` on one Go extension while other members remain fused SDK factories.
+
+Audience: author
+
+Stock disposition: inert capability. Stock PiG supplies no direct members. Only a Piglet Binary build links the selected source. This is an explicit trust opt-in authorized for fork issue MyPiglets #410; it reverses the rule “a Piglet is never first party” only for members that request `direct`.
+
+What: `extensions[].realization: direct` selects the exact Go package and its `func DirectExtension(extension.API) error`. Empty or `fused` retains existing SDK planning; `build.extensionRealization: fused` remains the default build requirement and permits the explicit member override. Per-member selection allows a native core beside fused MCP and skills. The builder records `direct` with binary materialization in the component plan, merges the member module graph with the host source, and overlays a function in `cmd/pig` that returns named native factories by value. The loader invokes these through the existing factory API, not the SDK or subprocess resolver. Stock binaries cannot turn a source path into a native factory. The direct inventory must match the baked component plan in both directions before session loading. Effective Piglet removal and `--no-extensions` disable native members.
+
+Guarantees: native members use the existing transactional factory loader, typed API, handler error propagation, runtime invalidation and Session lifecycle. Factory loading is blocking and sequential; errors return before registration commits. Handler cancellation and scheduling remain those of the native API; this adds no detached execution. The process-hazard vet still rejects exit, chdir, stdout, fatal logging and built-in table access. Only native factory/loader symbols are exempt for direct members. Fused members and frontends retain their existing vet restrictions, SDK handshake and transport.
+
+Non-guarantees: this is not a sandbox, JavaScript scheduler, object-identity emulator, universal ordered-map representation or full Pi parity claim. Linked code shares host memory and crash/hang fate, as fused code already does. Independent goroutine panics and fatal runtime errors can end the process. Native tool argument APIs still carry raw JSON where their existing contract requires it. The native factory is coupled at compile time to the PiG source being built; rebuilding and conformance remain necessary after host changes. No SDK or wire schema changes.
+
+Why: explicit native linkage lets a Go member use the host API without the SDK conversion boundary, without changing what `fused` means.
+
+Call sites: `coding/piglet/types.go`, `coding/pigletbuild/direct.go`, `coding/pigletbuild/resolve.go`, `coding/pigletbuild/plan.go`, `coding/pigletbuild/native_build.go`, `coding/pigletbuild/fused_vet.go`, `coding/piglet/artifact/plan.go`, `coding/pigletbuild/binarypiglet/binarypiglet.go`, `coding/cli/direct_factories.go`, `cmd/pig/direct_factories.go`.
+
+Tests: `coding/piglet/direct_test.go`, `coding/piglet/artifact/direct_test.go`, `coding/pigletbuild/direct_test.go`, `coding/pigletbuild/binarypiglet/binarypiglet_test.go`, `coding/cli/direct_factories_test.go`. Full conformance and real-core build evidence are reported separately; these unit tests do not establish complete API parity.
+
+Remove when: the explicit native Piglet realization is removed or upstream supplies an equivalent build-time native member mechanism.
+
+PORT_MAP path: n/a (downstream-only, explicitly selected build substrate).
+SCRUTINIZED:approved (fork experiment, owner request in MyPiglets #410; not upstream approval).

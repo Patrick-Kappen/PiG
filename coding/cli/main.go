@@ -451,6 +451,14 @@ func resolvePigletExtConfigs(p *piglet.Piglet) []subprocess.ExtConfig {
 		if len(ext.Origins) == 0 {
 			continue
 		}
+		// pig additive (D237): direct is a build-time selection; an ordinary --piglet cannot load native code from a path.
+		if ext.Realization == "direct" {
+			configs = append(configs, unresolvedPigletExtConfig(p, ext.Name, fmt.Errorf("direct member requires pig piglet build")))
+			if len(resolved) > 0 && resolved[0].Entry.Name == ext.Name {
+				resolved = resolved[1:]
+			}
+			continue
+		}
 		if len(resolved) > 0 && resolved[0].Entry.Name == ext.Name {
 			r := resolved[0]
 			resolved = resolved[1:]
@@ -689,6 +697,8 @@ func reportExtensionSDKStageFailure(stderr io.Writer, err error) {
 type MainOptions struct {
 	// ExtensionFactories are the compiled-in extensions an embedding program adds after the built-in ones (main.ts:575). Only the program's own main passes them (docs/specs/extension-factory-trust.md).
 	ExtensionFactories []extension.InlineExtension
+	// PigletFactories are generated direct members, verified against the baked component plan before loading. Run-time inputs cannot supply factory code.
+	PigletFactories []extension.NamedInlineExtension
 }
 
 // processCwd is process.cwd(). It is a variable so that a test can make the working directory fail the way Pi's deleted-cwd.test.ts
@@ -866,7 +876,15 @@ func Main(args []string, options *MainOptions) {
 			packedNames = append(packedNames, ext.Name)
 		}
 	}
-	if err := binarypiglet.VerifyRegisteredClosure(fusedNames, packedNames); err != nil {
+	var directFactories []extension.NamedInlineExtension
+	if options != nil {
+		directFactories = options.PigletFactories
+	}
+	directNames := make([]string, 0, len(directFactories))
+	for _, factory := range directFactories {
+		directNames = append(directNames, factory.Name)
+	}
+	if err := binarypiglet.VerifyRegisteredClosure(fusedNames, packedNames, directNames); err != nil {
 		fmt.Fprintf(os.Stderr, "pig: %v\n", err)
 		exitProcess(1)
 	}
@@ -1182,7 +1200,7 @@ func Main(args []string, options *MainOptions) {
 		shadowedPiglet:  piglet.ShadowedWorkspacePiglet(requestedPigletName(flags.UnknownFlags), flags.ProjectTrustOverride),
 		settingsManager: startupSettingsManager, settingsDiagnostics: startupSettingsDiagnostics,
 		startupUIOptions: startupUIOpts, trustStore: codingagent.NewProjectTrustStore(agentDir),
-		trustByCWD: map[string]bool{}, extensionFactories: programExtensions,
+		trustByCWD: map[string]bool{}, extensionFactories: slices.Concat(programExtensions, selectedDirectFactories(activePiglet, directFactories, flags.NoExtensions)),
 		stageExtensionSDKs: func() error {
 			// Staged before the first extension load that starts an extension, including the pre-trust load, so out-of-tree `-e` builds and packed
 			// cells resolve the SDKs on a clean host with no PiG checkout. A run that loads no extension reads no SDK, so it neither hashes nor

@@ -104,13 +104,14 @@ type recording struct {
 var conformanceHostInfo subprocess.HostInfo
 
 type harness struct {
-	runner  *inproc.Runner
-	host    *subprocess.Host
-	notify  *[]string
-	status  *[]string
-	actions *[]string
-	ui      *recordingUI
-	bridge  *subprocess.UIBridge
+	runner      *inproc.Runner
+	host        *subprocess.Host
+	notify      *[]string
+	status      *[]string
+	actions     *[]string
+	ui          *recordingUI
+	bridge      *subprocess.UIBridge
+	directProbe *directStateProbe
 	// wire records the calls the extension sends while recording is on;
 	// nil for inproc-go.
 	wire    *wireTap
@@ -133,12 +134,14 @@ func allHarnessCases() []harnessCase {
 		{name: "subprocess-python", make: makeSubprocessPythonHarness, extName: "python-sdk-fixture"},
 		{name: "subprocess-lisp", make: makeSubprocessLispHarness, extName: lispFixtureName},
 		{name: "fused-go", make: makeFusedGoHarness, extName: "sdk-fixture"},
+		{name: "direct-go", make: makeDirectGoHarness, extName: inprocFixtureName},
 	}
 }
 
 func sdkHarnessCases() []harnessCase {
 	cases := allHarnessCases()
-	return cases[1:]
+	// Native direct members have no subprocess host or wire; host-only rows apply only to the SDK realizations.
+	return slices.DeleteFunc(cases[1:], func(tc harnessCase) bool { return tc.name == "direct-go" })
 }
 
 // packedSDKHarnessCases are the Go, Rust, Python and Lisp SDKs loaded into one shared runtime cell beside a peer extension, through the production

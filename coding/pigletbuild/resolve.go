@@ -47,6 +47,7 @@ func extensionInputsFromCells(cells []subprocess.CellSpec) []ExtensionInput {
 				Name:             cfg.Name,
 				Language:         Language(cell.Language),
 				Fusible:          fusible,
+				Direct:           cfg.Factory == directFactory,
 				NotFusibleReason: reason,
 			})
 		}
@@ -66,7 +67,18 @@ func resolvePigletCells(p *piglet.Piglet) ([]subprocess.CellSpec, []string) {
 	}
 
 	var configs []subprocess.ExtConfig
+	var direct []subprocess.CellSpec
 	for _, re := range resolved {
+		// pig additive (D237): direct members never enter SDK cell planning.
+		if re.Entry.Realization == "direct" {
+			cfg, err := resolveDirectConfig(re.Entry.Name, re.Path)
+			if err != nil {
+				warns = append(warns, fmt.Sprintf("extension %q: %v", re.Entry.Name, err))
+				continue
+			}
+			direct = append(direct, subprocess.CellSpec{Key: "direct:" + cfg.Name, Strategy: subprocess.CellStrategyIsolated, Language: "go", Extensions: []subprocess.ExtConfig{cfg}})
+			continue
+		}
 		cfg, _, err := subprocess.ResolveExtConfig(re.Path)
 		if err != nil {
 			warns = append(warns, fmt.Sprintf("extension %q: %v", re.Entry.Name, err))
@@ -76,5 +88,5 @@ func resolvePigletCells(p *piglet.Piglet) ([]subprocess.CellSpec, []string) {
 		configs = append(configs, cfg)
 	}
 
-	return subprocess.PlanCells(configs, nil), warns
+	return append(subprocess.PlanCells(configs, nil), direct...), warns
 }

@@ -236,9 +236,12 @@ func (p *Piglet) ValidateAgentEnvironmentLaunch() error {
 // A nil Tools pointer means every registered tool; a non-nil empty slice means
 // none.
 type ExtensionEntry struct {
-	Name    string    `yaml:"name"`
-	Origins []string  `yaml:"origins,omitempty"`
-	Tools   *[]string `yaml:"tools,omitempty"`
+	// Realization selects direct native linkage explicitly; empty retains fused planning.
+	// pig additive (D237): only a Piglet Binary build can supply native member code.
+	Realization string    `yaml:"realization,omitempty"`
+	Name        string    `yaml:"name"`
+	Origins     []string  `yaml:"origins,omitempty"`
+	Tools       *[]string `yaml:"tools,omitempty"`
 }
 
 // UnmarshalYAML handles the bare extension-name shorthand.
@@ -548,6 +551,9 @@ func (p *Piglet) Validate() error {
 			return fmt.Errorf("extensions[%d]: duplicate name %q", i, ext.Name)
 		}
 		extensionNames[ext.Name] = struct{}{}
+		if ext.Realization != "" && ext.Realization != "fused" && ext.Realization != "direct" {
+			return fmt.Errorf("extensions[%d].realization %q must be fused or direct", i, ext.Realization)
+		}
 		if err := validateToolAllowlist(fmt.Sprintf("extensions[%d].tools", i), ext.Tools, nil); err != nil {
 			return err
 		}
