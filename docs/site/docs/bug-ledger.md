@@ -990,6 +990,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-930c88e](#bf-930c88e) | Claude models with per-message effort no longer fail with `Invalid effort level` on accounts whose… | PiG's own defect | All platforms | 0.7.0 |
 | [BF-9327bc7](#bf-9327bc7) | A closed Harness or Session no longer stays reachable from Go's timer heap | PiG's own defect | All platforms | 0.7.0 |
 | [BF-93319f4](#bf-93319f4) | The terminal UI worked example now describes the typed `/model` prefix in words | PiG's own defect | All platforms | 0.5.0 |
+| [BF-935506d](#bf-935506d) | An Anthropic OAuth request (a Claude subscription) names Claude Code 2.1.322 in its `user-agent` instead of… | A Pi defect that PiG fixed first | All platforms | Unreleased |
 | [BF-93b5de0](#bf-93b5de0) | A login refresh that took between ten and fifteen seconds while another pig process opened the credential… | PiG's own defect | All platforms | Unreleased |
 | [BF-93c09d6](#bf-93c09d6) | A local package source that is a file Node cannot import, such as a packed `.tgz`, fails to load as in Pi… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-93c09d6-2](#bf-93c09d6-2) | `pig install --validate-only` on a Package root validates every extension the Package names in… | PiG's own defect | All platforms | 0.5.0 |
@@ -1132,6 +1133,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-aca35e7](#bf-aca35e7) | In print and JSON mode, a Node extension no longer runs a timer or other callback between a prompt's last… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-ad0c167](#bf-ad0c167) | Bold, italic, underline, strikethrough and inverse text (markdown headings, quotes, table headers, links and… | PiG's own defect | All platforms | 0.7.0 |
 | [BF-ad6d659](#bf-ad6d659) | The durable scheduler's per-commit work no longer grows with the number of conversations: after a commit it… | A fix Pi shipped that PiG ported | All platforms | 0.7.0 |
+| [BF-ad7ab4c](#bf-ad7ab4c) | A tool call whose arguments are not a JSON object (`[]`, `42`, `"text"`, `null`, or text that is no JSON) is… | PiG's own defect | All platforms | Unreleased |
 | [BF-ad9ed64](#bf-ad9ed64) | Appending a tool result whose details are a tool's own value (a truncated `read`, `bash` output details, an… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-ad9ed64-2](#bf-ad9ed64-2) | A large message's session record no longer keeps a regrown buffer when its text has escapes such as newlines… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-ae1ee6d](#bf-ae1ee6d) | The login dialog opens and prints only `http:` and `https:` URLs, in their normalized form (percent-encoded… | PiG's own defect | All platforms | 0.7.0 |
@@ -1357,6 +1359,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-d7fbf00](#bf-d7fbf00) | Stored assistant messages of a durable conversation now carry `thinkingLevel`: a generation records the… | PiG's own defect | All platforms | 0.7.0 |
 | [BF-d80425c](#bf-d80425c) | fix(train): gate repairs after merging train 3 and the ordering stack | PiG's own defect | All platforms | Unreleased |
 | [BF-d80c1cd](#bf-d80c1cd) | Where Pi calls `new URL(value)`, Pig now parses a `ws:`, `wss:`, `ftp:` or `file:` URL, and a bracketed IPv6… | PiG's own defect | All platforms | 0.5.0 |
+| [BF-d82319e](#bf-d82319e) | Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`… | PiG's own defect | All platforms | Unreleased |
 | [BF-d8357e2](#bf-d8357e2) | Cache warmer pure functions against live Pi: new `TestCacheWarmerPureFunctionsMatchPi`… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-d856f4a](#bf-d856f4a) | `host.Registry` with a short `ReadyTimeout` no longer fails "did not become live" when the machine delays the… | PiG's own defect | All platforms | Unreleased |
 | [BF-d87b70c](#bf-d87b70c) | A second `ctx.ui.custom` component opened while one is shown now opens over it at once, as in Pi, whether it… | PiG's own defect | All platforms | 0.5.0 |
@@ -1481,6 +1484,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-e63c61c](#bf-e63c61c) | fix(interactive): pump the owner loop while model selection awaits extensions (#208) (#209) | PiG's own defect | All platforms | Unreleased |
 | [BF-e64d2cf](#bf-e64d2cf) | fix(tui): a tool error result collapses like any other (Pi updateResult) | PiG's own defect | All platforms | Unreleased |
 | [BF-e65ade9](#bf-e65ade9) | `WaitForIdle` on the Harness or a Conversation no longer resumes before the `SubscribeCommits` listeners saw… | PiG's own defect | All platforms | 0.7.0 |
+| [BF-e6744a1](#bf-e6744a1) | Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does | PiG's own defect | All platforms | Unreleased |
 | [BF-e69d018](#bf-e69d018) | Closing an `env` connection, or losing it, now ends its daemon process with SIGTERM, as in Pi, instead of… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-e73e536](#bf-e73e536) | Codemode scripts no longer fail immediately when both codemode workers are busy, for example with parallel… | A fix Pi shipped that PiG ported | All platforms | 0.5.2 |
 | [BF-e75a8b9](#bf-e75a8b9) | The external editor (`ctrl+g`) now edits `prompt.md` inside a private `pi-editor-*` directory under the… | PiG's own defect | All platforms | 0.5.0 |
@@ -15103,6 +15107,22 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Tests:** `test/docs-drift/docs_drift_test.go::TestDocumentedSlashCommandsExist`
 - **Release note:** The terminal UI worked example now describes the typed `/model` prefix in words. A docs check no longer reports a nonexistent command from that page.
 
+### BF-935506d
+
+**An Anthropic OAuth request (a Claude subscription) names Claude Code 2.1.322 in its `user-agent` instead of…**
+
+- **Source:** A Pi defect that PiG fixed first (divergence D235)
+- **Symptom:** An Anthropic OAuth request (a Claude subscription) names Claude Code 2.1.322 in its `user-agent` instead of 2.1.280, which Anthropic refuses for newer models with `claude_code_version_too_old` ("Claude Code 2.1.280 does not support this model").
+- **Root cause:** Pi main's value, ahead of the pin, so that they work.
+- **User impact:** An operation failed or was rejected
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Pi issue:** none recorded
+- **Removed when Pi fixes it:** the pinned Pi release contains a05e3a0. Then the call-site marker, the oracle comparison's mapping and this record go.
+- **Fix commits:** `935506dfa9` (2026-11-10), `d547ac9596` (2026-11-10)
+- **Tests:** `ai/anthropic_oauth_test.go::TestAnthropicClientUserAgent`, `ai/anthropic_oauth_test.go::TestAnthropicOnPayloadReplacesBetas`, `ai/anthropic_oauth_test.go::TestAnthropicRequestAuthShapes`, `ai/identity_oracle_test.go::TestAnthropicUserAgentHeaderReplacesTheClaudeCodeIdentityLikePi`, `ai/identity_oracle_test.go::TestProviderIdentityHeadersMatchPi`, `coding/anthropic_auth_test.go::TestBuildModelAnthropicEnvAuthRequestShapes`, `coding/cli/model_anthropic_auth_test.go::TestBuildModelAnthropicAuthRequestShapes`
+- **Release note:** An Anthropic OAuth request (a Claude subscription) names Claude Code 2.1.322 in its `user-agent` instead of 2.1.280, which Anthropic refuses for newer models with `claude_code_version_too_old` ("Claude Code 2.1.280 does not support this model"). Pi 1.5.0 sends 2.1.280; PiG follows Pi main a05e3a0 (D235). A configured `User-Agent` header still replaces it.
+
 ### BF-93b5de0
 
 **A login refresh that took between ten and fifteen seconds while another pig process opened the credential…**
@@ -17080,6 +17100,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Fix commits:** `ad6d659c09` (2026-10-30)
 - **Tests:** `durable/core/session/sched_idle_scopes_test.go::TestAKeptContextGoesBusyWithWorkBelowItAndIdleAgainWhenItEnds`, `durable/core/session/sched_idle_scopes_test.go::TestAKeptContextKeepsItsExpiryWhenReadAgain`, `durable/core/session/sched_idle_scopes_test.go::TestATaskChangeSettlesTheConversationsAboveItWithoutACheckOfEveryScope`, `durable/core/session/sched_idle_scopes_test.go::TestEndingATaskCostsTheSameAtAnyNumberOfKeptContexts`, `durable/core/session/sched_idle_scopes_test.go::TestKeptContextsAreAllDroppedWhenRetentionBecomesZero`, `durable/core/session/sched_idle_scopes_test.go::TestKeptContextsExpireInIdleOrderWhenTheClockGoesBack`, `durable/harness/context_kept_range_test.go::TestKeptContextRanges`, `durable/harness/harness_idle_scopes_test.go::TestIdleWaitersByScope` and 4 more in docs/bug-ledger.json
 - **Release note:** The durable scheduler's per-commit work no longer grows with the number of conversations: after a commit it re-checks idleness only for the conversations above the tasks that became live or ended (a task whose chain is not loaded yet is settled when the chain loads), expires idle context ranges from an index ordered by `idleSince`, and `wake()` takes the earliest sleep from the sleeping tasks and scans the live tasks only while nothing runs. Before, every commit re-walked every conversation read in the last `contextRetentionMs`. A task run with 4,000 conversations keeping a context range took 3.2 ms and 8,800 allocations in the Harness, and about 4.2 ms in the core; it now costs what it does with 100. Carried forward from Pi 35dfa757, past the 1.4.0+b3a29f11 pin.
+
+### BF-ad7ab4c
+
+**A tool call whose arguments are not a JSON object (`[]`, `42`, `"text"`, `null`, or text that is no JSON) is…**
+
+- **Source:** PiG's own defect
+- **Symptom:** A tool call whose arguments are not a JSON object (`[]`, `42`, `"text"`, `null`, or text that is no JSON) is refused with Pi's `Invalid arguments for tool "<name>": …` result; the tool no longer runs with `{}`.
+- **Root cause:** Pi's parseToolCallArguments gives a finished call whose text is not a JSON object arguments {} and an argumentsError; validateToolArguments refuses the call with `Invalid arguments for tool "<name>": <argumentsError>` before execute. PiG kept ArgumentsError on the ai.ToolCall but newPendingToolCall dropped it and prepareToolCall validated only the bytes, so the tool ran with {}.
+- **User impact:** An operation failed or was rejected
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `ad7ab4cc8a` (2026-11-13)
+- **Tests:** `agent/tool_arguments_error_test.go::TestToolCallWithArgumentsErrorIsRefusedBeforeExecute`, `test/extension-conformance/raw_tool_arguments_test.go::TestToolArgumentsThatAreNoJSONObjectAreRefusedAsPiRefusesThem`
+- **Release note:** A tool call whose arguments are not a JSON object (`[]`, `42`, `"text"`, `null`, or text that is no JSON) is refused with Pi's `Invalid arguments for tool "<name>": …` result; the tool no longer runs with `{}`.
 
 ### BF-ad9ed64
 
@@ -20196,6 +20230,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Tests:** `ai/authorization_input_oracle_test.go::TestAuthorizationInputParsersMatchPi`, `ai/codex_account_id_oracle_test.go::TestCodexAccountIDMatchesPi`, `ai/githubcopilot_oracle_test.go::TestGitHubCopilotHelpersMatchPi`, `ai/streaming_json_oracle_test.go::TestStreamingJSONMatchesPiOnSeededInput`, `ai/trusted_url_oracle_test.go::TestTrustedVerificationURLsMatchPi`, `coding/cli/strip_app_features_test.go::TestStripExportHTMLBuildOmitsExportPackage`, `internal/nodeurl/genericurl_oracle_test.go::TestParseURLMatchesNode`, `internal/nodeurl/url_oracle_test.go::TestParseMatchesNodeURL` and 1 more in docs/bug-ledger.json
 - **Release note:** Where Pi calls `new URL(value)`, Pig now parses a `ws:`, `wss:`, `ftp:` or `file:` URL, and a bracketed IPv6 host of any other scheme, instead of refusing it. This affects package and repository sources (`coding/source`), the OAuth paste and GitHub Copilot enterprise-domain inputs.
 
+### BF-d82319e
+
+**Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`…**
+
+- **Source:** PiG's own defect
+- **Symptom:** Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`, including nested objects, number-like keys and lone UTF-16 surrogate halves.
+- **Root cause:** Pi passes prepared.args to afterToolCall, the same validated object passed to beforeToolCall and execute. The Go host already sends those arguments as ordered JSON in tool_result, but the SDK populated ctx.toolInput only for tool_call, so a result handler could read only an unordered map.
+- **User impact:** Wrong output or ordering
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `d82319e331` (2026-11-13)
+- **Tests:** `extensions/sdk/tool_prepare_arguments_text_test.go::TestToolCallEventHandlerReadsTheInputInOrder`, `extensions/sdk/tool_result_input_test.go::TestToolResultHandlerReadsOrderedInputAndParams`, `test/extension-conformance/tool_result_input_test.go::TestToolResultInputThroughSession`
+- **Release note:** Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`, including nested objects, number-like keys and lone UTF-16 surrogate halves. The input includes prepare-hook replacements and earlier `tool_call` handlers' edits. The host and wire contract are unchanged.
+
 ### BF-d8357e2
 
 **Cache warmer pure functions against live Pi: new `TestCacheWarmerPureFunctionsMatchPi`…**
@@ -21909,6 +21957,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Fix commits:** `e65ade9b1b` (2026-10-27)
 - **Tests:** `durable/harness/harness_tasks_test.go::TestPublicationAtAdoption`
 - **Release note:** `WaitForIdle` on the Harness or a Conversation no longer resumes before the `SubscribeCommits` listeners saw the commit that made the work idle. The idle settle that ends a reconcile pass, and the one the context expiry timer runs, could decide on a commit another goroutine had just adopted and resolve the waits ahead of its host listeners; Pi's continuation there cannot run between an adoption and its publication, and PiG's now leaves the decision to the settle queued behind the listeners.
+
+### BF-e6744a1
+
+**Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does**
+
+- **Source:** PiG's own defect
+- **Symptom:** Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does.
+- **Root cause:** Not recorded.
+- **User impact:** Behavior differed from Pi
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `e6744a1f85` (2026-11-13)
+- **Tests:** `coding/extension/host/subprocess/tool_call_input_reply_test.go::TestToolCallReplyEditsTheEventInputInPlace`, `coding/session_tool_call_surrogate_test.go::TestSessionToolCallPreservesSurrogateInput`, `coding/session_tool_call_surrogate_test.go::TestSessionToolCallSurrogateReplacementIsAnEdit`, `test/extension-conformance/tool_call_surrogate_test.go::TestToolCallSurrogateInputThroughSession`
+- **Release note:** Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does. A handler that replaces a lone half with U+FFFD now changes the executed arguments.
 
 ### BF-e69d018
 
@@ -24518,6 +24580,7 @@ Each divergence record is accounted for here. A divergence that fixes a Pi defec
 | D228 | Terminal.app: plain Up dequeues a queued message, and Up recall elsewhere says once that the text is a copy | [BF-2359a0a](#bf-2359a0a) |
 | D231 | PiG follows Pi main 1708b4788 ahead of the v1.5.0 pin: RPC mode acts on an idle `ctx.shutdown()` | [BF-0cced6a](#bf-0cced6a) |
 | D233 | A Streamable HTTP application/json reply is capped at maxMessageBytes, and an HTTP error body keeps its first… | [BF-d4e641b](#bf-d4e641b) |
+| D235 | An Anthropic OAuth request names Claude Code 2.1.322, as Pi main a05e3a0 does | [BF-935506d](#bf-935506d) |
 | D247 | Quit settles the interrupted run before session_shutdown and disposal | [BF-D247](#bf-d247) |
 | D615 | The Go, Python, Lisp and Rust SDKs show the host each provider stream event as it was when the provider… | deliberate difference |
 | D651 | Credential files are replaced through a temporary file where that changes nothing but the inode, where Pi… | [BF-26b210c](#bf-26b210c) |
