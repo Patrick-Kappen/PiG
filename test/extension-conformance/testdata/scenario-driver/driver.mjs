@@ -117,6 +117,7 @@ function query(pi, ctx, name) {
   switch (name) {
     case "idle": return ctx.isIdle();
     case "pending": return ctx.hasPendingMessages();
+    case "session-cache": return ctx.getSessionCacheObservation();
     case "system-prompt": return ctx.getSystemPrompt();
     case "thinking": return ctx.thinkingLevel;
     case "all-tools": return pi.getAllTools().map(({ name, description }) => ({ name, description }));

@@ -109,6 +109,8 @@ func (s *Session) bindExtensionCore(runner *inproc.Runner) {
 		SetActiveTools: s.SetActiveToolsByName, RefreshTools: s.RefreshTools, GetScopedModels: s.ScopedModels,
 		GetThinkingLevel: func() extension.ThinkingLevel { return s.ThinkingLevel() },
 		ToolActions:      s.ToolActions(),
+		// pig additive (D616): the Session binds its own diagnostic, so a Session without a CLI mode reports it too.
+		GetSessionCacheObservation: s.SessionCacheObservation,
 	}, nil)
 }
 

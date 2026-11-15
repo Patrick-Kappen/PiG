@@ -328,6 +328,9 @@ type HostCallbacks struct {
 	// upstream: runner.ts:614-617
 	GetContextUsage func() *extension.ContextUsage
 
+	// pig additive (D616): no refresh, provider call or history read is needed.
+	GetSessionCacheObservation func() *extension.SessionCacheObservation
+
 	// GetSystemPrompt returns the current system prompt text.
 	// upstream: runner.ts:620 (getSystemPrompt getter on ExtensionContext)
 	GetSystemPrompt func() string
@@ -1168,6 +1171,9 @@ func (b *UIBridge) SetHostAction(key string, fn any) {
 		b.actions.SetThinkingLevel = fn.(func(string))
 	case "getContextUsage":
 		b.actions.GetContextUsage = fn.(func() *extension.ContextUsage)
+	// pig additive (D616): bind the same diagnostic in every execution mode.
+	case CallGetSessionCacheObservation:
+		b.actions.GetSessionCacheObservation = fn.(func() *extension.SessionCacheObservation)
 	case "getSystemPrompt":
 		b.actions.GetSystemPrompt = fn.(func() string)
 	case "getSystemPromptOptions":
@@ -1531,6 +1537,14 @@ func (b *UIBridge) handleCall(ctx context.Context, extName string, owner *Conn, 
 		return b.handleSetThinkingLevel(actions, call.Args)
 	case "getContextUsage":
 		return b.handleGetContextUsage(actions)
+	// pig additive (D616): unknown is JSON null; expired data is preserved.
+	case CallGetSessionCacheObservation:
+		var observation *extension.SessionCacheObservation
+		if actions != nil && actions.GetSessionCacheObservation != nil {
+			observation = actions.GetSessionCacheObservation()
+		}
+		data, err := json.Marshal(observation)
+		return &CallResultPayload{Result: data}, err
 	case "getSystemPrompt":
 		return b.handleGetSystemPrompt(actions)
 	case "renderSystemPrompt":

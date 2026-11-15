@@ -497,6 +497,10 @@ func (r *Runner) BindCore(
 	if contextActions.RefreshTools == nil {
 		contextActions.RefreshTools = r.contextActions.RefreshTools
 	}
+	// pig additive (D616): a mode binding keeps the Session diagnostic when omitted.
+	if contextActions.GetSessionCacheObservation == nil {
+		contextActions.GetSessionCacheObservation = r.contextActions.GetSessionCacheObservation
+	}
 	r.contextActions = contextActions
 	r.contextActions.SessionManager = nil
 	if contextActions.SessionManager != nil {

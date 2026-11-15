@@ -1626,6 +1626,11 @@ class RuntimeContext {
   // produced is painted (it drains input first), so a shutdown requested
   // from an editor's handleInput reaches the host after that frame.
   shutdown() { this.runtime.extensionRuntime.assertActive(); queueMicrotask(() => this.runtime.fireAndForget("shutdown", {})); }
+  // pig additive (D616): passive, live diagnostics, separate from Pi's events.
+  getSessionCacheObservation() {
+    this.runtime.extensionRuntime.assertActive();
+    return this.runtime.callSync("getSessionCacheObservation") ?? null;
+  }
   getContextUsage() { this.runtime.extensionRuntime.assertActive(); return this.runtime.state.contextUsage; }
   // The host reads the options flat. Upstream starts compaction without
   // awaiting it and reports the outcome through onComplete/onError, so a call
@@ -5326,8 +5331,10 @@ export class Runtime {
     const providerMethod = method === "provider.object" && ["getModels", "filterModels", "update"].includes(args.method);
     // notify and LoginOptions.getDeviceId are synchronous in Pi (auth/types.ts:160, 208).
     const providerCallback = method === "provider.callback" && (args.method === "notify" || args.method === "getDeviceId");
+    // pig additive (D616): passive cache reads are bounded synchronous host calls.
+    const cacheObservation = method === "getSessionCacheObservation";
     const themeMethod = ["ui.getTheme", "ui.setTheme", "ui.theme", "ui.addAutocompleteProvider", "ui.autocomplete.invoke", "ui.autocomplete.current"].includes(method);
-    if (!facetMethod && !themeMethod && !["registerTool", "registerDeclaration", "registerMcpServer", "unregisterMcpServer", "registerVirtualModel", "unregisterVirtualModel", "mcpServers.check", "getMcpServers", "getCallableTools", "getAllTools", "getActiveTools", "getCommands", "hasPendingMessages", "getSystemPrompt", "getSystemPromptOptions", "isIdle", "tool.reachesTools", "setLabel", "setSessionName", "sendMessage", "xref.hello", "xref.op", "provider.config", "events.on", "events.off", "events.emit", "events.settle", "ui.custom.control", "ui.custom.showOverlay", "ui.custom.hideOverlay", "ui.custom.setFocus"].includes(method) && method !== "provider.retain" && method !== "provider.release" && !providerMethod && !providerCallback) {
+    if (!cacheObservation && !facetMethod && !themeMethod && !["registerTool", "registerDeclaration", "registerMcpServer", "unregisterMcpServer", "registerVirtualModel", "unregisterVirtualModel", "mcpServers.check", "getMcpServers", "getCallableTools", "getAllTools", "getActiveTools", "getCommands", "hasPendingMessages", "getSystemPrompt", "getSystemPromptOptions", "isIdle", "tool.reachesTools", "setLabel", "setSessionName", "sendMessage", "xref.hello", "xref.op", "provider.config", "events.on", "events.off", "events.emit", "events.settle", "ui.custom.control", "ui.custom.showOverlay", "ui.custom.hideOverlay", "ui.custom.setFocus"].includes(method) && method !== "provider.retain" && method !== "provider.release" && !providerMethod && !providerCallback) {
       throw new Error(`Host method ${method} is not a synchronous bridge operation`);
     }
     if (!this.conn) throw new Error("runtime not connected");
@@ -5448,6 +5455,8 @@ export class Runtime {
     context.isProjectTrusted = () => read("isProjectTrusted")?.trusted === true;
     context.hasPendingMessages = () => read("hasPendingMessages")?.pending === true;
     context.getContextUsage = () => read("getContextUsage") ?? undefined;
+    // pig additive (D616): a replacement reads its own live diagnostic.
+    context.getSessionCacheObservation = () => read("getSessionCacheObservation") ?? null;
     context.getSystemPrompt = () => read("getSystemPrompt")?.prompt ?? "";
     context.getSystemPromptOptions = () => read("getSystemPromptOptions") ?? {};
     Object.defineProperty(runtime.contextValues, "model", {
