@@ -56,6 +56,13 @@ func (s *Session) handleAgentEvent(ctx context.Context, event agent.AgentEvent) 
 	// Record the calls a tool made through ctx.executeTool() and their usage on its result message.
 	s.recordNestedCalls(event)
 	switch event := event.(type) {
+	case agent.MessageEndEvent:
+		// pig additive (D616): do not expose a failed or aborted real request as a known cache write.
+		if message := event.Message.Assistant; message != nil && (message.StopReason == ai.StopReasonError || message.StopReason == ai.StopReasonAborted) {
+			if warmer, _ := s.cacheWarmer(); warmer != nil {
+				warmer.DiscardSessionCacheObservation()
+			}
+		}
 	case agent.MessageStartEvent:
 		if event.Message.User != nil {
 			s.overflowRecoveryAttempted.Store(false)

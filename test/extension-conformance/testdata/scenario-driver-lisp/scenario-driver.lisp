@@ -137,6 +137,7 @@
 (defun query (ctx name)
   (cond ((equal name "idle") (if (pig:ctx-is-idle-p ctx) t :false))
         ((equal name "pending") (if (pig:ctx-has-pending-messages-p ctx) t :false))
+        ((equal name "session-cache") (or (pig:ctx-get-session-cache-observation ctx) :null))
         ((equal name "system-prompt") (pig:ctx-get-system-prompt ctx))
         ((equal name "thinking") (pig:ctx-get-thinking-level ctx))
         ((equal name "all-tools")

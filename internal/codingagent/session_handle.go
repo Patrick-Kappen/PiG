@@ -131,6 +131,9 @@ type InteractiveSessionHandle interface {
 	// CacheWarmingStatus reports the Session's cache warmer, or nil when it
 	// has none. Mirrors upstream AgentSession.cacheWarmingStatus.
 	CacheWarmingStatus() *CacheWarmingStatus
+	// SessionCacheObservation reports the prompt-cache lifetime of the Session's last dispatched request, or nil when it is unknown.
+	// pig additive (D616): the mode binds it for its extensions, as it binds the Session's other state.
+	SessionCacheObservation() *extension.SessionCacheObservation
 	// SetCacheWarmingMode persists the mode and reconciles active warming.
 	// Mirrors upstream AgentSession.setCacheWarmingMode.
 	SetCacheWarmingMode(CacheWarmingMode) error

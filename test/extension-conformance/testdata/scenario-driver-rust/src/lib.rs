@@ -234,6 +234,7 @@ fn query(ctx: &Context, name: &str) -> std::io::Result<Value> {
     Ok(match name {
         "idle" => json!(ctx.is_idle()?),
         "pending" => json!(ctx.has_pending_messages()?),
+        "session-cache" => json!(ctx.get_session_cache_observation()?),
         "system-prompt" => json!(ctx.get_system_prompt()?),
         "thinking" => json!(ctx.get_thinking_level()?),
         "all-tools" => Value::Array(

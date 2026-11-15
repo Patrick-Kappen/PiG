@@ -89,6 +89,14 @@ func (r *scenarioRig) installHostState() {
 	b.SetHostAction("isIdle", func() bool { return false })
 	b.SetHostAction("hasPendingMessages", func() bool { return true })
 	b.SetHostAction("getSystemPrompt", func() string { return rigSystemPrompt })
+	cacheReads := 0
+	b.SetHostAction(subprocess.CallGetSessionCacheObservation, func() *extension.SessionCacheObservation {
+		cacheReads++
+		if cacheReads == 2 {
+			return nil
+		}
+		return &extension.SessionCacheObservation{StartedAt: 1700000000000, TTLms: 12345, Provider: "diagnostic-provider", Model: "diagnostic-model"}
+	})
 	b.SetHostAction("getThinkingLevel", func() string { return rigThinkingLevel })
 	b.SetHostAction("getAllTools", func() []subprocess.ToolInfo {
 		return []subprocess.ToolInfo{

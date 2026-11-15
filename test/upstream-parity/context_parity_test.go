@@ -68,6 +68,9 @@ var translatedContextMembers = map[string]string{}
 // pigOnlyContextMembers records Go Context members without a direct upstream
 // Context member.
 var pigOnlyContextMembers = map[string]string{
+	// D616: approved passive diagnostics, recorded in docs/additive-features.md.
+	"GetSessionCacheObservation": "D616",
+
 	// D23: Piglet-scoped active-tool Context API.
 	// Upstream has no piglet-driven tool scoping. These methods enable the
 	// piglet extension (D18) to read flags, inspect all tools with source

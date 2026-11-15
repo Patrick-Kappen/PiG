@@ -3366,6 +3366,11 @@ class Context:
         ``sourceInfo``."""
         return list(self._reply_field("getCommands", "commands"))
 
+    def get_session_cache_observation(self) -> dict[str, Any] | None:
+        """PiG's passive cache diagnostic. None is unknown; elapsed data remains available."""
+        # pig additive (D616): use the live Session without changing a ported event.
+        return self._call("getSessionCacheObservation").get("result")
+
     def get_context_usage(self) -> dict[str, Any] | None:
         result = self._call("getContextUsage").get("result")
         return result if isinstance(result, dict) and result else None

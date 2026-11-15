@@ -89,6 +89,13 @@ func ExtensionHostSessionActions(current func() *Session, stage func() *Extensio
 			}
 			return ""
 		},
+		// pig additive (D616): read the live Session, including after replacement.
+		GetSessionCacheObservation: func() *extension.SessionCacheObservation {
+			if sess := current(); sess != nil {
+				return sess.SessionCacheObservation()
+			}
+			return nil
+		},
 		GetContextUsage: func() *extension.ContextUsage {
 			sess := current()
 			if sess == nil {
@@ -217,6 +224,8 @@ func BindSessionExtensionActions(runner *inproc.Runner, bridge *subprocess.UIBri
 		contextActions.HasPendingMessages = sessionContext.HasPendingMessages
 		contextActions.GetScopedModels = sessionContext.GetScopedModels
 		contextActions.GetContextUsage = sessionContext.GetContextUsage
+		// pig additive (D616): native and wire contexts read one Session diagnostic.
+		contextActions.GetSessionCacheObservation = sessionContext.GetSessionCacheObservation
 		contextActions.GetSystemPromptOptions = sessionContext.GetSystemPromptOptions
 		runner.BindCore(actions, contextActions, nil)
 	}
@@ -271,6 +280,8 @@ func BindSessionExtensionActions(runner *inproc.Runner, bridge *subprocess.UIBri
 		return ""
 	})
 	bridge.SetHostAction("getContextUsage", sessionContext.GetContextUsage)
+	// pig additive (D616): passive diagnostics share the ordinary host-call lifetime.
+	bridge.SetHostAction(subprocess.CallGetSessionCacheObservation, sessionContext.GetSessionCacheObservation)
 	bridge.SetHostAction("getSignal", sessionContext.GetSignal)
 
 	bridge.SetHostAction("getSystemPrompt", sessionContext.GetSystemPrompt)

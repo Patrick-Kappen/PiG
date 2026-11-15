@@ -231,8 +231,10 @@ type cacheWarmingRun struct {
 // callback the warmer tracks, cancelled through the run's context and drained
 // by Wait.
 type CacheWarmer struct {
-	mu             sync.Mutex
-	run            *cacheWarmingRun
+	mu  sync.Mutex
+	run *cacheWarmingRun
+	// pig additive (D616): retain only scalar diagnostics, independently of warming.
+	observation    *extension.SessionCacheObservation
 	inactive       CacheWarmingStatus
 	closed         bool
 	stream         agent.StreamFn
@@ -320,6 +322,9 @@ func (w *CacheWarmer) Start(request CacheWarmRequest, isCurrent func() bool) {
 	if w.closed {
 		return
 	}
+	// pig additive (D616): observe dispatch even when warming is off or replay is unsafe.
+	startedAt := cacheWarmingNowMs()
+	w.observeSessionCacheLocked(request, startedAt)
 	w.clearRunLocked()
 	if reason := w.startStopReason(request); reason != "" {
 		w.stopLocked(reason, nil, false)
@@ -562,6 +567,8 @@ func (w *CacheWarmer) sendRefresh(run *cacheWarmingRun, extensionOverride bool) 
 	}()
 	options := run.Options
 	options.MaxTokens = 1
+	// pig additive (D616): a successful refresh renews the cache from dispatch, not completion.
+	startedAt := cacheWarmingNowMs()
 	stream, err := w.stream(ai.WithProviderMaxRetries(run.ctx, 0), run.Model, run.Context, options)
 	if err != nil {
 		return true
@@ -573,6 +580,12 @@ func (w *CacheWarmer) sendRefresh(run *cacheWarmingRun, extensionOverride bool) 
 	if message == nil || message.StopReason == ai.StopReasonError || message.StopReason == ai.StopReasonAborted {
 		return true
 	}
+	// pig additive (D616): a late retired refresh cannot overwrite a newer request.
+	w.mu.Lock()
+	if w.run == run {
+		w.observeSessionCacheLocked(run.CacheWarmRequest, startedAt)
+	}
+	w.mu.Unlock()
 	model := message.ResponseModel
 	if model == "" {
 		model = message.Model
