@@ -39,6 +39,24 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ steps.app.outputs.token }}
+      # A merge whose conflicts are all in derived files is made in this checkout (sync.sh merge_derived): git needs an
+      # identity for it, and the pre-flight's `signed` check needs it signed. The committer is the fork owner, whose
+      # account holds the signing key, so GitHub shows the merge Verified.
+      - name: Set up signing
+        env:
+          FORK_SIGNING_KEY: ${{ secrets.FORK_SIGNING_KEY }}
+        run: |
+          if [ -z "$FORK_SIGNING_KEY" ]; then
+            echo "::error::secret FORK_SIGNING_KEY is not set"
+            exit 1
+          fi
+          key="$RUNNER_TEMP/signing_key"
+          install -m 600 /dev/null "$key"
+          printf '%s\n' "$FORK_SIGNING_KEY" > "$key"
+          git config user.name "Patrick Kappen"
+          git config user.email "patrick@kappen.io"
+          git config gpg.format ssh
+          git config user.signingkey "$key"
       - name: Upstream main into main
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
