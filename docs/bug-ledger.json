@@ -728,6 +728,26 @@
       ]
     },
     {
+      "id": "BF-06582c4",
+      "title": "A routed `pi.events.emit` no longer lets its emitter run ahead of a listener extension process",
+      "symptom": "As in Pi, every continuation a listener queued runs before any microtask the emitter queues after `emit` returns, and the emitter's settle wait now covers every listener process of the emit: it used to end early when an earlier listener process had already answered (it was inside its own wait for an earlier emit of the same burst), failed or exited before the Host wrote the request of the next one, so that process's continuations could interleave with the emitter's later work.",
+      "rootCause": "The emission settled the first moment its pending map was empty, so a realm that reported before the dispatch loop had registered the next realm (a quiesce written before its dispatch response, a failed dispatch, a closed connection) closed it, and the emitter's events.settle returned without waiting for the realms the loop reached afterwards. Their continuations could then run between the emitter's later microtasks; in Pi every continuation a listener queued runs before any microtask the emitter queues after emit returns (event-bus.ts:15-17, 19-25).",
+      "rootCauseSource": "commit",
+      "userImpact": "An operation failed or was rejected",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "A routed `pi.events.emit` no longer lets its emitter run ahead of a listener extension process. As in Pi, every continuation a listener queued runs before any microtask the emitter queues after `emit` returns, and the emitter's settle wait now covers every listener process of the emit: it used to end early when an earlier listener process had already answered (it was inside its own wait for an earlier emit of the same burst), failed or exited before the Host wrote the request of the next one, so that process's continuations could interleave with the emitter's later work. PiG 0.3.0 through 0.7.0 have the defect. \u003c!-- tests: coding/extension/host/subprocess/event_bus_settle_test.go::TestDispatchEventEmissionStaysOpenUntilTheLoopHasRegisteredEveryListenerRealm, coding/extension/host/subprocess/event_bus_settle_test.go::TestDispatchEventEmissionSettlesWhenTheLoopEndsWithNoPendingListener, coding/extension/host/subprocess/event_bus_settle_test.go::TestHostEventBusEmitCallSettlesAfterEveryListenerRealm --\u003e",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "06582c49c6",
+          "date": "2026-11-14"
+        }
+      ],
+      "tests": []
+    },
+    {
       "id": "BF-06a8890",
       "title": "fix(bug): tell the reporter exactly what to do with the /bug archive",
       "symptom": "fix(bug): tell the reporter exactly what to do with the /bug archive",
@@ -10880,6 +10900,28 @@
       "tests": [
         "internal/codingagent/model_registry_availability_refresh_gaps_test.go::TestRefreshModelRuntimeHonoursNetworkForceErrorsAndRegistrationCover",
         "tui/tool_execution_test.go::TestErrorResultStaysCollapsedUntilExpanded"
+      ]
+    },
+    {
+      "id": "BF-4d65734",
+      "title": "Quitting interactive mode with ctrl+c twice, ctrl+d or `/quit` while a turn is streaming now ends the turn…",
+      "symptom": "Quitting interactive mode with ctrl+c twice, ctrl+d or `/quit` while a turn is streaming now ends the turn first, as Pi does: the interrupted assistant message is written to the session file as the provider's stream ended it (for a built-in provider the text received so far, with stop reason `aborted`), and extensions receive `message_end`, `turn_end` and `agent_end` before `session_shutdown`.",
+      "rootCause": "Pi's quit awaits session.abort() before it emits session_shutdown (Pi main, #9126, the divergence D247 that the line carries): the interrupted turn's final assistant message is saved and the extensions see message_end, turn_end and agent_end. pig ended the process at the quit while the turn still streamed and lost the turn.",
+      "rootCauseSource": "commit",
+      "userImpact": "Wrong display",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "Quitting interactive mode with ctrl+c twice, ctrl+d or `/quit` while a turn is streaming now ends the turn first, as Pi does: the interrupted assistant message is written to the session file as the provider's stream ended it (for a built-in provider the text received so far, with stop reason `aborted`), and extensions receive `message_end`, `turn_end` and `agent_end` before `session_shutdown`. PiG exited at once: the interrupted turn was missing from the session file, and extensions saw `session_shutdown` in the middle of the turn. A `!` command that is still running is not waited for, and nothing of the interrupted turn is drawn after the screen was restored. PiG 0.2.0 through 0.7.0 have the defect.",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "4d65734a52",
+          "date": "2026-11-14"
+        }
+      ],
+      "tests": [
+        "coding/runtime_dispose_settlement_test.go::TestRuntimeCloseDuringToolSettlesTheInterruptedTurnBeforeShutdown"
       ]
     },
     {
@@ -26931,40 +26973,6 @@
       ]
     },
     {
-      "id": "BF-935506d",
-      "title": "An Anthropic OAuth request (a Claude subscription) names Claude Code 2.1.322 in its `user-agent` instead of…",
-      "symptom": "An Anthropic OAuth request (a Claude subscription) names Claude Code 2.1.322 in its `user-agent` instead of 2.1.280, which Anthropic refuses for newer models with `claude_code_version_too_old` (\"Claude Code 2.1.280 does not support this model\").",
-      "rootCause": "Pi main's value, ahead of the pin, so that they work.",
-      "rootCauseSource": "divergence record",
-      "userImpact": "An operation failed or was rejected",
-      "platform": "All platforms",
-      "class": "ahead-of-pi",
-      "divergence": "D235",
-      "removeWhen": "the pinned Pi release contains a05e3a0. Then the call-site marker, the oracle comparison's mapping and this record go.",
-      "fixedIn": "Unreleased",
-      "releaseNote": "An Anthropic OAuth request (a Claude subscription) names Claude Code 2.1.322 in its `user-agent` instead of 2.1.280, which Anthropic refuses for newer models with `claude_code_version_too_old` (\"Claude Code 2.1.280 does not support this model\"). Pi 1.5.0 sends 2.1.280; PiG follows Pi main a05e3a0 (D235). A configured `User-Agent` header still replaces it.",
-      "origin": "release note",
-      "commits": [
-        {
-          "hash": "935506dfa9",
-          "date": "2026-11-10"
-        },
-        {
-          "hash": "d547ac9596",
-          "date": "2026-11-10"
-        }
-      ],
-      "tests": [
-        "ai/anthropic_oauth_test.go::TestAnthropicClientUserAgent",
-        "ai/anthropic_oauth_test.go::TestAnthropicOnPayloadReplacesBetas",
-        "ai/anthropic_oauth_test.go::TestAnthropicRequestAuthShapes",
-        "ai/identity_oracle_test.go::TestAnthropicUserAgentHeaderReplacesTheClaudeCodeIdentityLikePi",
-        "ai/identity_oracle_test.go::TestProviderIdentityHeadersMatchPi",
-        "coding/anthropic_auth_test.go::TestBuildModelAnthropicEnvAuthRequestShapes",
-        "coding/cli/model_anthropic_auth_test.go::TestBuildModelAnthropicAuthRequestShapes"
-      ]
-    },
-    {
       "id": "BF-93c09d6",
       "title": "A local package source that is a file Node cannot import, such as a packed `.tgz`, fails to load as in Pi…",
       "symptom": "A local package source that is a file Node cannot import, such as a packed `.tgz`, fails to load as in Pi (`Failed to load extension: Unknown file extension \".tgz\" for \u003cpath\u003e`, exit 1) instead of being run as a program and failing with \"permission denied\".",
@@ -27548,6 +27556,26 @@
         "chord/delta/own_key_order_test.go::TestDiffRevisionsVisitsArrayIndexKeysFirstInNumericOrder",
         "internal/chord/chordjson/own_key_order_test.go::TestCopyFollowsPisKeyOrderAndMessages"
       ]
+    },
+    {
+      "id": "BF-982a52a",
+      "title": "A Chord rollout lists every failed worker it retried",
+      "symptom": "A Chord rollout lists every failed worker it retried.",
+      "rootCause": "A rollout kept the entry of a failed worker it retried only when its own Retry answered that it had started the resolve, and the entry of one whose address already had a start running (the route starts a resolve itself when a worker link closes; a resolve ends only when its start settles) was dropped: the worker went on starting and the rollout list lacked it. Pi has no such test: it lists `routed.starting` after `retry`, whatever began it (workers.ts:598-601). The rollout now does the same.",
+      "rootCauseSource": "commit",
+      "userImpact": "Lost or altered data",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "A Chord rollout lists every failed worker it retried. A worker whose address already had a start running when the rollout retried it (the route starts one itself when the worker's link closes) was left out of the rollout's list although its start went on, so the app saw one worker fewer than the rollout had brought up; the list now carries the start the address has after the retry, whoever began it, as Pi's does. \u003c!-- cause: the rollout kept a retried worker's entry only when its own Retry answered that it had started the resolve, assuming a start on a failed address was always its own; Pi lists whatever start the address has after the retry (workers.ts:598-601) --\u003e",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "982a52a9f9",
+          "date": "2026-11-14"
+        }
+      ],
+      "tests": []
     },
     {
       "id": "BF-983d651",
@@ -29169,6 +29197,33 @@
       ],
       "tests": [
         "test/extension-conformance/refine_arguments_test.go::TestConformance_RefinedToolArgumentsAreNotRefined"
+      ]
+    },
+    {
+      "id": "BF-D247",
+      "title": "Quit settles the interrupted run before session_shutdown and disposal",
+      "symptom": "the quit disposes the runtime while a turn is still running and does not wait for it to settle, so the turn's last messages are not saved and a stored assistant tool call can be left without its result ([#9124](https://github.com/earendil-works/pi/issues/9124)); a later Pi change awaits the abort first.",
+      "rootCause": "the quit disposes the runtime during a run without waiting for it: persistence is disconnected before the turn settles, leaving a stored assistant tool call without its result and losing the turn's last messages.",
+      "rootCauseSource": "divergence record",
+      "userImpact": "Behavior differed from Pi",
+      "platform": "All platforms",
+      "class": "ahead-of-pi",
+      "divergence": "D247",
+      "removeWhen": "the pin reaches a Pi release containing 7a53c310a.",
+      "fixedIn": "Unreleased",
+      "origin": "divergence",
+      "commits": [
+        {
+          "hash": "4d65734a52",
+          "date": "2026-11-14"
+        },
+        {
+          "hash": "8e8168061b",
+          "date": "2026-11-14"
+        }
+      ],
+      "tests": [
+        "coding/runtime_dispose_settlement_test.go::TestRuntimeCloseDuringToolSettlesTheInterruptedTurnBeforeShutdown"
       ]
     },
     {
@@ -31130,29 +31185,6 @@
         "durable/harness/harness_idle_scopes_test.go::TestWakeReadsSleepingTasksAndScansLiveOnesOnlyWhileNothingRuns",
         "durable/harness/harness_tasks_test.go::TestPublicationAtAdoption",
         "durable/harness/scheduler_idle_scaling_bench_test.go::TestWakeWhileATaskRunsCostsTheSameAtAnyNumberOfLiveTasks"
-      ]
-    },
-    {
-      "id": "BF-ad7ab4c",
-      "title": "A tool call whose arguments are not a JSON object (`[]`, `42`, `\"text\"`, `null`, or text that is no JSON) is…",
-      "symptom": "A tool call whose arguments are not a JSON object (`[]`, `42`, `\"text\"`, `null`, or text that is no JSON) is refused with Pi's `Invalid arguments for tool \"\u003cname\u003e\": …` result; the tool no longer runs with `{}`.",
-      "rootCause": "Pi's parseToolCallArguments gives a finished call whose text is not a JSON object arguments {} and an argumentsError; validateToolArguments refuses the call with `Invalid arguments for tool \"\u003cname\u003e\": \u003cargumentsError\u003e` before execute. PiG kept ArgumentsError on the ai.ToolCall but newPendingToolCall dropped it and prepareToolCall validated only the bytes, so the tool ran with {}.",
-      "rootCauseSource": "commit",
-      "userImpact": "An operation failed or was rejected",
-      "platform": "All platforms",
-      "class": "own",
-      "fixedIn": "Unreleased",
-      "releaseNote": "A tool call whose arguments are not a JSON object (`[]`, `42`, `\"text\"`, `null`, or text that is no JSON) is refused with Pi's `Invalid arguments for tool \"\u003cname\u003e\": …` result; the tool no longer runs with `{}`.",
-      "origin": "release note",
-      "commits": [
-        {
-          "hash": "ad7ab4cc8a",
-          "date": "2026-11-13"
-        }
-      ],
-      "tests": [
-        "agent/tool_arguments_error_test.go::TestToolCallWithArgumentsErrorIsRefusedBeforeExecute",
-        "test/extension-conformance/raw_tool_arguments_test.go::TestToolArgumentsThatAreNoJSONObjectAreRefusedAsPiRefusesThem"
       ]
     },
     {
@@ -35522,6 +35554,30 @@
       ]
     },
     {
+      "id": "BF-cc061a0",
+      "title": "When SIGINT ends interactive mode (exit status 130), PiG now ends its extension processes before it exits",
+      "symptom": "When SIGINT ends interactive mode (exit status 130), PiG now ends its extension processes before it exits.",
+      "rootCause": "A quit by keys that waits for an author keeps its dispose pending. The ctrl+c that then ends pig (exit 130) ran no dispose, so the runtime of a Node author that holds a timer stayed behind. handleInterruptSignal terminates the extension processes before it exits, as the emergency exit does.",
+      "rootCauseSource": "commit",
+      "userImpact": "Behavior differed from Pi",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "When SIGINT ends interactive mode (exit status 130), PiG now ends its extension processes before it exits. The runtime process of a Node extension whose event loop was still alive, for example one that holds a timer, stayed behind after a quit by keys that was still waiting for an extension's session_shutdown handler. Nothing more is written to the session file at that exit. PiG 0.2.0 through 0.7.0 have the defect.",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "cc061a0b20",
+          "date": "2026-11-13"
+        },
+        {
+          "hash": "f522a9c34a",
+          "date": "2026-11-13"
+        }
+      ],
+      "tests": []
+    },
+    {
       "id": "BF-cc9370b",
       "title": "A Node extension's `setWidget`, `setHeader` and `setFooter` factories receive the same `tui` as a…",
       "symptom": "A Node extension's `setWidget`, `setHeader` and `setFooter` factories receive the same `tui` as a `ctx.ui.custom` factory, as in Pi: `showOverlay`, `hideOverlay`, `setFocus` and `terminal` work there, and `tui.requestRender()` also redraws the overlays the extension shows.",
@@ -37663,30 +37719,6 @@
         "internal/nodeurl/genericurl_oracle_test.go::TestParseURLMatchesNode",
         "internal/nodeurl/url_oracle_test.go::TestParseMatchesNodeURL",
         "tui/keys_oracle_test.go::TestParseAndMatchKeyMatchPiOnSeededInput"
-      ]
-    },
-    {
-      "id": "BF-d82319e",
-      "title": "Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`…",
-      "symptom": "Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`, including nested objects, number-like keys and lone UTF-16 surrogate halves.",
-      "rootCause": "Pi passes prepared.args to afterToolCall, the same validated object passed to beforeToolCall and execute. The Go host already sends those arguments as ordered JSON in tool_result, but the SDK populated ctx.toolInput only for tool_call, so a result handler could read only an unordered map.",
-      "rootCauseSource": "commit",
-      "userImpact": "Wrong output or ordering",
-      "platform": "All platforms",
-      "class": "own",
-      "fixedIn": "Unreleased",
-      "releaseNote": "Go extensions can read a `tool_result` event's input in order with `ctx.ToolInput()` and `ctx.ToolParams()`, including nested objects, number-like keys and lone UTF-16 surrogate halves. The input includes prepare-hook replacements and earlier `tool_call` handlers' edits. The host and wire contract are unchanged.",
-      "origin": "release note",
-      "commits": [
-        {
-          "hash": "d82319e331",
-          "date": "2026-11-13"
-        }
-      ],
-      "tests": [
-        "extensions/sdk/tool_prepare_arguments_text_test.go::TestToolCallEventHandlerReadsTheInputInOrder",
-        "extensions/sdk/tool_result_input_test.go::TestToolResultHandlerReadsOrderedInputAndParams",
-        "test/extension-conformance/tool_result_input_test.go::TestToolResultInputThroughSession"
       ]
     },
     {
@@ -42003,31 +42035,6 @@
       ],
       "tests": [
         "durable/harness/harness_tasks_test.go::TestPublicationAtAdoption"
-      ]
-    },
-    {
-      "id": "BF-e6744a1",
-      "title": "Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does",
-      "symptom": "Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does.",
-      "rootCause": "",
-      "rootCauseSource": "",
-      "userImpact": "Behavior differed from Pi",
-      "platform": "All platforms",
-      "class": "own",
-      "fixedIn": "Unreleased",
-      "releaseNote": "Preserve lone UTF-16 surrogate units in `tool_call` input keys and values, including handler edits, as Pi does. A handler that replaces a lone half with U+FFFD now changes the executed arguments.",
-      "origin": "release note",
-      "commits": [
-        {
-          "hash": "e6744a1f85",
-          "date": "2026-11-13"
-        }
-      ],
-      "tests": [
-        "coding/extension/host/subprocess/tool_call_input_reply_test.go::TestToolCallReplyEditsTheEventInputInPlace",
-        "coding/session_tool_call_surrogate_test.go::TestSessionToolCallPreservesSurrogateInput",
-        "coding/session_tool_call_surrogate_test.go::TestSessionToolCallSurrogateReplacementIsAnEdit",
-        "test/extension-conformance/tool_call_surrogate_test.go::TestToolCallSurrogateInputThroughSession"
       ]
     },
     {
@@ -48044,9 +48051,9 @@
       "entry": "BF-d4e641b"
     },
     {
-      "id": "D235",
-      "title": "An Anthropic OAuth request names Claude Code 2.1.322, as Pi main a05e3a0 does",
-      "entry": "BF-935506d"
+      "id": "D247",
+      "title": "Quit settles the interrupted run before session_shutdown and disposal",
+      "entry": "BF-D247"
     },
     {
       "id": "D615",
