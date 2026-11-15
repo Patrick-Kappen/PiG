@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/MichaelKinsy/PiG/internal/coding/pigversion"
+	"github.com/MichaelKinsy/PiG/internal/testenv"
 )
 
 // autobindMainEnv makes the test binary run the command itself, so a test sees the exit status a make target sees.
@@ -21,7 +22,7 @@ func TestMain(m *testing.M) {
 		main()
 		os.Exit(0)
 	}
-	os.Exit(m.Run())
+	os.Exit(testenv.RunScoped(m, "pig-autobind-"))
 }
 
 // mirrorFixture writes the fixture module with its ledger under the pinned version (what make interface-gaps-update reads) and an

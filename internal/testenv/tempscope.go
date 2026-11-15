@@ -14,6 +14,8 @@ import (
 //
 // It also moves every agent-directory variable under root (IsolateAgentEnv), so a test that reaches the agent directory through the environment cannot write the credentials, settings, trust file or sessions of the user running `go test`.
 //
+// It also points git at an empty configuration (IsolateGitEnv), so no test depends on the global git configuration of the user running `go test`.
+//
 // It also pins GOCACHE and GOMODCACHE (KeepGoBuildCaches), so a test that points HOME at a temporary directory and then runs `go build` links from the compiled packages a user's builds share instead of recompiling PiG and its dependencies in an empty cache.
 func ScopeTempDir(root string) error {
 	for _, key := range []string{"TMPDIR", "TMP", "TEMP"} {
@@ -22,6 +24,9 @@ func ScopeTempDir(root string) error {
 		}
 	}
 	if err := IsolateAgentEnv(root); err != nil {
+		return err
+	}
+	if err := IsolateGitEnv(root); err != nil {
 		return err
 	}
 	return KeepGoBuildCaches()

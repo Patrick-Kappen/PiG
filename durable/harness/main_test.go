@@ -1,6 +1,7 @@
 package harness
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -8,5 +9,17 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	os.Exit(testenv.RunWithoutGoroutineLeaks(m, endCrashedProcesses))
+	root, err := os.MkdirTemp("", "pig-harness-git-")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(2)
+	}
+	if err := testenv.IsolateGitEnv(root); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		_ = os.RemoveAll(root)
+		os.Exit(2)
+	}
+	code := testenv.RunWithoutGoroutineLeaks(m, endCrashedProcesses)
+	_ = os.RemoveAll(root)
+	os.Exit(code)
 }

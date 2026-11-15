@@ -207,3 +207,33 @@ type errorRecorder struct {
 
 func (r *errorRecorder) Helper()               {}
 func (r *errorRecorder) Errorf(string, ...any) { r.failed = true }
+
+// A global tag.gpgSign makes `git tag` wait for a message in an editor, so ScopeTempDir must hide the user's git configuration from the test binary and its children.
+func TestScopeTempDirIsolatesGitConfig(t *testing.T) {
+	user := filepath.Join(t.TempDir(), "user.gitconfig")
+	if err := os.WriteFile(user, []byte("[tag]\n\tgpgSign = true\n[commit]\n\tgpgsign = true\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{"TMPDIR", "TMP", "TEMP", "GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM", "GIT_CONFIG_NOSYSTEM", "GIT_TERMINAL_PROMPT", "GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL"} {
+		t.Setenv(key, os.Getenv(key))
+	}
+	t.Setenv("GIT_CONFIG_GLOBAL", user)
+	t.Setenv("GOCACHE", "")
+	t.Setenv("GOMODCACHE", "")
+	if err := ScopeTempDir(t.TempDir()); err != nil {
+		t.Fatal(err)
+	}
+	if os.Getenv("GOCACHE") == "" {
+		t.Error("ScopeTempDir stopped after the git isolation: GOCACHE is not pinned")
+	}
+	for _, key := range []string{"tag.gpgsign", "commit.gpgsign"} {
+		out, err := exec.Command("git", "config", "--get", key).CombinedOutput()
+		if err == nil {
+			t.Errorf("git config %s = %q, want it unset", key, out)
+		}
+	}
+	out, err := exec.Command("git", "var", "GIT_COMMITTER_IDENT").Output()
+	if err != nil || !strings.HasPrefix(string(out), "pig test <pig-test@example.invalid>") {
+		t.Errorf("git committer identity = %q, %v; want the fixed test identity", out, err)
+	}
+}

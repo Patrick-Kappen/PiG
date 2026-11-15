@@ -11,6 +11,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/MichaelKinsy/PiG/internal/testenv"
 )
 
 // fakeGoName is the executable name under which this test binary acts as a
@@ -21,7 +23,7 @@ func TestMain(m *testing.M) {
 	if strings.TrimSuffix(filepath.Base(os.Args[0]), ".exe") == fakeGoName {
 		os.Exit(runFakeGo(os.Args[1:]))
 	}
-	os.Exit(m.Run())
+	os.Exit(testenv.RunScoped(m, "pig-closure-"))
 }
 
 // runFakeGo runs the real go recorded beside this executable with its stderr

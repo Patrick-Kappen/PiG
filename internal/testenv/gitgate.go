@@ -2,6 +2,7 @@ package testenv
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -152,6 +153,18 @@ async function report(event) {
 })().catch((error) => { console.error(error); process.exit(99); });
 `
 
+// isolatedGitEnv is the environment that makes git ignore the host's configuration, never prompt, and use a fixed identity. config names an empty file.
+func isolatedGitEnv(config string) map[string]string {
+	return map[string]string{
+		"GIT_CONFIG_GLOBAL":   config,
+		"GIT_CONFIG_SYSTEM":   config,
+		"GIT_CONFIG_NOSYSTEM": "1",
+		"GIT_TERMINAL_PROMPT": "0",
+		"GIT_AUTHOR_NAME":     "pig test", "GIT_AUTHOR_EMAIL": "pig-test@example.invalid",
+		"GIT_COMMITTER_NAME": "pig test", "GIT_COMMITTER_EMAIL": "pig-test@example.invalid",
+	}
+}
+
 // IsolateGit points git at an empty configuration with a fixed identity and no prompts, for the test and the processes it starts.
 func IsolateGit(t testing.TB) {
 	t.Helper()
@@ -159,15 +172,23 @@ func IsolateGit(t testing.TB) {
 	if err := os.WriteFile(config, nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	for key, value := range map[string]string{
-		"GIT_CONFIG_GLOBAL":   config,
-		"GIT_CONFIG_NOSYSTEM": "1",
-		"GIT_TERMINAL_PROMPT": "0",
-		"GIT_AUTHOR_NAME":     "pig test", "GIT_AUTHOR_EMAIL": "pig-test@example.invalid",
-		"GIT_COMMITTER_NAME": "pig test", "GIT_COMMITTER_EMAIL": "pig-test@example.invalid",
-	} {
+	for key, value := range isolatedGitEnv(config) {
 		t.Setenv(key, value)
 	}
+}
+
+// IsolateGitEnv does for a whole test binary what IsolateGit does for one test: the configuration file lies under root. A global `tag.gpgSign` or `commit.gpgsign` otherwise makes a test's `git tag` wait for a message in an editor. ScopeTempDir calls it.
+func IsolateGitEnv(root string) error {
+	config := filepath.Join(root, "gitconfig")
+	if err := os.WriteFile(config, nil, 0o600); err != nil {
+		return fmt.Errorf("create isolated git configuration: %w", err)
+	}
+	for key, value := range isolatedGitEnv(config) {
+		if err := os.Setenv(key, value); err != nil {
+			return fmt.Errorf("isolate %s: %w", key, err)
+		}
+	}
+	return nil
 }
 
 // RunGit runs git in dir and returns its trimmed output; a failure fails the test.
