@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT
+#
+# Fork only (Patrick-Kappen/PiG; .github/fork/README.md): the pull requests that some checks of config.yaml do not apply to.
+#
+# An entry covers a pull request that `author` opened from a branch of this repository whose name matches `head` (a glob,
+# as `paths` in config.yaml). On such a pull request every check under `checks` passes with `reason` and is not decided;
+# every other check is decided as on any pull request. The file is read from main, like config.yaml.
+
+exempt:
+  # A fork sync (.github/fork/sync.sh) opens a pull request with the commits of its source: upstream's squash merges for
+  # main, main's commits for performance. Each of them was judged on the pull request that made it, and what these checks
+  # read went with that pull request: its description (template, depends-on, the `Fix:` answer bug-ledger and changelog
+  # start from, the citation test-expectation asks for), the commits a changelog fragment and its fix markers name (a
+  # squash merge replaces them) and the sign-off of each commit (a squash merge carries none of its own, and the sync's
+  # merge is made by GitHub's merge API, which adds no line).
+  - name: fork-sync
+    author: 'patrick-kappen-release[bot]'
+    head: 'sync/*'
+    checks: [template, signoff, depends-on, bug-ledger, changelog, test-expectation]
+    reason: its commits were judged on the pull requests that made them
