@@ -113,6 +113,8 @@ def query(ctx, name):
         return ctx.is_idle()
     if name == "pending":
         return ctx.has_pending_messages()
+    if name == "session-cache":
+        return ctx.get_session_cache_observation()
     if name == "system-prompt":
         return ctx.get_system_prompt()
     if name == "thinking":

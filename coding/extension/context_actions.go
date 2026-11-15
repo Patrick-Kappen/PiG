@@ -120,6 +120,9 @@ type ContextActions struct {
 	// upstream: types.ts:317
 	GetContextUsage func() *ContextUsage
 
+	// pig additive (D616): the current Session supplies passive cache diagnostics.
+	GetSessionCacheObservation func() *SessionCacheObservation
+
 	// Compact backs Context.Compact(opts).
 	// upstream: types.ts:319
 	Compact func(opts *CompactOptions)

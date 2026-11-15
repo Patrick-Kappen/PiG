@@ -40,6 +40,18 @@ func contextScenarios() []Scenario {
 	bare.Providers = nil
 	return []Scenario{
 		{
+			ID: "session-cache-observation-known-and-unknown", Group: group,
+			Pi:     "PiG additive D616: passive session-cache diagnostics; null means unknown, not elapsed; read the host on every call",
+			Covers: []string{"call getSessionCacheObservation"},
+			Spec:   Spec{Commands: []Command{query("q-cache", "session-cache")}},
+			Steps:  []Step{{Op: "command", Name: "q-cache", JSON: true}, {Op: "command", Name: "q-cache", JSON: true}, {Op: "command", Name: "q-cache", JSON: true}},
+			Want: []string{
+				`command q-cache {"model":"diagnostic-model","provider":"diagnostic-provider","startedAt":1700000000000,"ttlMs":12345}`,
+				`command q-cache null`,
+				`command q-cache {"model":"diagnostic-model","provider":"diagnostic-provider","startedAt":1700000000000,"ttlMs":12345}`,
+			},
+		},
+		{
 			ID: "state-getters-answer-from-the-host", Group: group,
 			Pi:     "runner.ts createContext and agent-session.ts _bindExtensionCore: ctx.isIdle(), ctx.hasPendingMessages(), ctx.getSystemPrompt() and pi.getThinkingLevel()/getAllTools() return what the session answers, not a default",
 			Covers: []string{"call isIdle", "call hasPendingMessages", "call getSystemPrompt", "call getThinkingLevel", "call getAllTools"},

@@ -1,0 +1,3 @@
+### Added
+
+- Extensions can read the prompt-cache lifetime of the Session's last dispatched request: `ctx.GetSessionCacheObservation()` in Go, `ctx.get_session_cache_observation()` in Rust and Python, `ctx.getSessionCacheObservation()` in Node and TypeScript, and `pig:ctx-get-session-cache-observation` in Lisp. The read returns the dispatch time (`startedAt`, Unix milliseconds), the effective lifetime (`ttlMs`), `provider` and `model`, or null when unknown. An elapsed lifetime stays known, and a successful warmer refresh renews it. It works with warming off, starts no request or timer, and changes no Pi event (additive feature D616, `docs/session-cache-observation.md`).

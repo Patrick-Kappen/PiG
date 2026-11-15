@@ -1581,6 +1581,7 @@ type recordingCompactHandle struct {
 	abortRetryCount      int
 	retryAttempt         int
 	cacheWarming         *CacheWarmingStatus
+	cacheObservation     *extension.SessionCacheObservation
 	bashRecordErr        error
 	cacheWarmingModes    []CacheWarmingMode
 	agentSettledCount    int
@@ -1646,6 +1647,9 @@ func (h *recordingCompactHandle) WaitForIdle(ctx context.Context) error {
 }
 
 func (h *recordingCompactHandle) CacheWarmingStatus() *CacheWarmingStatus { return h.cacheWarming }
+func (h *recordingCompactHandle) SessionCacheObservation() *extension.SessionCacheObservation {
+	return h.cacheObservation
+}
 func (h *recordingCompactHandle) SetCacheWarmingMode(mode CacheWarmingMode) error {
 	h.cacheWarmingModes = append(h.cacheWarmingModes, mode)
 	return nil

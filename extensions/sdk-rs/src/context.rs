@@ -4165,6 +4165,14 @@ impl Context {
         self.required_field("getCommands", None, "commands")
     }
 
+    /// Read PiG's passive session-cache diagnostic. Null means unknown; an elapsed lifetime remains available.
+    pub fn get_session_cache_observation(&self) -> io::Result<Option<serde_json::Value>> {
+        // pig additive (D616): a separate host call leaves ported events untouched.
+        Ok(self
+            .call_host("getSessionCacheObservation", None)?
+            .filter(|value| !value.is_null()))
+    }
+
     /// Get current context usage (token counts and context window percentage). Pi's `getContextUsage` is `ContextUsage | undefined`: `None` means no usable context window.
     pub fn get_context_usage(&self) -> io::Result<Option<ContextUsage>> {
         let Some(v) = self.call_host("getContextUsage", None)? else {

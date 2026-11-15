@@ -106,7 +106,7 @@ func scenarioDriverConfig(t *testing.T, root string, sdk sdkscenarios.SDK, name 
 
 // newScenarioRig loads the scenario's extension through sdk's driver into a
 // real host and registry.
-func newScenarioRig(t *testing.T, sdk sdkscenarios.SDK, scenario sdkscenarios.Scenario) *scenarioRig {
+func newScenarioRig(t *testing.T, sdk sdkscenarios.SDK, scenario sdkscenarios.Scenario, configure ...func(*scenarioRig)) *scenarioRig {
 	t.Helper()
 	root, err := filepath.Abs("../..")
 	if err != nil {
@@ -138,6 +138,12 @@ func newScenarioRig(t *testing.T, sdk sdkscenarios.SDK, scenario sdkscenarios.Sc
 	}
 	host.SetInboundObserver(rig.wire.observe)
 	rig.configs = []subprocess.ExtConfig{scenarioDriverConfig(t, root, sdk, "scenario-driver-"+string(sdk))}
+	for _, fn := range configure {
+		fn(rig)
+	}
+	if rig.loaded != nil {
+		return rig
+	}
 	host.SetConfigLoader(func() ([]subprocess.ExtConfig, error) { return slices.Clone(rig.configs), nil })
 	loaded, errs := host.LoadAll(t.Context(), slices.Clone(rig.configs))
 	if len(errs) != 0 {
