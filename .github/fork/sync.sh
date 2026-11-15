@@ -133,11 +133,21 @@ derived() {
 # merge_derived <commit> <message>: merges commit into the sync branch in this checkout when every conflict is in a
 # derived file, keeping the sync branch's version of those (CI's autofix regenerates them on the pull request), and
 # pushes the merge. Signed when git has a signing key. Sets conflict_files and returns 1 when a conflict needs a human.
+# It runs on the right of ||, where set -e does not hold, so every other failure exits here: a merge that did not start,
+# a commit or a push that failed would otherwise be reported as a resolved merge.
 conflict_files=
 merge_derived() {
-	git fetch --quiet --no-tags origin "$sync_branch"
-	git switch --quiet --detach FETCH_HEAD
+	git var GIT_COMMITTER_IDENT >/dev/null || {
+		log "merge_derived: git has no committer identity"
+		exit 1
+	}
+	git fetch --quiet --no-tags origin "$sync_branch" || exit 1
+	git switch --quiet --detach FETCH_HEAD || exit 1
 	git merge --quiet --no-ff --no-commit "$1" >/dev/null 2>&1 || true
+	git rev-parse --quiet --verify MERGE_HEAD >/dev/null || {
+		log "merge_derived: git merge of $1 into $sync_branch did not start"
+		exit 1
+	}
 	local file unresolved=()
 	mapfile -t conflicted < <(git diff --name-only --diff-filter=U)
 	for file in "${conflicted[@]}"; do
@@ -146,17 +156,17 @@ merge_derived() {
 	if [[ ${#unresolved[@]} -gt 0 ]]; then
 		# shellcheck disable=SC2016 # Markdown backticks, not expansions
 		conflict_files=$(printf -- '- `%s`\n' "${unresolved[@]}")
-		git merge --abort
+		git merge --abort || exit 1
 		return 1
 	fi
 	if [[ ${#conflicted[@]} -gt 0 ]]; then
-		git checkout --quiet --ours -- "${conflicted[@]}"
-		git add -- "${conflicted[@]}"
+		git checkout --quiet --ours -- "${conflicted[@]}" || exit 1
+		git add -- "${conflicted[@]}" || exit 1
 	fi
 	local sign=()
 	[[ -n $(git config user.signingkey || true) ]] && sign=(-S)
-	git commit --quiet "${sign[@]}" -m "$2" -m "Derived files kept from $sync_branch; CI's autofix regenerates them: $(printf '%s ' "${conflicted[@]}")"
-	git push --quiet --no-verify origin "HEAD:refs/heads/$sync_branch"
+	git commit --quiet "${sign[@]}" -m "$2" -m "Derived files kept from $sync_branch; CI's autofix regenerates them: $(printf '%s ' "${conflicted[@]}")" || exit 1
+	git push --quiet --no-verify origin "HEAD:refs/heads/$sync_branch" || exit 1
 	log "merged with derived-file conflicts resolved: ${conflicted[*]}"
 }
 
