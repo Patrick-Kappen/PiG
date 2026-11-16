@@ -975,3 +975,10 @@ commit = "d82319e331f39f021bff28b38e9eb85afbdc7381"
 class = "CITE"
 cite = "packages/agent/src/agent-loop.ts:886"
 reason = "Pi passes prepared.args to afterToolCall, the same validated arguments passed to execution. The tool_result handler therefore reads the event input through ToolInput, just as the tool_call handler does; the test expects the host's ordered input instead of an empty string. Mutation replies remain exclusive to tool_call."
+
+[[entry]]
+path = "ai/auth_pi_lock_test.go"
+commit = "241a0a8c599c4951bf031fc1c6e63ff07494e854"
+class = "CITE"
+cite = "packages/coding-agent/src/core/auth-storage.ts:188"
+reason = "Pi withLockAsync (auth-storage.ts:188) writes the modifier's result with writeFileSync as long as its heartbeat has not reported a compromise yet, and throws only after it has (throwIfCompromised, TestAuthStorageLockCompromisedDuringModifyUpstream). The Go test that expected no write whenever the lock file had been removed inside the modifier is renamed and now expects the modifier's credential and the other providers in the file; the reported-compromise case stays an error and is covered by the upstream test."
