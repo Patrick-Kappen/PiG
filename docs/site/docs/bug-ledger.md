@@ -1047,6 +1047,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-9d64980](#bf-9d64980) | fix(coding): provider order and availability of virtual models follow Pi | PiG's own defect | All platforms | Unreleased |
 | [BF-9dc3adc](#bf-9dc3adc) | fix(chord/nextnode/plugins): the proxies' requests to Go and the callbacks' calls have names of their own on… | PiG's own defect | All platforms | Unreleased |
 | [BF-9df8c5c](#bf-9df8c5c) | `--session <id>` and `--fork <id>` with an exact session ID now read only the session headers of the… | PiG's own defect | All platforms | 0.7.0 |
+| [BF-9e74cf6](#bf-9e74cf6) | `make generate` no longer fails after rendering the help text: the help generator now removes its temporary… | PiG's own defect | All platforms | Unreleased |
 | [BF-9e95660](#bf-9e95660) | A compaction, branch summary or bug report summary no longer fails with "Summarization failed: 401… | PiG's own defect | All platforms | Unreleased |
 | [BF-9eda512](#bf-9eda512) | The Go Durable SDK's scheduler no longer resolves the Harness settings for the context a run itself reads… | PiG's own defect | All platforms | 0.7.0 |
 | [BF-9f4702c](#bf-9f4702c) | A failed extension shortcut handler is now reported as `Error: Shortcut handler error: …` in the error… | PiG's own defect | All platforms | 0.5.0 |
@@ -15895,6 +15896,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Fix commits:** `9df8c5c8f5` (2026-10-30)
 - **Tests:** `coding/cli/startup_session_exact_id_norace_test.go::TestScalingResolveExactSessionIDWithSessionSize`, `coding/cli/startup_session_exact_id_test.go::TestResolveSessionArgumentRows`
 - **Release note:** `--session <id>` and `--fork <id>` with an exact session ID now read only the session headers of the project's session directory, as Pi does, and list sessions only to match an ID prefix or to search other projects. Resolving an exact ID no longer decodes every session first: with 20 sessions of 1000 messages it allocated 21.7 MB, growing with the sessions, and it now allocates a size-independent amount.
+
+### BF-9e74cf6
+
+**`make generate` no longer fails after rendering the help text: the help generator now removes its temporary…**
+
+- **Source:** PiG's own defect
+- **Symptom:** `make generate` no longer fails after rendering the help text: the help generator now removes its temporary copy of the protected Pi oracle instead of exiting 1 because it could not delete the copy's read-only directories.
+- **Root cause:** Make only real directories in the temporary tree owner-writable before removing it. Exercise protected success and failure, retained source modes, linked dependencies, and temporary-directory cleanup.
+- **User impact:** An operation failed or was rejected
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `9e74cf693d` (2026-11-14)
+- **Tests:** `test/generate/help_test.go::TestHelpGeneratorIsolatesAgentAndPreservesOutputOnFailure`
+- **Release note:** `make generate` no longer fails after rendering the help text: the help generator now removes its temporary copy of the protected Pi oracle instead of exiting 1 because it could not delete the copy's read-only directories. The committed help and the shared oracle are unchanged. <!-- cause: `cp -R` preserved the oracle's 0555 directory modes in the copy, and the EXIT trap ran `rm -rf` without making them writable first -->
 
 ### BF-9e95660
 
