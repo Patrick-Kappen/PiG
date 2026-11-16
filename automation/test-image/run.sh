@@ -37,6 +37,7 @@ exec "$@"'
 
 exec "$engine" run --rm "${tty[@]}" "${user[@]}" --init \
   --shm-size=2g \
+  --pids-limit=-1 \
   "${mounts[@]}" \
   -v pig-test-cache:/home/runner/.cache \
   -v pig-test-gopath:/home/runner/go \
