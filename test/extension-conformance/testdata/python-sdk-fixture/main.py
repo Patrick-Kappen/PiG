@@ -2921,6 +2921,8 @@ def new_extension() -> pig_sdk.Extension:
         return None
 
     def tool_result(ctx: pig_sdk.Context, data: dict[str, Any]) -> dict[str, Any] | None:
+        if data.get("toolCallId") in ("terminate-on", "terminate-off"):
+            return {"terminate": data["toolCallId"] == "terminate-on"}
         if data.get("toolName") == "order_probe":
             ctx.notify("order-result=%s" % data.get("toolCallId"), "info")
             return None

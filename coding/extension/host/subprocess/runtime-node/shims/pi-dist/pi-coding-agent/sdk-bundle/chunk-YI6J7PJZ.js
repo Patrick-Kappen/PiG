@@ -6531,6 +6531,10 @@ var ExtensionRunner = class {
             currentEvent.isError = handlerResult.isError;
             modified = true;
           }
+          if (handlerResult.terminate !== void 0) {
+            currentEvent.terminate = handlerResult.terminate;
+            modified = true;
+          }
           if (handlerResult.usage !== void 0) {
             currentEvent.usage = handlerResult.usage;
             modified = true;
@@ -6555,7 +6559,9 @@ var ExtensionRunner = class {
       details: currentEvent.details,
       structuredContent: currentEvent.structuredContent,
       isError: currentEvent.isError,
-      usage: currentEvent.usage
+      usage: currentEvent.usage,
+      // pig additive (D652): return the chained termination flag.
+      terminate: currentEvent.terminate
     };
   }
   async emitToolCall(event) {
@@ -9283,7 +9289,9 @@ var AgentSession = class {
       details: result.details,
       ...result.structuredContent === void 0 ? {} : { structuredContent: result.structuredContent },
       isError,
-      usage: result.usage
+      usage: result.usage,
+      // pig additive (D652): expose the tool's flag to the handler chain.
+      terminate: result.terminate
     }) : void 0;
     const content = hookResult?.content ?? result.content ?? [];
     const resizeOptions = this._limitsModel()?.inputLimits?.images?.resize;
@@ -9299,7 +9307,9 @@ var AgentSession = class {
       details: hookResult?.details,
       structuredContent: hookResult ? hookResult.structuredContent : result.structuredContent,
       isError: hookResult?.isError ?? isError,
-      usage: hookResult?.usage
+      usage: hookResult?.usage,
+      // pig additive (D652): omission keeps the tool's own flag, including during image normalization.
+      terminate: hookResult?.terminate ?? result.terminate
     };
   }
   /**

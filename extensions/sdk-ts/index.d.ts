@@ -2,6 +2,15 @@ import "@earendil-works/pi-coding-agent";
 import "@earendil-works/pi-tui";
 
 export type * from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI as PiExtensionAPI, ExtensionHandler, ToolResultEvent as PiToolResultEvent, ToolResultEventResult as PiToolResultEventResult } from "@earendil-works/pi-coding-agent";
+
+/** pig additive (D652): the tool's termination flag, updated by earlier result handlers. */
+export type ToolResultEvent = PiToolResultEvent & { terminate?: boolean };
+export type ToolResultEventResult = PiToolResultEventResult & { terminate?: boolean };
+export type ExtensionAPI = Omit<PiExtensionAPI, "on"> & {
+  on: ((event: "tool_result", handler: ExtensionHandler<ToolResultEvent, ToolResultEventResult>) => () => void) & PiExtensionAPI["on"];
+};
+export type ExtensionFactory = (pi: ExtensionAPI) => void | Promise<void>;
 
 /**
  * Data rendered by PiG's fixed native login template.

@@ -9900,8 +9900,8 @@
       },
       "source": "dist/core/agent-session.js",
       "sourceSha256": "1941d9608c98a3638825a8d10b5443ff7c06f96b3ae370bb37269f3a574ede65",
-      "sha256": "fb4934090cd2b96d58351531a0818a0b82f30df8debf5332573ea73e2892481b",
-      "rewrite": "module specifiers"
+      "sha256": "ecc612b1dd601985fe7ec135b28236d57983de98fcf108b278f5b7945b1dc114",
+      "rewrite": "module specifiers; D652 tool_result termination override (automation/gen/pi-tool-result-terminate-patches.mjs)"
     },
     {
       "path": "pi-dist/pi-coding-agent/core/auth-guidance.js",
@@ -10231,8 +10231,8 @@
       },
       "source": "dist/core/extensions/runner.js",
       "sourceSha256": "0e659fb4338069d91c4d0a3b032b51bf8d179a99e6417bc3e39e59b672aaec76",
-      "sha256": "2c6b0751f8b6318cbf6ce3fd94fb9815882f46df4c29e5c7f8d631b3fc9859ae",
-      "rewrite": "module specifiers"
+      "sha256": "ddc11dbf715084939e54cd885fd1d39a82095671bdaced60b30760b4b4171c3d",
+      "rewrite": "module specifiers; D652 tool_result termination override (automation/gen/pi-tool-result-terminate-patches.mjs)"
     },
     {
       "path": "pi-dist/pi-coding-agent/core/extensions/types.js",
@@ -14284,16 +14284,6 @@
       "rewrite": "automation/gen/bundle-pi-sdk.mjs; exact input hashes in sdk-bundle/inputs.json"
     },
     {
-      "path": "pi-dist/pi-coding-agent/sdk-bundle/chunk-NFOIYUJ5.js",
-      "package": {
-        "name": "@earendil-works/pi-coding-agent",
-        "version": "1.5.0",
-        "integrity": "sha512-xNDZ5kqowO6Z03FS2gwAkPEGk1ssxVcYKQ6qZId84mFEvwACvvyc2l0vAMOS+c5zvxLRMLBE9r4y44IGYkMJaQ=="
-      },
-      "sha256": "d1fe75b95cb6ea1caf6b13c08a1d3e2b87ca5e11f2a1eb1db7d50e58b5e2f623",
-      "rewrite": "automation/gen/bundle-pi-sdk.mjs; exact input hashes in sdk-bundle/inputs.json"
-    },
-    {
       "path": "pi-dist/pi-coding-agent/sdk-bundle/chunk-QWVFFAFF.js",
       "package": {
         "name": "@earendil-works/pi-coding-agent",
@@ -14354,13 +14344,23 @@
       "rewrite": "automation/gen/bundle-pi-sdk.mjs; exact input hashes in sdk-bundle/inputs.json"
     },
     {
+      "path": "pi-dist/pi-coding-agent/sdk-bundle/chunk-YI6J7PJZ.js",
+      "package": {
+        "name": "@earendil-works/pi-coding-agent",
+        "version": "1.5.0",
+        "integrity": "sha512-xNDZ5kqowO6Z03FS2gwAkPEGk1ssxVcYKQ6qZId84mFEvwACvvyc2l0vAMOS+c5zvxLRMLBE9r4y44IGYkMJaQ=="
+      },
+      "sha256": "6bda8248433345219e75619c97a66645a6f4239d16f4dcb462327f15a23f63f4",
+      "rewrite": "automation/gen/bundle-pi-sdk.mjs; exact input hashes in sdk-bundle/inputs.json"
+    },
+    {
       "path": "pi-dist/pi-coding-agent/sdk-bundle/index.js",
       "package": {
         "name": "@earendil-works/pi-coding-agent",
         "version": "1.5.0",
         "integrity": "sha512-xNDZ5kqowO6Z03FS2gwAkPEGk1ssxVcYKQ6qZId84mFEvwACvvyc2l0vAMOS+c5zvxLRMLBE9r4y44IGYkMJaQ=="
       },
-      "sha256": "13cc45bdbddb94e8bae56a076ac6504a1d8b3dd746fffdb023d623b64101f97d",
+      "sha256": "bc2a842100d927e12c42c1b27867b06be368f1d929b145783c251b850bb685f7",
       "rewrite": "automation/gen/bundle-pi-sdk.mjs; exact input hashes in sdk-bundle/inputs.json"
     },
     {
@@ -14370,7 +14370,7 @@
         "version": "1.5.0",
         "integrity": "sha512-xNDZ5kqowO6Z03FS2gwAkPEGk1ssxVcYKQ6qZId84mFEvwACvvyc2l0vAMOS+c5zvxLRMLBE9r4y44IGYkMJaQ=="
       },
-      "sha256": "9263467542e5dba91e4849a0b8f670a77d4a14a2d335c6d9c891b9cc8f5ea7a9",
+      "sha256": "38a85c56bee0b1f5f424738e4aebd57091e1afc00a7efbfc76cc2fa966e1fb2c",
       "rewrite": "automation/gen/bundle-pi-sdk.mjs; exact input hashes in sdk-bundle/inputs.json"
     },
     {
@@ -14380,7 +14380,7 @@
         "version": "1.5.0",
         "integrity": "sha512-xNDZ5kqowO6Z03FS2gwAkPEGk1ssxVcYKQ6qZId84mFEvwACvvyc2l0vAMOS+c5zvxLRMLBE9r4y44IGYkMJaQ=="
       },
-      "sha256": "5b6adc6b664c5214498379742f70b2b5c2b2f2ee9ff4d340eb027ff9e75adf77",
+      "sha256": "b8742f5b55966b2fb0aacb3ddb9d37af5e2a6cc5dbbc86aef546e444a89a4e86",
       "rewrite": "automation/gen/bundle-pi-sdk.mjs; exact input hashes in sdk-bundle/inputs.json"
     },
     {

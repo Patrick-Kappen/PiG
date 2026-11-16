@@ -372,6 +372,8 @@ export class AgentSession {
                 ...(result.structuredContent === undefined ? {} : { structuredContent: result.structuredContent }),
                 isError,
                 usage: result.usage,
+                // pig additive (D652): expose the tool's flag to the handler chain.
+                terminate: result.terminate,
             })
             : undefined;
         const content = hookResult?.content ?? result.content ?? [];
@@ -391,6 +393,8 @@ export class AgentSession {
             structuredContent: hookResult ? hookResult.structuredContent : result.structuredContent,
             isError: hookResult?.isError ?? isError,
             usage: hookResult?.usage,
+            // pig additive (D652): omission keeps the tool's own flag, including during image normalization.
+            terminate: hookResult?.terminate ?? result.terminate,
         };
     }
     /**

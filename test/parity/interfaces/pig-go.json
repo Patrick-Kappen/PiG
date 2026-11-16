@@ -84530,6 +84530,17 @@
       "shapeHash": "sha256:fa1e6338e511c3b941cb34464aa6a1267314e35faf41ae05d0b1c273484e5d02"
     },
     {
+      "id": "go:github.com/MichaelKinsy/PiG/coding#toolResultEventTerminate",
+      "package": "github.com/MichaelKinsy/PiG/coding",
+      "name": "toolResultEventTerminate",
+      "kind": "function",
+      "exported": false,
+      "shape": {
+        "type": "func(result github.com/MichaelKinsy/PiG/agent.AgentToolResult) *bool"
+      },
+      "shapeHash": "sha256:2b0dd5c8185fc736e6c5cda7b99616ba0e5acd110f768acf535fba28c3440166"
+    },
+    {
       "id": "go:github.com/MichaelKinsy/PiG/coding#toolResultEventUsage",
       "package": "github.com/MichaelKinsy/PiG/coding",
       "name": "toolResultEventUsage",
@@ -119538,9 +119549,9 @@
       "kind": "function",
       "exported": false,
       "shape": {
-        "type": "func(event github.com/MichaelKinsy/PiG/coding/extension.ToolResultEvent) (content []any, details any, isError bool, usage any, structured encoding/json.RawMessage)"
+        "type": "func(event github.com/MichaelKinsy/PiG/coding/extension.ToolResultEvent) (content []any, details any, isError bool, usage any, structured encoding/json.RawMessage, terminate *bool)"
       },
-      "shapeHash": "sha256:9dff83d2cecaa18b5cfb29f461b7d703c9e8a2abfb0535d8d8c7515214e3c32b"
+      "shapeHash": "sha256:078a74bdbce09c9b9551704b6d697d8ff3250f74332efb0b8c6ea04ffe9790b6"
     },
     {
       "id": "go:github.com/MichaelKinsy/PiG/coding/extension/host/inproc#handlerPanicError",
@@ -120352,9 +120363,9 @@
       "kind": "function",
       "exported": false,
       "shape": {
-        "type": "func(event github.com/MichaelKinsy/PiG/coding/extension.ToolResultEvent, content []any, details any, isError bool, usage any, structured encoding/json.RawMessage) github.com/MichaelKinsy/PiG/coding/extension.ToolResultEvent"
+        "type": "func(event github.com/MichaelKinsy/PiG/coding/extension.ToolResultEvent, content []any, details any, isError bool, usage any, structured encoding/json.RawMessage, terminate *bool) github.com/MichaelKinsy/PiG/coding/extension.ToolResultEvent"
       },
-      "shapeHash": "sha256:b3855c2a43c5a3501658074328a3d4a09d1e138f0caf5c1eb2e712d4ad78185d"
+      "shapeHash": "sha256:84f62387e35cf93f4f65280759b9ad31ccd0c726fe17c911151b9a1687d9d8e4"
     },
     {
       "id": "go:github.com/MichaelKinsy/PiG/coding/extension/host/invocation#Acknowledge",

@@ -63,7 +63,8 @@ func ToolResultEventOverride(result *extension.ToolResultEventResult) agent.Afte
 		// upstream: agent-loop.ts:884 `afterResult.details ?? result.details`: null details keep the tool's own.
 		details = nil
 	}
-	return agent.AfterToolCallResult{Content: content, Details: details, StructuredContent: result.StructuredContent, IsError: result.IsError, Usage: result.Usage}
+	// pig additive (D652): carry the handler's optional termination override without choosing batch policy.
+	return agent.AfterToolCallResult{Content: content, Details: details, StructuredContent: result.StructuredContent, IsError: result.IsError, Usage: result.Usage, Terminate: result.Terminate}
 }
 
 // toolResultBlockFields returns a content block's JSON object fields. A value

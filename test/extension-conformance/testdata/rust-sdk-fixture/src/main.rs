@@ -5068,6 +5068,9 @@ fn main() {
         None
     });
     ext.on_event("tool_result", |ctx, data| {
+        if data["toolCallId"] == "terminate-on" || data["toolCallId"] == "terminate-off" {
+            return Some(json!({"terminate": data["toolCallId"] == "terminate-on"}));
+        }
         if data["toolName"] == "order_probe" {
             ctx.notify(
                 &format!(
