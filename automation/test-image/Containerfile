@@ -21,6 +21,10 @@ ARG RUST_VERSION
 
 ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 TZ=Etc/UTC
 
+# No recommended packages, for every apt run in the image including install-native-test-packages.sh's: the tests need
+# what the packages depend on, not what they recommend (xvfb alone recommends ~280 MB of Mesa and LLVM).
+RUN printf 'APT::Install-Recommends "false";\nAPT::Install-Suggests "false";\n' > /etc/apt/apt.conf.d/99-pig-no-recommends
+
 # The base tools the hosted runner image ships and the install scripts and tests assume: sudo for the apt script, git,
 # curl, the archive tools, tzdata, and a Python with venv for the SDK and terminal-engine venvs. tzdata-legacy holds the
 # backward zone links (Cuba, US/Eastern, ...): ICU resolves a TZ value through the host's zoneinfo, so without them

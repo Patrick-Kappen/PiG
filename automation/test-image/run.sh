@@ -6,7 +6,9 @@
 # named volumes, so a second run is warm. The first run prepares what CI's setup steps prepare: the pinned npm in the
 # tree and the Pi oracle (make upstream-mirror).
 #   automation/test-image/run.sh [COMMAND...]      default: make test
-# Environment: PIG_TEST_IMAGE (default pig-test:local), CONTAINER_ENGINE (podman or docker).
+# Environment: PIG_TEST_IMAGE (default pig-test:local), CONTAINER_ENGINE (podman or docker), PIG_TEST_CHECKOUT (the
+# path the checkout is mounted at, default its own path). Go and cargo key their caches on source paths, so checkouts
+# mounted at one PIG_TEST_CHECKOUT share warm caches, as CI's jobs do at /home/runner/work/PiG/PiG.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -15,7 +17,8 @@ engine="${CONTAINER_ENGINE:-$(command -v podman || command -v docker)}"
 [ "$#" -gt 0 ] || set -- make test
 
 # A linked worktree's .git names the main repository's git directory; mount that too, at its own path.
-mounts=(-v "$root:$root")
+checkout="${PIG_TEST_CHECKOUT:-$root}"
+mounts=(-v "$root:$checkout")
 common="$(git -C "$root" rev-parse --path-format=absolute --git-common-dir)"
 case "$common" in "$root"/*) ;; *) mounts+=(-v "$common:$common") ;; esac
 
@@ -40,5 +43,5 @@ exec "$engine" run --rm "${tty[@]}" "${user[@]}" --init \
   -v pig-test-cargo-registry:/home/runner/.cargo/registry \
   -v pig-test-npm:/home/runner/.npm \
   -e CI=1 -e TERM=xterm-256color \
-  -w "$root" \
+  -w "$checkout" \
   "$image" bash -c "$prepare" bash "$@"
