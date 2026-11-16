@@ -29,6 +29,9 @@ node_modules
 # Developer-specific environment and editor state.
 .envrc
 .direnv/
+.devenv*
+devenv.local.nix
+devenv.local.yaml
 .env
 .env.*
 !.env.example
