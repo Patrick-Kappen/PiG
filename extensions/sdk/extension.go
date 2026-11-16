@@ -1062,7 +1062,7 @@ func (e *Extension) OnSessionShutdown(handler EventFunc) func() {
 	return e.OnEvent("session_shutdown", handler)
 }
 
-// OnToolResult registers a handler for the tool_result event.
+// OnToolResult registers a handler for the tool_result event. PiG also accepts a boolean "terminate" in the returned map: omission keeps the tool's flag, and later handlers win (D652).
 func (e *Extension) OnToolResult(handler EventFunc) func() {
 	return e.OnEvent("tool_result", handler)
 }

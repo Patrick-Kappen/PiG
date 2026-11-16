@@ -2373,6 +2373,9 @@ func makeInprocFixture(ui extension.UIContext, actions *[]string) extension.Exte
 			},
 			"tool_result": {
 				func(args ...any) (any, error) {
+					if event, ok := args[0].(extension.CustomToolResultEvent); ok && (event.ToolCallID == "terminate-on" || event.ToolCallID == "terminate-off") {
+						return &extension.ToolResultEventResult{Terminate: new(event.ToolCallID == "terminate-on")}, nil
+					}
 					if event, ok := args[0].(extension.ToolResultEvent); ok {
 						var held []string
 						for _, guard := range []struct {

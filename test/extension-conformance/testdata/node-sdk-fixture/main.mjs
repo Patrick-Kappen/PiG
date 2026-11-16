@@ -2228,6 +2228,7 @@ export default function (pi) {
     if (event.input?.command === "blocked-command") return { block: true, reason: `blocked ${event.toolName}` };
   });
   pi.on("tool_result", async (event, ctx) => {
+    if (event.toolCallId === "terminate-on" || event.toolCallId === "terminate-off") return { terminate: event.toolCallId === "terminate-on" };
     if (event.toolName === "order_probe") { ctx.ui.notify(`order-result=${event.toolCallId}`, "info"); return; }
     const held = [["bash", isBashToolResult], ["powershell", isPowerShellToolResult], ["read", isReadToolResult], ["edit", isEditToolResult], ["write", isWriteToolResult], ["grep", isGrepToolResult], ["find", isFindToolResult], ["ls", isLsToolResult]].filter(([, is]) => is(event)).map(([name]) => name);
     ctx.ui.notify(`tool-result-guards=${held.join(",")}`, "info");

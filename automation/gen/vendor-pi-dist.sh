@@ -177,6 +177,7 @@ node "$root/automation/gen/vendor-pi-session-seams.mjs" "$agent" "$dist/pi-codin
 node "$root/automation/gen/vendor-pi-startup-seams.mjs" "$dist/pi-coding-agent"
 # PiG's product identity for Pi's outbound identity literals and hosted endpoints (D26); the same values the Go host sends.
 node "$root/automation/gen/pi-identity-patches.mjs" "$dist"
+node "$root/automation/gen/pi-tool-result-terminate-patches.mjs" "$dist"
 rm -rf "$shims/cross-spawn"
 node "$root/automation/gen/vendor-node-dependencies.mjs" "$agent/node_modules/cross-spawn/package.json" "$shims/cross-spawn"
 cp -R "$yaml/browser/dist" "$shims/yaml/dist"

@@ -2078,3 +2078,28 @@ Remove when: Pi exposes an equivalent read-only Session diagnostic, or no extens
 
 Approval: owner decision relayed 2026-11-14 for the product-neutral mechanism required by MyPiglets issue 439.
 SCRUTINIZED:approved
+
+## D652 Tool-result handlers override termination
+
+Summary: A tool_result handler can set or clear the result's terminate flag before the agent decides whether the whole batch ends the run.
+
+Audience: author
+
+Stock disposition: inert capability. An extension selects it by returning `terminate`; Stock PiG adds no termination or error policy.
+
+What: `ToolResultEventResult.Terminate *bool` uses the wire field `terminate`. Omission preserves the tool's own flag. Explicit `true` or `false` overrides it. Later handlers win, and each handler sees the chained flag on its event. The agent retains the existing rule: the run ends after the batch only when every finalized result terminates. Content remains in the Session. Queued steering and follow-up behavior remains unchanged.
+
+Why: a coordinating extension must be able to finalize an earlier ordinary result as well as its own tool result in a mixed batch. The extension decides whether errors or other results permit termination. Pi has tool-result termination and blocked-call termination but no `tool_result` handler override.
+
+SDK contract: in-process Go returns `extension.ToolResultEventResult{Terminate: new(true)}` or `new(false)`. Go SDK handlers return a map with `"terminate": true` or `false`. Node and Python return an object/dict with `terminate`; Rust returns the equivalent JSON object. Lisp returns `(pig:obj "terminate" t)` or `(pig:obj "terminate" :false)`. Leave the member out to preserve it. Generic event/result transports require no new request or host method. Isolated and packed runtimes and fused Go use the same contract. The private Node Session and runner carry it through generator-owned patches, not edits to the pinned Pi installation.
+
+Async and resource contract: result handlers remain awaited in load order with the existing cancellation and handler-error behavior. The override adds one optional boolean, no task, process, timer, retained history, or extra IPC request. Session and runtime shutdown ownership stays unchanged.
+
+Tests: `TestToolTerminateEndsTheRunOnlyForAnAllTerminatingBatchAcrossSDKs` drives real Sessions in every SDK, isolated and packed, and fused Go. It checks the original terminating/mixed batch cases, a mixed batch made all-terminating by a handler (one model request), an explicit false override (two), and only one of two non-terminating results overridden (two). `TestEmitToolResultTerminateChains` checks initial true/false, omission, later-handler wins and event visibility. `TestToolResultTerminateSurvivesEveryEventVariant` preserves omitted/false/true through every event variant. `TestToolResultEventOverrideCarriesTerminate` checks nil/false/true forwarding. `BenchmarkToolResultTerminateChain` measures 0, 1 and 8 handlers with allocations and CPU/allocation profiles. `TestNodeToolResultTerminateChainsAndReachesSession` checks the private Node source and compiled SDK bundle. `TestVendoredPiDistMatchesThePinnedPackage`, `TestNodeSDKBundleRegeneratesExactly` and `TestNodeVendorManifestIncludesPinnedNativeAssets` bind the declared Node patch to the pinned source and generated provenance. TypeScript typechecking covers the optional event field and return value.
+
+Call-site markers: `coding/extension/events.go`, `coding/extension/tool_result_event_json.go`, `coding/extension/host/inproc/runner.go`, `coding/session_extension_hooks.go`, `internal/codingagent/tool_result_content.go`, `extensions/sdk-ts/index.d.ts`, and `automation/gen/pi-tool-result-terminate-patches.mjs` (including its generated Node sites).
+
+Remove when: Pi exposes the same handler override and event chaining, or no extension needs it.
+
+Approval: owner decision on Patrick-Kappen/MyPiglets#505, 2026-11-16, explicitly requests an additive fork capability and leaves batch and error policy unchanged.
+SCRUTINIZED:approved

@@ -502,7 +502,10 @@
                        (when (equal (pig:jget input "command") "blocked-command") (pig:obj "block" t "reason" (format nil "blocked ~A" name)))))))))
     (pig:on ext "tool_result"
             (lambda (ctx data)
-              (if (equal (pig:jget data "toolName") "order_probe")
+              (cond
+                ((member (pig:jget data "toolCallId") '("terminate-on" "terminate-off") :test #'equal)
+                 (pig:obj "terminate" (if (equal (pig:jget data "toolCallId") "terminate-on") t :false)))
+                (t (if (equal (pig:jget data "toolName") "order_probe")
                   (progn (core-info ctx (format nil "order-result=~A" (core-py-str (pig:jget data "toolCallId")))) nil)
                   (let ((name (pig:jget data "toolName")))
                     (core-info ctx (concatenate 'string "tool-result-guards=" (core-join (coding-accepting-guards data))))
@@ -510,7 +513,7 @@
                       (let* ((details (or (pig:jget data "details") (pig:obj))) (content (let ((c (pig:jget data "content"))) (if (and c (plusp (length c))) c (vector (pig:obj))))))
                         (core-info ctx (format nil "tool-result=~A:~A:~A:~A" name (core-py-str (pig:jget details "fullOutputPath"))
                                                (core-py-str (core-get details "truncation" "totalLines")) (core-py-str (pig:jget (aref content 0) "text"))))
-                        (pig:obj "content" (vector (pig:obj "type" "text" "text" (format nil "~A redacted" name))))))))))
+                        (pig:obj "content" (vector (pig:obj "type" "text" "text" (format nil "~A redacted" name))))))))))))
     (pig:on-project-trust ext (lambda (ctx data) (declare (ignore ctx data)) (error "trust-boom")))
     (pig:on-project-trust ext (lambda (ctx data) (declare (ignore ctx data)) (pig:obj "trusted" "undecided")))
     (pig:on-project-trust ext (lambda (ctx data) (declare (ignore ctx))

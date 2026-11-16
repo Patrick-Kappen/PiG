@@ -1620,7 +1620,7 @@ func (r *Runner) AwaitEventLoopTurns(ctx context.Context, event string) {
 
 // EmitToolResult dispatches a ToolResultEvent to every "tool_result"
 // handler across all extensions, in load order. Each handler can mutate
-// `content` / `details` / `isError`; mutations chain through subsequent
+// `content` / `details` / `isError` / `terminate`; mutations chain through subsequent
 // handlers (the next handler sees the previous handler's output, not
 // the original input). Returns the combined modification, or nil if no
 // handler modified anything.
@@ -1646,7 +1646,7 @@ func (r *Runner) EmitToolResult(ctx context.Context, event extension.ToolResultE
 	// content/details/isError/usage into it, so every handler sees its
 	// predecessors' values. The chained values are rebuilt into the event's
 	// own variant before each handler.
-	curContent, curDetails, curIsError, curUsage, curStructured := extractToolResultFields(event)
+	curContent, curDetails, curIsError, curUsage, curStructured, curTerminate := extractToolResultFields(event)
 	modified := false
 
 	for _, snapshot := range snapshotEventHandlers(r.extensions, "tool_result") {
@@ -1655,7 +1655,7 @@ func (r *Runner) EmitToolResult(ctx context.Context, event extension.ToolResultE
 			continue
 		}
 		for _, handler := range handlers {
-			event = withToolResultFields(event, curContent, curDetails, curIsError, curUsage, curStructured)
+			event = withToolResultFields(event, curContent, curDetails, curIsError, curUsage, curStructured, curTerminate)
 			handlerResult, err := callHandler(handler, event, dispatchCtx)
 			if started != nil {
 				// The handler ran to its first await, which is when Pi starts the next call's hooks; a handler in an extension process reported it when its request was written.
@@ -1693,6 +1693,11 @@ func (r *Runner) EmitToolResult(ctx context.Context, event extension.ToolResultE
 				curIsError = *typed.IsError
 				modified = true
 			}
+			// pig additive (D652): an explicit false overrides true; omission keeps the chained flag.
+			if typed.Terminate != nil {
+				curTerminate = new(*typed.Terminate)
+				modified = true
+			}
 			if typed.StructuredContent != nil {
 				curStructured = typed.StructuredContent
 				modified = true
@@ -1713,6 +1718,7 @@ func (r *Runner) EmitToolResult(ctx context.Context, event extension.ToolResultE
 		StructuredContent: curStructured,
 		IsError:           &curIsError,
 		Usage:             toolResultUsage(curUsage),
+		Terminate:         curTerminate,
 	}, nil
 }
 
@@ -2694,28 +2700,28 @@ func (r *Runner) EmitResourcesDiscover(
 // extractToolResultFields pulls the chainable fields (content, details,
 // isError) out of any ToolResultEvent variant. Used by EmitToolResult
 // to seed the mutation chain.
-func extractToolResultFields(event extension.ToolResultEvent) (content []any, details any, isError bool, usage any, structured json.RawMessage) {
+func extractToolResultFields(event extension.ToolResultEvent) (content []any, details any, isError bool, usage any, structured json.RawMessage, terminate *bool) {
 	switch e := event.(type) {
 	case extension.BashToolResultEvent:
-		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent
+		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent, e.Terminate
 	case extension.PowerShellToolResultEvent:
-		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent
+		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent, e.Terminate
 	case extension.ReadToolResultEvent:
-		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent
+		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent, e.Terminate
 	case extension.EditToolResultEvent:
-		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent
+		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent, e.Terminate
 	case extension.WriteToolResultEvent:
-		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent
+		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent, e.Terminate
 	case extension.GrepToolResultEvent:
-		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent
+		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent, e.Terminate
 	case extension.FindToolResultEvent:
-		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent
+		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent, e.Terminate
 	case extension.LsToolResultEvent:
-		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent
+		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent, e.Terminate
 	case extension.CustomToolResultEvent:
-		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent
+		return e.Content, e.Details, e.IsError, e.Usage, e.StructuredContent, e.Terminate
 	}
-	return nil, nil, false, nil, nil
+	return nil, nil, false, nil, nil, nil
 }
 
 // withToolResultFields returns event with the chained content, details,
@@ -2723,9 +2729,10 @@ func extractToolResultFields(event extension.ToolResultEvent) (content []any, de
 // handler's replacement converts to them without loss; otherwise the event
 // continues as a CustomToolResultEvent with the same toolName carrying the
 // replacement exactly, as upstream assigns handlerResult.details as returned.
-func withToolResultFields(event extension.ToolResultEvent, content []any, details any, isError bool, usage any, structured json.RawMessage) extension.ToolResultEvent {
+func withToolResultFields(event extension.ToolResultEvent, content []any, details any, isError bool, usage any, structured json.RawMessage, terminate *bool) extension.ToolResultEvent {
 	base := func(b extension.ToolResultEventBase) extension.ToolResultEventBase {
 		b.Content, b.IsError, b.Usage, b.StructuredContent = content, isError, usage, structured
+		b.Terminate = terminate
 		return b
 	}
 	generic := func(b extension.ToolResultEventBase, toolName string) extension.ToolResultEvent {

@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-// Configuration paths, the published-loader branch, SDK ownership imports, and private theme import edges change; every Session, Agent, resource, tool, and theme algorithm remains Pi's code.
+// The private Node graph keeps Pi's bodies except declared configuration/import seams and PiG's additive tool_result termination override (D652).
 func checkCodingAgentVendor(t *testing.T, root, file string, got []byte) {
 	t.Helper()
 	if strings.HasPrefix(file, "sdk-bundle/") {
@@ -35,6 +35,16 @@ func checkCodingAgentVendor(t *testing.T, root, file string, got []byte) {
 	switch file {
 	case "index.js":
 		replacements = append(replacements, [2]string{`from "./core/sdk.js";`, `from "../../independent-session.mjs";`})
+	case "core/agent-session.js":
+		replacements = append(replacements,
+			[2]string{"                usage: result.usage,\n", "                usage: result.usage,\n                // pig additive (D652): expose the tool's flag to the handler chain.\n                terminate: result.terminate,\n"},
+			[2]string{"            usage: hookResult?.usage,\n", "            usage: hookResult?.usage,\n            // pig additive (D652): omission keeps the tool's own flag, including during image normalization.\n            terminate: hookResult?.terminate ?? result.terminate,\n"},
+		)
+	case "core/extensions/runner.js":
+		replacements = append(replacements,
+			[2]string{"                    if (handlerResult.usage !== undefined) {", "                    // pig additive (D652): later handlers win; false overrides true.\n                    if (handlerResult.terminate !== undefined) {\n                        currentEvent.terminate = handlerResult.terminate;\n                        modified = true;\n                    }\n                    if (handlerResult.usage !== undefined) {"},
+			[2]string{"            usage: currentEvent.usage,\n", "            usage: currentEvent.usage,\n            // pig additive (D652): return the chained termination flag.\n            terminate: currentEvent.terminate,\n"},
+		)
 	case "core/agent-session-services.js":
 		replacements = append(replacements, [2]string{`from "./sdk.js";`, `from "../../../independent-session.mjs";`})
 	case "core/extensions/virtual-modules.js":

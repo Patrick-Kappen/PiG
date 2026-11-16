@@ -61,6 +61,12 @@ func marshalToolResultEvent(base ToolResultEventBase, toolName string, details a
 			return nil, err
 		}
 	}
+	// pig additive (D652): preserve explicit false as well as true on the extension wire.
+	if base.Terminate != nil {
+		if err := add("terminate", *base.Terminate); err != nil {
+			return nil, err
+		}
+	}
 	return writeOrderedFields(fields)
 }
 

@@ -250,7 +250,7 @@ class ExtensionRunner(_GraphObject):
         return self._invoke_async("emitToolCall", event)
 
     def emit_tool_result(self, event: dict[str, Any]) -> dict[str, Any] | None:
-        """``emitToolResult(event)``: a tool_result event whose handlers' edits chain; the result is the edits (``{content, details, isError, ...}``), ``None`` when none."""
+        """``emitToolResult(event)``: a tool_result event whose handlers' edits chain; the result is the edits (``{content, details, isError, terminate, ...}``), ``None`` when none. PiG also accepts boolean ``terminate`` from result handlers; omission keeps the tool flag and later handlers win (D652)."""
         return self._invoke_async("emitToolResult", event)
 
     def emit_input(self, text: str, images: list[dict[str, Any]] | None, source: str, streaming_behavior: str | None = None) -> dict[str, Any]:

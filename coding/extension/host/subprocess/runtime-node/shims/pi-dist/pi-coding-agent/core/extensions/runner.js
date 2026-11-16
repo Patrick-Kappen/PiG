@@ -926,6 +926,11 @@ export class ExtensionRunner {
                         currentEvent.isError = handlerResult.isError;
                         modified = true;
                     }
+                    // pig additive (D652): later handlers win; false overrides true.
+                    if (handlerResult.terminate !== undefined) {
+                        currentEvent.terminate = handlerResult.terminate;
+                        modified = true;
+                    }
                     if (handlerResult.usage !== undefined) {
                         currentEvent.usage = handlerResult.usage;
                         modified = true;
@@ -952,6 +957,8 @@ export class ExtensionRunner {
             structuredContent: currentEvent.structuredContent,
             isError: currentEvent.isError,
             usage: currentEvent.usage,
+            // pig additive (D652): return the chained termination flag.
+            terminate: currentEvent.terminate,
         };
     }
     async emitToolCall(event) {
