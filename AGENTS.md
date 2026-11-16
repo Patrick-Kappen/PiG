@@ -4,7 +4,7 @@ Operating rules for AI agents maintaining `pig`, the Go port of upstream `pi`. T
 
 ## Mission
 
-`pig` must match upstream `pi` observable behavior unless `docs/parity/DIVERGENCES.md` records a numbered, scrutinized exception. Treat the port as a compiler from upstream TypeScript behavior to Go behavior: `docs/parity/PORT_MAP.md` defines the file map, parity scenarios define behavior, `test/parity/coverage.md` reports proof, and gates keep the claims honest.
+`pig` follows upstream `pi` observable behavior by default. Matching Pi is the preference, not a reason to choose an easier solution over the right one: a difference is allowed when the owner explicitly approves it, and it is then recorded as a numbered, scrutinized divergence in `docs/parity/DIVERGENCES.md` (or as an additive record in `docs/additive-features.md` when Pi has no such behavior). The rule exists so that no difference goes unnoticed or unrecorded. Treat the port as a compiler from upstream TypeScript behavior to Go behavior: `docs/parity/PORT_MAP.md` defines the file map, parity scenarios define behavior, `test/parity/coverage.md` reports proof, and gates keep the claims honest.
 
 Source of truth:
 - `.upstream/current/` is the upstream mirror.
@@ -481,7 +481,7 @@ unreachable/equal behavior, stale scaffolds, or caller-free code. IDs are global
 across `docs/parity/DIVERGENCES.md` and additive ledgers; duplicate IDs fail even when they
 live in different files.
 
-A divergence is allowed only when it is user-visible or interop-relevant and cannot or should not be made faithful now. Every active divergence must have:
+Record a divergence when a difference is user-visible or interop-relevant. A divergence needs the owner's explicit approval; propose it with the reason and the alternative that matches Pi, and do not pick the matching alternative only because it avoids the approval. Every active divergence must have:
 - `D<N>` id in `docs/parity/DIVERGENCES.md`;
 - `SCRUTINIZED:approved`;
 - remove-when condition;
