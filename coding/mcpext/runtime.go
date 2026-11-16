@@ -13,6 +13,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/MichaelKinsy/PiG/coding/extension"
@@ -245,6 +246,9 @@ type Connection struct {
 	endLifetime context.CancelFunc
 	stderrTail  string
 	background  sync.WaitGroup
+	// owner is the session the connection reports its tools and state to (see [connectionOwner]); a session that
+	// takes the connection over swaps it, and a close of a connection no session owns any more clears it.
+	owner atomic.Pointer[connectionOwner]
 }
 
 // NewConnection returns a connection in the connecting state. It does not
@@ -289,6 +293,13 @@ func NewConnection(options ConnectionOptions) (*Connection, error) {
 
 // Name is the server's name.
 func (c *Connection) Name() string { return c.Entry.Name }
+
+// isClosed reports whether the connection was closed.
+func (c *Connection) isClosed() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.closed
+}
 
 // State is the connection state.
 func (c *Connection) State() ServerState {

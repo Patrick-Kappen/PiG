@@ -24,6 +24,15 @@ func mcpEntries(options Options) []Extension {
 	return []Extension{{Name: "mcp", Replaceable: true, Factory: mcpext.CreateMcpExtension(mcp)}}
 }
 
+// processMcpPool is the one connection pool of the process: every session's MCP extension that [Options.KeepMcpServersAcrossSessions] configured shares it.
+var processMcpPool = mcpext.NewConnectionPool()
+
+// KeepMcpServersAcrossSessions makes a session replacement (`/new`, `/resume`, `/fork`, `/reload`) hand the running stdio
+// MCP servers to the next session instead of stopping and starting them, and close the servers it does not keep in the
+// background.
+// pig divergence (D236): Pi stops every server on session_shutdown, waits for it, and starts them again.
+func (o *Options) KeepMcpServersAcrossSessions() { o.Mcp.Pool = processMcpPool }
+
 // RefuseMcpConfigFiles makes the MCP extension start no server from `mcp.json` and report message instead. An empty message accepts them.
 func (o *Options) RefuseMcpConfigFiles(message string) { o.Mcp.RefuseConfigFiles = message }
 
