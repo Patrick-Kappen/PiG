@@ -2,17 +2,17 @@
 
 # Fork automation (Patrick-Kappen/PiG only)
 
-The fork keeps two lines, and these files keep them current. Every workflow here starts with `if: github.repository == 'Patrick-Kappen/PiG'`, so it does nothing in another repository, and every file is new, so an upstream sync never conflicts with it.
+The fork keeps two lines; they move only by hand. Every workflow here starts with `if: github.repository == 'Patrick-Kappen/PiG'`, so it does nothing in another repository, and every file is new, so an upstream sync never conflicts with it.
 
 | Line | Follows | Built by MyPiglets as |
 |---|---|---|
 | `main` | upstream `MichaelKinsy/PiG` main, plus the fixes meant for upstream | `pig` |
-| `performance` | the fork's `main`, plus the performance patches | `pig-test` |
+| `performance` | the fork's `main`, plus the performance patches | nothing |
 
 ## Workflows
 
-- `fork-sync.yml` (every 30 minutes, and by hand) runs `sync.sh` twice: upstream main into `main` (branch `sync/upstream`), then `main` into `performance` (branch `sync/performance`). Each opens a pull request that merges itself, as a merge commit, once the required checks pass, with every incoming `changelog.d` release note and every commit on its own line. GitHub's merge API makes the merge commits, so they are Verified. A conflict only in derived files (`automation/ci/autofix-paths.txt`) is resolved by keeping the target's version, and CI's autofix regenerates them on the pull request; that merge is made in the workflow and signed with `FORK_SIGNING_KEY`, and a failure in it stops the run. Any other conflict opens one issue (label `sync-conflict:<name>`) with the files and the commands; resolve it on the sync branch, and the next run opens the pull request.
-- `fork-notify.yml` (a push to `main` or `performance`) sends `pig-updated` to MyPiglets, whose `update-pig` moves `pig` and `pig-test`.
+- `fork-sync.yml` (only by hand: Actions → Fork sync → Run workflow) runs `sync.sh` twice: upstream main into `main` (branch `sync/upstream`), then `main` into `performance` (branch `sync/performance`). Each opens a pull request that merges itself, as a merge commit, once the required checks pass, with every incoming `changelog.d` release note and every commit on its own line. GitHub's merge API makes the merge commits, so they are Verified. A conflict only in derived files (`automation/ci/autofix-paths.txt`) is resolved by keeping the target's version, and CI's autofix regenerates them on the pull request; that merge is made in the workflow and signed with `FORK_SIGNING_KEY`, and a failure in it stops the run. Any other conflict opens one issue (label `sync-conflict:<name>`) with the files and the commands; resolve it on the sync branch, and the next run opens the pull request.
+- MyPiglets moves its `pig` to the fork's `main` by hand (`nix flake update pig` there); nothing here tells it.
 - `fork-forward.yml` (by hand: pull request number, target `main` or `upstream`) cherry-picks a pull request's commits 1:1 onto the fork's `main` or upstream main, signs them with the fork signing key, and opens the pull request there (`forward.sh`).
 
 ## Settings and secrets
