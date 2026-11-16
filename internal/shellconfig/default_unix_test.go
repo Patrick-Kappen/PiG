@@ -83,3 +83,36 @@ func TestUpstreamUnixShellExistenceChecks(t *testing.T) {
 		}
 	})
 }
+
+// findBash finds an executable bash on PATH without starting `which`; only when nothing executable is found does
+// `which` decide, so a shell without the execute bit (Termux) is still found as in Pi (D234).
+func TestFindBashLooksUpInProcessBeforeWhich(t *testing.T) {
+	bin, tools := t.TempDir(), t.TempDir()
+	ran := filepath.Join(t.TempDir(), "which-ran")
+	which := "#!/bin/sh\n: > " + ran + "\nprintf '/termux/bash\\n'\n"
+	if err := os.WriteFile(filepath.Join(tools, "which"), []byte(which), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	bash := filepath.Join(bin, "bash")
+	if err := os.WriteFile(bash, []byte("#!/bin/sh\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", tools+string(os.PathListSeparator)+bin)
+
+	if got := findBash("bash"); got != bash {
+		t.Fatalf("executable bash on PATH: got %q, want %q", got, bash)
+	}
+	if _, err := os.Stat(ran); err == nil {
+		t.Fatal("which ran although bash was found in process")
+	}
+
+	if err := os.Chmod(bash, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if got := findBash("bash"); got != "/termux/bash" {
+		t.Fatalf("bash without the execute bit: got %q, want which's answer", got)
+	}
+	if _, err := os.Stat(ran); err != nil {
+		t.Fatal("which did not run although nothing executable was found")
+	}
+}
