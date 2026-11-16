@@ -10,7 +10,7 @@ changing source.
 
 ## Contribution principles
 
-- Preserve observable Pi behavior unless an approved numbered divergence applies.
+- Prefer observable Pi behavior. A difference needs the owner's explicit approval and a numbered divergence, or an additive record when Pi has no such behavior.
 - Keep Stock PiG product-neutral.
 - Put product behavior in an extension or explicitly selected Piglet.
 - Add the smallest change that satisfies the stated contract.
