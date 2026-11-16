@@ -9,6 +9,9 @@
 # Environment: PIG_TEST_IMAGE (default pig-test:local), CONTAINER_ENGINE (podman or docker), PIG_TEST_CHECKOUT (the
 # path the checkout is mounted at, default its own path). Go and cargo key their caches on source paths, so checkouts
 # mounted at one PIG_TEST_CHECKOUT share warm caches, as CI's jobs do at /home/runner/work/PiG/PiG.
+# PIG_TEST_CACHE_ROOT (a host directory, e.g. a CI job's $HOME) binds its .cache, go, .cargo/{registry,git} and .npm
+# instead of the named volumes, so caches a CI job restored on the host reach the container. PIG_TEST_ENV names host
+# environment variables (space-separated) passed into the container.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -35,14 +38,25 @@ log="$HOME/.cache/pig-test-prepare.log"
 export PATH="$PWD/automation/ci/npm-toolchain/node_modules/.bin:$PATH"
 exec "$@"'
 
+caches=()
+if [ -n "${PIG_TEST_CACHE_ROOT:-}" ]; then
+  for dir in .cache go .cargo/registry .cargo/git .npm; do
+    mkdir -p "$PIG_TEST_CACHE_ROOT/$dir"
+    caches+=(-v "$PIG_TEST_CACHE_ROOT/$dir:/home/runner/$dir")
+  done
+else
+  caches=(-v pig-test-cache:/home/runner/.cache -v pig-test-gopath:/home/runner/go
+    -v pig-test-cargo-registry:/home/runner/.cargo/registry -v pig-test-npm:/home/runner/.npm)
+fi
+
+envs=(-e CI=1 -e TERM=xterm-256color)
+for name in ${PIG_TEST_ENV:-}; do envs+=(-e "$name"); done
+
 exec "$engine" run --rm "${tty[@]}" "${user[@]}" --init \
   --shm-size=2g \
   --pids-limit=-1 \
   "${mounts[@]}" \
-  -v pig-test-cache:/home/runner/.cache \
-  -v pig-test-gopath:/home/runner/go \
-  -v pig-test-cargo-registry:/home/runner/.cargo/registry \
-  -v pig-test-npm:/home/runner/.npm \
-  -e CI=1 -e TERM=xterm-256color \
+  "${caches[@]}" \
+  "${envs[@]}" \
   -w "$checkout" \
   "$image" bash -c "$prepare" bash "$@"

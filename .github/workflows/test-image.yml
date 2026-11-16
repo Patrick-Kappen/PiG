@@ -1,0 +1,149 @@
+# SPDX-License-Identifier: MIT
+#
+# Fork experiment: runs Linux CI shards inside the test image (automation/test-image) on GitHub-hosted runners, to
+# compare with the same shards of ci.yml's Linux job. The image job builds the image once and pushes it to the fork's
+# GHCR; each shard job pulls it, restores the caches ci.yml's Linux job restores (main's), and runs the shard's make
+# target in the image. A push to the experiment branch starts it; workflow_dispatch needs the file on the default branch.
+name: Test image
+
+on:
+  push:
+    branches: ['team/patrick/test-image']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NPM_VERSION: 12.1.0
+  RUST_VERSION: 1.97.1
+  PIG_PERF_TIMING_REPORT_ONLY: '1'
+
+jobs:
+  image:
+    name: Build the test image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      ref: ${{ steps.push.outputs.ref }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build
+        env:
+          CONTAINER_ENGINE: docker
+        run: automation/test-image/build.sh pig-test:ci
+      - name: Push to GHCR
+        id: push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ref="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/pig-test:${GITHUB_SHA}"
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+          docker tag pig-test:ci "$ref"
+          docker push "$ref"
+          docker image inspect pig-test:ci --format 'unpacked bytes: {{.Size}}'
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+  linux:
+    name: Image / ${{ matrix.shard }}
+    needs: image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { shard: test-fast, target: ci-test-fast }
+          - { shard: test-conformance-1, target: ci-test-conformance-1 }
+          - { shard: toolchains, target: ci-toolchains }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # The same caches, keys and paths as ci.yml's Linux job; main's entries restore here.
+      - name: Restore the Go module cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/go/pkg/mod
+          key: gomod-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            gomod-${{ runner.os }}-
+      - name: Restore the Go build cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/go-build
+          key: gocache-${{ runner.os }}-${{ hashFiles('go.sum') }}-${{ github.sha }}
+          restore-keys: |
+            gocache-${{ runner.os }}-${{ hashFiles('go.sum') }}-
+      - name: Restore the npm cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.npm
+          key: node-cache-${{ runner.os }}-${{ runner.arch }}-npm-${{ hashFiles('extensions/sdk-ts/package-lock.json', 'test/parity/interface-extractor/package-lock.json', 'automation/images/ci-parity/package-lock.json', 'automation/images/npm-runtime/package-lock.json') }}
+          restore-keys: |
+            node-cache-${{ runner.os }}-${{ runner.arch }}-npm-
+      - name: Restore the Pi oracle build
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pig-dev/pi-builds
+          key: pi-oracle-${{ runner.os }}-${{ hashFiles('.upstream/pin', 'automation/pin/frozen/**', 'automation/pin/*.py', '.node-version', 'automation/ci/npm-toolchain/package-lock.json') }}
+      - name: Restore the Cargo registry and test targets
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cache/pig-dev/cargo-target
+          key: cargo-${{ runner.os }}-${{ env.RUST_VERSION }}-${{ hashFiles('extensions/sdk-rs/Cargo.lock', 'extensions/sdk-rs/Cargo.toml', 'automation/ci/test-warm.sh') }}
+          restore-keys: |
+            cargo-${{ runner.os }}-${{ env.RUST_VERSION }}-
+      - name: Pull the test image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+          REF: ${{ needs.image.outputs.ref }}
+        run: |
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+          docker pull "$REF"
+      - name: Prepare npm and the Pi oracle in the image
+        env:
+          CONTAINER_ENGINE: docker
+          PIG_TEST_IMAGE: ${{ needs.image.outputs.ref }}
+          PIG_TEST_CACHE_ROOT: /home/runner
+        run: automation/test-image/run.sh true
+      - name: Warm the fixture caches
+        if: startsWith(matrix.shard, 'test-')
+        env:
+          CONTAINER_ENGINE: docker
+          PIG_TEST_IMAGE: ${{ needs.image.outputs.ref }}
+          PIG_TEST_CACHE_ROOT: /home/runner
+        run: automation/test-image/run.sh make test-warm
+      - name: Run PiG verification shard in the image
+        env:
+          CONTAINER_ENGINE: docker
+          PIG_TEST_IMAGE: ${{ needs.image.outputs.ref }}
+          PIG_TEST_CACHE_ROOT: /home/runner
+          PIG_TEST_ENV: SHARD TARGET LINT_BASE TEST_BASE MAKEFLAGS TEST_FAST_PARALLEL PIG_PERF_TIMING_REPORT_ONLY NPM_VERSION RUST_VERSION
+          SHARD: ${{ matrix.shard }}
+          TARGET: ${{ matrix.target }}
+          LINT_BASE: origin/main
+          TEST_BASE: origin/main
+          MAKEFLAGS: -k
+          TEST_FAST_PARALLEL: 6
+        run: automation/test-image/run.sh make "$TARGET"

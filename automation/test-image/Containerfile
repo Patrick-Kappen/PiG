@@ -18,6 +18,9 @@ ARG GO_URL
 ARG GO_SHA256
 ARG NODE_VERSION
 ARG RUST_VERSION
+# The runner user's uid: build.sh passes the building user's, so a checkout mounted from the host keeps its owner
+# (1000 on a typical desktop, 1001 on a GitHub-hosted runner).
+ARG RUNNER_UID=1000
 
 ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 TZ=Etc/UTC
 
@@ -63,19 +66,19 @@ RUN test "$NODE_VERSION" = "$(cat /tmp/pig/.node-version)" \
 # SBCL: install-sbcl.sh installs and checks the pinned binary.
 RUN prefix="$(/tmp/pig/automation/ci/install-sbcl.sh /opt/pig-sbcl | tail -n1)" && test "$prefix" = /opt/pig-sbcl
 
-# The runner user: non-root with passwordless sudo, as on the hosted runner. uid 1000 matches podman's --userns=keep-id
-# for a host user 1000, so files written into a mounted checkout keep their owner.
+# The runner user: non-root with passwordless sudo, as on the hosted runner, with the uid of the user who built the
+# image (podman's --userns=keep-id or docker's --user map the host user onto it).
 RUN userdel -r ubuntu 2>/dev/null || true \
- && useradd -m -u 1000 -s /bin/bash runner \
+ && useradd -m -u "$RUNNER_UID" -s /bin/bash runner \
  && echo 'runner ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/runner && chmod 0440 /etc/sudoers.d/runner \
- && install -d -m 0700 -o runner -g runner /run/user/1000 \
+ && install -d -m 0700 -o runner -g runner "/run/user/$RUNNER_UID" \
  && rm -rf /tmp/pig
 
 USER runner
 # XDG_RUNTIME_DIR as on the hosted runner: without it the extension host puts its sockets in $TMPDIR/pig-<uid>, which
 # test-grouped.sh's leaked-scratch check reports.
 ENV HOME=/home/runner \
-    XDG_RUNTIME_DIR=/run/user/1000 \
+    XDG_RUNTIME_DIR=/run/user/${RUNNER_UID} \
     PIG_SBCL=/opt/pig-sbcl/bin/sbcl \
     SBCL_HOME=/opt/pig-sbcl/lib/sbcl \
     PKG_CONFIG_PATH=/opt/pig-libxcb/lib/pkgconfig \

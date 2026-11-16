@@ -30,4 +30,5 @@ exec "$engine" build -t "$tag" -f "$root/automation/test-image/Containerfile" \
   --build-arg GO_SHA256="$(cut -f7 <<<"$go_row")" \
   --build-arg NODE_VERSION="$node_version" \
   --build-arg RUST_VERSION="$rust_version" \
+  --build-arg RUNNER_UID="$(id -u)" \
   "$context"
