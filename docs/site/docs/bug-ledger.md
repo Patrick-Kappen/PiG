@@ -855,7 +855,6 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-866c7f9](#bf-866c7f9) | fix(rpc): two prompts of one batch answer in request order | PiG's own defect | All platforms | Unreleased |
 | [BF-869cef8](#bf-869cef8) | A pi-messages stream event that is a number, string, boolean or array is skipped, as Pi skips an event of… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-86c411a](#bf-86c411a) | fix(builtin): codemode and tool_search declare their parameters in TypeBox key order | PiG's own defect | All platforms | Unreleased |
-| [BF-86e8d9f](#bf-86e8d9f) | In RPC mode, a session replacement no longer leaves a second process of each MCP server running | PiG's own defect | All platforms | Unreleased |
 | [BF-8780292](#bf-8780292) | The footer's thinking level no longer reads `thinking off` in the first frames of an interactive start | PiG's own defect | All platforms | 0.7.0 |
 | [BF-87a6ac5](#bf-87a6ac5) | Fix in shipped code | PiG's own defect | All platforms | Unreleased |
 | [BF-87d4c01](#bf-87d4c01) | Searching a long session in `/tree` allocates as many objects as in 0.7.0 again, 30% fewer than with the… | PiG's own defect | All platforms | Unreleased |
@@ -13226,20 +13225,6 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Fixed in:** Unreleased
 - **Fix commits:** `86c411a481` (2026-10-10)
 - **Tests:** `coding/extension/builtin/codemode/schema_order_test.go::TestInputSchemaKeepsTypeBoxKeyOrder`, `coding/extension/builtin/toolsearch/schema_order_test.go::TestInputSchemaKeepsTypeBoxKeyOrder`
-
-### BF-86e8d9f
-
-**In RPC mode, a session replacement no longer leaves a second process of each MCP server running**
-
-- **Source:** PiG's own defect
-- **Symptom:** In RPC mode, a session replacement no longer leaves a second process of each MCP server running.
-- **Root cause:** RPC mode binds a replaced session twice (rpc-mode.ts:435-441), so the MCP extension gets a second session_start without a session_shutdown. It replaced its servers without closing their connections: a server the first start had already spawned kept running until the process exited, one process per server and replacement (MyPiglets #382). The second start now takes over the connections of the first, so each server runs once, as in Pi, where the first start's connections wait for setImmediate and are replaced before they spawn. A connection is checked and stored under one lock, so a start or shutdown in between cannot miss it.
-- **User impact:** Behavior differed from Pi
-- **Platform:** All platforms
-- **Fixed in:** Unreleased
-- **Fix commits:** `86e8d9f604` (2026-11-12)
-- **Tests:** `coding/mcpext/pool_test.go::TestAReplacementClosesServersInTheBackground`, `coding/mcpext/pool_test.go::TestASecondSessionStartClosesAStartingServerItReplaces`, `coding/mcpext/pool_test.go::TestASecondSessionStartTakesOverTheConnectionsOfTheFirst`, `coding/mcpext/pool_test.go::TestThePoolDoesNotKeepAServerWhoseEntryOrDirectoryChanged`, `coding/mcpext/pool_test.go::TestThePoolKeepsAStdioServerAcrossASessionReplacement`, `coding/mcpext/pool_test.go::TestWithoutAPoolAReplacementStartsTheServersAgain`, `coding/mcpext/session_shutdown_yield_internal_test.go::TestSessionShutdownYieldsOnlyWhileWorkIsPending`
-- **Release note:** In RPC mode, a session replacement no longer leaves a second process of each MCP server running. RPC mode starts a replaced session twice, and the second start replaced the servers of the first without closing them, so a server the first start had already spawned ran until PiG exited. The second start now takes over the first start's connections, and each server runs once.
 
 ### BF-8780292
 
