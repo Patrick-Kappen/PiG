@@ -6755,6 +6755,54 @@
       "tests": []
     },
     {
+      "id": "BF-332139a",
+      "title": "CI only: a pull request's secret scan now stops, with one error line, when it cannot compute the range of…",
+      "symptom": "CI only: a pull request's secret scan now stops, with one error line, when it cannot compute the range of commits to scan.",
+      "rootCause": "The range script printed an open-ended `..\u003chead\u003e` and exited 0 when the base had no merge base with the head (unrelated histories, or a clone too shallow to reach the fork point), so the scan could cover no commits and pass; a missing or empty argument or a ref that is not a commit was not checked either.",
+      "rootCauseSource": "release note",
+      "userImpact": "Credential or permission exposure",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "CI only: a pull request's secret scan now stops, with one error line, when it cannot compute the range of commits to scan. The range script printed an open-ended `..\u003chead\u003e` and exited 0 when the base had no merge base with the head (unrelated histories, or a clone too shallow to reach the fork point), so the scan could cover no commits and pass; a missing or empty argument or a ref that is not a commit was not checked either. A pull request that adds no commit over its base is now reported as having nothing to scan. Released versions: none (CI only). \u003c!-- cause: secret-scan-range.sh took the merge base inside the arguments of printf, where a failing command does not trip set -e, so a failed git merge-base left an empty first sha and the script still printed the range and exited 0; no test ran it without a merge base. --\u003e",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "332139af2f",
+          "date": "2026-11-15",
+          "pr": "510"
+        }
+      ],
+      "tests": [
+        "automation/ci/test_secret_scan_range.py",
+        "test/ci-images/merge_queue_test.go::TestSecretScanRunsInTheMergeGroup"
+      ]
+    },
+    {
+      "id": "BF-332139a-2",
+      "title": "CI only: a pull request's secret scan now covers what the pull request adds over its base (the merge base to…",
+      "symptom": "A batch pull request that merged member branches cut from an older main used to fail the scan on secret-shaped test values already on main, and, because the scan followed only the first parent (`--first-parent`), the commits inside a merged member branch were not scanned at all.",
+      "rootCause": "A batch pull request that merged member branches cut from an older main used to fail the scan on secret-shaped test values already on main, and, because the scan followed only the first parent (`--first-parent`), the commits inside a merged member branch were not scanned at all.",
+      "rootCauseSource": "release note",
+      "userImpact": "Credential or permission exposure",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "CI only: a pull request's secret scan now covers what the pull request adds over its base (the merge base to its head) instead of everything from the parent of its oldest commit. A batch pull request that merged member branches cut from an older main used to fail the scan on secret-shaped test values already on main, and, because the scan followed only the first parent (`--first-parent`), the commits inside a merged member branch were not scanned at all. Released versions: none (CI only). \u003c!-- cause: gitleaks-action scanned `\u003coldest pull request commit\u003e^..\u003cnewest\u003e` with --first-parent, which reaches back into main's history for an older-based member and skips every commit behind a merge, and no test built a batch of merged member branches --\u003e",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "332139af2f",
+          "date": "2026-11-15",
+          "pr": "510"
+        }
+      ],
+      "tests": [
+        "automation/ci/test_secret_scan_range.py",
+        "test/ci-images/merge_queue_test.go::TestSecretScanRunsInTheMergeGroup"
+      ]
+    },
+    {
       "id": "BF-333229c",
       "title": "An HTTP 413 from any provider is treated as request-size overflow, so the agent compacts and retries instead…",
       "symptom": "An HTTP 413 from any provider is treated as request-size overflow, so the agent compacts and retries instead of showing a raw API error.",
@@ -21714,6 +21762,32 @@
       ]
     },
     {
+      "id": "BF-7b2669d",
+      "title": "`/reload` no longer hangs when extensions that share a packed process (Go, Rust, Python or Lisp) subscribe to…",
+      "symptom": "`/reload` no longer hangs when extensions that share a packed process (Go, Rust, Python or Lisp) subscribe to the event bus with `pi.events.on` while their factory runs.",
+      "rootCause": "Fix-Commit:",
+      "rootCauseSource": "commit",
+      "userImpact": "Crash, hang or runaway process",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "`/reload` no longer hangs when extensions that share a packed process (Go, Rust, Python or Lisp) subscribe to the event bus with `pi.events.on` while their factory runs. The Host wrote the admissions of every retained member before it accepted the first connection. A runner starts each admitted factory on its own goroutine or thread and takes them in whatever order the scheduler picks, and a factory that calls the Host before it returns waits for the Host to serve its member's connection. When a later member took the factory turn first, the Host waited for an earlier member that could not start its factory, so the reload never returned. The Host now admits each retained member after the members before it have registered, which is the order Pi loads its factories in, and every listener hears an emit once after a reload. PiG 0.5.2 through 0.7.0 have the defect. \u003c!-- cause: the Host admitted every retained member of a packed process before it accepted the first connection, while a factory that subscribes to the event bus waits for the Host to serve its own member's connection and the Host serves the members in order --\u003e \u003c!-- tests: coding/extension/host/subprocess/retained_factory_bus_test.go::TestGoFactoryReloadWithFactoryTimeSubscriptionsCompletesAndDeliversOnce, coding/extension/host/subprocess/retained_factory_bus_test.go::TestGoFactoryReloadRetainedMembersBesideAChangedMemberDeliverOnce, test/extension-conformance/events_bridge_reload_test.go::TestNativeEventBusReloadKeepsEveryFactoryTimeListenerOnce --\u003e",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "7b2669dee6",
+          "date": "2026-11-17",
+          "pr": "527"
+        }
+      ],
+      "tests": [
+        "coding/extension/host/subprocess/reload_fused_events_test.go::TestHostReloadFusedFactoriesWithFactoryTimeSubscriptionsDeliverOnce",
+        "coding/extension/host/subprocess/retained_factory_bus_test.go::TestGoFactoryReloadRetainedMembersBesideAChangedMemberDeliverOnce",
+        "coding/extension/host/subprocess/retained_factory_bus_test.go::TestGoFactoryReloadWithFactoryTimeSubscriptionsCompletesAndDeliversOnce",
+        "test/extension-conformance/events_bridge_reload_test.go::TestNativeEventBusReloadKeepsEveryFactoryTimeListenerOnce"
+      ]
+    },
+    {
       "id": "BF-7b59fe2",
       "title": "`pig piglet build --format binary` from a Pig source directory that is not a Git checkout (for example…",
       "symptom": "`pig piglet build --format binary` from a Pig source directory that is not a Git checkout (for example `PIG_SOURCE_ROOT` pointing at an extracted archive) now says the directory must be a Git checkout of PiG, names it, and suggests cloning PiG or unsetting `PIG_SOURCE_ROOT`, instead of failing with `resolve Pig source revision: exit status 128`.",
@@ -25515,6 +25589,33 @@
         }
       ],
       "tests": []
+    },
+    {
+      "id": "BF-92101db",
+      "title": "A host whose parent link had closed before `Connect` registered it (a server that refused the WebSocket at…",
+      "symptom": "The host used to keep the dead link, bind every hold to it and wait on it, and the next `Connect` left a hold that was already set where it was.",
+      "rootCause": "Fix-Commit:",
+      "rootCauseSource": "commit",
+      "userImpact": "An operation failed or was rejected",
+      "platform": "All platforms",
+      "class": "own",
+      "fixedIn": "Unreleased",
+      "releaseNote": "A host whose parent link had closed before `Connect` registered it (a server that refused the WebSocket at once, a proxy that reset it) no longer keeps the dead link as its parent: its references wait for the next link, a hold with no other route fails at once with `no route to server`, and the next good `Connect` holds the references again. The host used to keep the dead link, bind every hold to it and wait on it, and the next `Connect` left a hold that was already set where it was. A WebSocket link made over a socket that had closed already is a closed link too; it used to stay open over the closed socket.",
+      "origin": "release note",
+      "commits": [
+        {
+          "hash": "92101db09d",
+          "date": "2026-11-16",
+          "pr": "525"
+        }
+      ],
+      "tests": [
+        "chord/host/closed_link_registration_test.go::TestConnectAfterALinkClosedAtOnceHoldsTheReferencesAgainOverTheNextGoodLink",
+        "chord/host/closed_link_registration_test.go::TestConnectOverALinkTheEmbedderClosedBeforeKeepsNoUpstreamAndAHoldHasNoRoute",
+        "chord/host/closed_link_registration_test.go::TestWebSocketLinkOverASocketClosingOrClosedGivesAClosedLinkAlsoOneThatClosedAsItRegistered",
+        "chord/host/closed_link_registration_test.go::TestWebSocketLinksARefusalThatCameBeforeTheHostConnectedTheLinkHasNoRoute",
+        "chord/host/closed_link_registration_test.go::TestWebSocketLinksARefusalThatCameBeforeTheLinkWrappedTheSocketHasNoRoute"
+      ]
     },
     {
       "id": "BF-924fe28",
