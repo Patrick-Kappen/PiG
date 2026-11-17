@@ -135,17 +135,17 @@ func TestToolBatchStartsInSourceOrderAcrossSDKs(t *testing.T) {
 func TestToolTerminateEndsTheRunOnlyForAnAllTerminatingBatchAcrossSDKs(t *testing.T) {
 	for _, tc := range append(allHarnessCases(), packedSDKHarnessCases()...) {
 		t.Run(tc.name, func(t *testing.T) {
-			h := tc.make(t)
-			t.Cleanup(func() {
-				if h.cleanup != nil {
-					h.cleanup()
-				}
-				if h.host != nil {
-					h.host.Shutdown("test done")
-				}
-			})
-			run := func(calls ...ai.FauxContentBlock) (modelRequests int) {
+			run := func(t *testing.T, calls ...ai.FauxContentBlock) (modelRequests int) {
 				t.Helper()
+				h := tc.make(t)
+				defer func() {
+					if h.cleanup != nil {
+						h.cleanup()
+					}
+					if h.host != nil {
+						h.host.Shutdown("test done")
+					}
+				}()
 				tools, errs := coding.BridgeNewRunnerTools(h.runner.Tools())
 				if len(errs) != 0 {
 					t.Fatal(errs)
@@ -155,8 +155,24 @@ func TestToolTerminateEndsTheRunOnlyForAnAllTerminatingBatchAcrossSDKs(t *testin
 					ai.FauxStaticStep(ai.FauxResponse{Content: calls, StopReason: "toolUse"}),
 					ai.FauxStaticStep(ai.FauxResponse{Content: []ai.FauxContentBlock{ai.FauxText("done")}, StopReason: "stop"}),
 				})
-				a := mustNewAgent(agent.AgentOptions{Model: &ai.Model{ID: "faux-1", Provider: provider}, Tools: tools})
-				messages, err := a.Send(t.Context(), "go")
+				services, err := coding.CreateAgentSessionServices(coding.CreateAgentSessionServicesOptions{CWD: t.TempDir(), AgentDir: t.TempDir()})
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer services.Close()
+				session, err := coding.NewSession(services, coding.SessionOptions{Model: &ai.Model{ID: "faux-1", Provider: provider}, Runner: h.runner, Tools: tools, NoSession: true, SkipBuiltinTools: true})
+				if err != nil {
+					t.Fatal(err)
+				}
+				done := make(chan struct{})
+				go func() {
+					defer close(done)
+					for event := range session.Events() {
+						coding.AcknowledgeEvent(event)
+					}
+				}()
+				defer func() { _ = session.Close(); <-done }()
+				messages, err := session.Send(t.Context(), "go")
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -169,11 +185,26 @@ func TestToolTerminateEndsTheRunOnlyForAnAllTerminatingBatchAcrossSDKs(t *testin
 			}
 			rich := ai.FauxToolCall("rich_tool", map[string]any{}, &ai.FauxToolCallOptions{ID: "tc-terminate-1"})
 			plain := ai.FauxToolCall("prepared_tool", map[string]any{"legacy": "x"}, &ai.FauxToolCallOptions{ID: "tc-terminate-2"})
-			if got := run(rich); got != 1 {
+			if got := run(t, rich); got != 1 {
 				t.Fatalf("a batch whose only result terminates took %d model requests, want 1 (the run ends after the batch)", got)
 			}
-			if got := run(rich, plain); got != 2 {
+			if got := run(t, rich, plain); got != 2 {
 				t.Fatalf("a mixed batch took %d model requests, want 2 (one result without terminate keeps the run going)", got)
+			}
+			for _, scenario := range []struct {
+				name  string
+				calls []ai.FauxContentBlock
+				want  int
+			}{
+				{"handler-terminates-mixed-batch", []ai.FauxContentBlock{rich, ai.FauxToolCall("prepared_tool", map[string]any{"legacy": "x"}, &ai.FauxToolCallOptions{ID: "terminate-on"})}, 1},
+				{"handler-clears-terminate", []ai.FauxContentBlock{ai.FauxToolCall("rich_tool", map[string]any{}, &ai.FauxToolCallOptions{ID: "terminate-off"})}, 2},
+				{"handler-terminates-only-one", []ai.FauxContentBlock{plain, ai.FauxToolCall("prepared_tool", map[string]any{"legacy": "x"}, &ai.FauxToolCallOptions{ID: "terminate-on"})}, 2},
+			} {
+				t.Run(scenario.name, func(t *testing.T) {
+					if got := run(t, scenario.calls...); got != scenario.want {
+						t.Fatalf("model requests = %d, want %d", got, scenario.want)
+					}
+				})
 			}
 		})
 	}

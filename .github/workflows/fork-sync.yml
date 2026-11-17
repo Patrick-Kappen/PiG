@@ -5,11 +5,9 @@ name: Fork sync
 # that merges itself once the required checks pass (.github/fork/sync.sh):
 #   upstream     MichaelKinsy/PiG main  ->  main         (sync/upstream)
 #   performance  this repository's main ->  performance  (sync/performance)
-# A conflict opens an issue instead, to resolve on the sync branch. Runs every 30 minutes and by hand; on the
-# upstream repository it does nothing.
+# A conflict opens an issue instead, to resolve on the sync branch. Runs only by hand (Actions → Fork sync → Run
+# workflow); on the upstream repository it does nothing.
 on:
-  schedule:
-    - cron: '7,37 * * * *'
   workflow_dispatch:
 
 permissions: {}

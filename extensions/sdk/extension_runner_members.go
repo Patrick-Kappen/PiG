@@ -708,7 +708,7 @@ func (r *ExtensionRunner) EmitToolCall(event map[string]any) (map[string]any, er
 	return graphMethodAsync[map[string]any](r.object, "emitToolCall", event)
 }
 
-// EmitToolResult is `emitToolResult(event)`: a tool_result event whose handlers' edits chain; the result is the edits ({content, details, isError}), nil when none.
+// EmitToolResult is `emitToolResult(event)`: a tool_result event whose handlers' edits chain; the result is the edits ({content, details, isError, terminate}), nil when none. PiG's optional terminate override preserves false (D652).
 func (r *ExtensionRunner) EmitToolResult(event map[string]any) (map[string]any, error) {
 	return graphMethodAsync[map[string]any](r.object, "emitToolResult", event)
 }

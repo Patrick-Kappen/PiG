@@ -190,7 +190,7 @@ The $name sync cannot merge **$conflict** into \`$sync_branch\` automatically ($
 Conflicts that need a hand (conflicts in derived files alone are resolved by the sync, and CI's autofix regenerates them):
 $conflict_files
 
-Resolve it on the sync branch; the next sync run (every 30 minutes, or Actions → Fork sync → Run workflow) opens the pull request once \`$sync_branch\` contains $source_repo@$source_sha:
+Resolve it on the sync branch; the next sync run (Actions → Fork sync → Run workflow) opens the pull request once \`$sync_branch\` contains $source_repo@$source_sha:
 
 \`\`\`sh
 git fetch origin && git switch $sync_branch && git pull --ff-only

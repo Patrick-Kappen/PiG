@@ -1,7 +1,6 @@
 import type {
   ExecuteToolOptions,
   Extension,
-  ExtensionAPI,
   ExtensionToolContext,
   ExtensionVirtualModel,
   InlineExtension,
@@ -21,6 +20,10 @@ import type {
   ToolLoadoutChanges,
   ToolNamespace,
 } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ToolResultEvent, ToolResultEventResult } from "./index.js";
+const terminateOverride = (event: ToolResultEvent): ToolResultEventResult => ({ terminate: !event.terminate });
+void terminateOverride;
+
 import { clampThinkingLevel } from "@earendil-works/pi-ai/models";
 import type { Component, Container } from "@earendil-works/pi-tui";
 import type {
@@ -56,6 +59,7 @@ const sprite: PiGSpriteDefinition = {
 };
 
 export default function extension(pi: ExtensionAPI): void {
+  pi.on("tool_result", async (event) => ({ terminate: !event.terminate }));
   pi.on("session_start", async (_event, ctx) => {
     await ctx.ui.setLogin(login);
     await ctx.ui.registerSprite(sprite);

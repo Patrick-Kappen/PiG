@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"maps"
 	"reflect"
+	"slices"
 	"time"
 
 	"github.com/MichaelKinsy/PiG/agent"
@@ -142,7 +143,11 @@ func (s *Session) toolResultHook(ctx context.Context, toolCallID, parentToolCall
 			Content:           icodingagent.ToolResultEventContent(result),
 			StructuredContent: result.StructuredContent,
 			IsError:           result.IsError,
-			Usage:             toolResultEventUsage(result.Usage),
+			// pig additive (D652): handlers see the tool's own flag before applying overrides. Like the Node
+			// host's `terminate: result.terminate`, the member is on the event only when the tool's result holds
+			// it, so a tool that never sets terminate keeps Pi's tool_result event shape.
+			Terminate: toolResultEventTerminate(result),
+			Usage:     toolResultEventUsage(result.Usage),
 		},
 		ToolName: toolName,
 		Details:  details,
@@ -486,6 +491,16 @@ func toolResultEventUsage(usage *ai.Usage) any {
 		return nil
 	}
 	return usage
+}
+
+// toolResultEventTerminate is the tool_result event's terminate member: the tool's own flag when its result holds the
+// member (set, or written as false), and absent otherwise, as the Node host's `terminate: result.terminate` serializes.
+// pig additive (D652)
+func toolResultEventTerminate(result agent.AgentToolResult) *bool {
+	if !slices.Contains(result.MemberNames(), "terminate") {
+		return nil
+	}
+	return new(result.Terminate)
 }
 
 // ReloadExtensions is the runtime rebuild of upstream's reload() for the extensions the mode loaded again (agent-session.ts:3547-3567 _buildRuntime): a runner over them, bound to the Session, replaces the current one, which goes stale, and the tool registry is rebuilt so the tools a settings reload newly added to defaultTools activate and every extension tool that activates on registration is active again (agent-session.ts:3598-3609, RefreshToolsAfterReload). The caller binds its own UI and command actions to the returned runner and then emits session_start.

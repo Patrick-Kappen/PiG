@@ -3196,6 +3196,9 @@ func Extension() *sdk.Extension {
 		return nil, nil
 	})
 	ext.OnEvent("tool_result", func(ctx sdk.Context, event map[string]any) (any, error) {
+		if event["toolCallId"] == "terminate-on" || event["toolCallId"] == "terminate-off" {
+			return map[string]any{"terminate": event["toolCallId"] == "terminate-on"}, nil
+		}
 		if event["toolName"] == "order_probe" {
 			ctx.Notify(fmt.Sprintf("order-result=%v", event["toolCallId"]), "info")
 			return nil, nil

@@ -8,7 +8,7 @@ PiG's suites are large: `make test` takes about 7,800 CPU-seconds and 31 minutes
 |---|---|---|---|
 | Inner loop | After each edit | `go test ./<pkg> -run '<Tests>'` for the code you edit | seconds |
 | Change gate | Before each commit you hand off | `make test-changed`, `make lint-changed`, `go vet` and `GOOS=windows go vet` on the packages you touched | minutes |
-| Contract gate | Once before you report a change ready | `make ci-drift ci-contracts`, plus `make parity-family FAMILY=<f>` for each parity family the change reaches | minutes |
+| Contract gate | Once before you report a change ready | `make ci-drift ci-contracts`, plus `make parity-family FAMILY=<f>` for each parity family the change reaches; see [CI pitfalls](ci-pitfalls.md) | minutes |
 | Full suites | CI, the integrator, and the release preview | `make test`, `make check`, `make verify`, `make parity`, `make vet`, `make lint`, `go test ./...` | tens of minutes |
 
 `make test-changed` tests the packages a change can affect. `automation/ci/changed-packages.py` maps each file changed since the merge base with `TEST_BASE` (default `@{upstream}`, then `main`) to Go packages:

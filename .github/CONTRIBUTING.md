@@ -10,7 +10,7 @@ changing source.
 
 ## Contribution principles
 
-- Preserve observable Pi behavior unless an approved numbered divergence applies.
+- Prefer observable Pi behavior. A difference needs the owner's explicit approval and a numbered divergence, or an additive record when Pi has no such behavior.
 - Keep Stock PiG product-neutral.
 - Put product behavior in an extension or explicitly selected Piglet.
 - Add the smallest change that satisfies the stated contract.
@@ -124,7 +124,7 @@ installing software.
 7. Run the relevant local tests early across applicable provider shapes, not only Copilot or `test-faux`.
 8. If you change exported Go API, CLI flags, settings, parity scenarios, or docs mirrors, run `make generate` and commit the result. CI's drift gates compare these files.
 9. If a commit is titled as a fix (`Fix ...`, `fix: ...` or `<area>: fix ...`) and changes shipped code, or a changelog `### Fixed` section gains an item, run `make bug-ledger` and commit `docs/bug-ledger.json` and `docs/site/docs/bug-ledger.md`. `make bug-ledger-check` fails without them. The ledger lists entries by ID and carries no totals, and `make bug-ledger` changes only the entries your branch adds, so two branches that each add a fix merge without a conflict and a merge of `main` needs no regeneration; a release runs `make bug-ledger-refresh`. A fix of something that never shipped carries a `Bug-Ledger: exempt <category>: <reason>` trailer. A follow-up of an earlier fix carries `Bug-Ledger: see <commit>`. A user-facing change goes in a fragment `changelog.d/<lane>-<sha>.md`, where `<sha>` is a commit of your branch; every `### Fixed` bullet ends with `<!-- fix: <sha> -->` naming the commit that fixes it, so the ledger never guesses and never credits a squash commit's tests to your bullet. `make changelog-check` fails a bullet without a marker and a marker or fragment name that names a commit `HEAD` does not reach; after a rebase, squash or amend, rename the fragment and update its markers to the commits that replaced them. A squash commit on `main` can keep a replaced commit nameable instead: a `Fix-Commit: <full 40-hex sha>` trailer in its message, one per replaced commit, makes a marker or fragment name that is a prefix (7 or more digits) of that sha resolve to the squash commit, and the ledger then attributes the squash commit's diff to the bullet (an abbreviated trailer, a trailer for another sha, or no trailer does not resolve; a commit `HEAD` reaches is never replaced by a trailer). It needs the full history (`git fetch --unshallow` in a shallow clone).
-10. Run `make check` before requesting review, and `make fixture-guard` before every push: fixtures must be minimal synthetic shapes generated in the test, never captured provider output (reasoning text, encrypted blobs, billing rows, ids, or your paths).
+10. Run `make check` before requesting review, and `make fixture-guard` before every push: fixtures must be minimal synthetic shapes generated in the test, never captured provider output (reasoning text, encrypted blobs, billing rows, ids, or your paths). [CI pitfalls](../docs/project/ci-pitfalls.md) lists, one line each, the failures that most often cost a CI round and how to catch them locally.
 11. Sign off and cryptographically sign every commit. Confirm that GitHub marks each signature **Verified**.
 12. Describe the problem, change, verification, and any divergence in the pull request.
 

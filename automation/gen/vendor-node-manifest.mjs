@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import { dirname, join, relative } from "node:path";
 import { identityPatches, patchIdentity } from "./pi-identity-patches.mjs";
 import { packageRoots } from "./pi-package-roots.mjs";
+import { toolResultTerminatePatches } from "./pi-tool-result-terminate-patches.mjs";
 
 const [shims, agent, output = join(shims, "vendor-manifest.json")] = process.argv.slice(2);
 // Pi 1.0.2 publishes no npm-shrinkwrap.json; the sdk-ts lock (install-strategy=shallow) records every package under
@@ -64,6 +65,7 @@ for (const [name, pkg] of piPackages) {
       // A file can carry both seams: keep the other rewrite's label unless the identity patches alone produce the output.
       const identity = "D26 PiG product identity (automation/gen/pi-identity-patches.mjs)";
       if (identityPatches[`${name}/${rel}`]) rewrite = patchIdentity(`${name}/${rel}`, readFileSync(source, "utf8")) === readFileSync(output, "utf8") ? identity : `${rewrite}; ${identity}`;
+      if (toolResultTerminatePatches[`${name}/${rel}`]) rewrite += "; D652 tool_result termination override (automation/gen/pi-tool-result-terminate-patches.mjs)";
     }
     record(output, source, pkg, rewrite);
   }

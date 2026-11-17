@@ -995,6 +995,8 @@ type ToolResultEventBase struct {
 	// replacing Content alone drops it. upstream: structuredContent?: JsonValue
 	StructuredContent json.RawMessage `json:"structuredContent,omitempty"`
 	IsError           bool            `json:"isError"`
+	// pig additive (D652): the finalized termination flag, chained through tool_result handlers when present.
+	Terminate *bool `json:"terminate,omitempty"`
 	// Usage is the usage of the tool execution itself, if available
 	// (upstream `usage?: Usage`).
 	Usage any `json:"usage,omitempty"`
@@ -1158,6 +1160,8 @@ type ToolResultEventResult struct {
 	// IsError is nil when the handler leaves the error flag unchanged, as
 	// upstream's optional `isError?: boolean` is undefined.
 	IsError *bool `json:"isError,omitempty"`
+	// pig additive (D652): nil keeps the tool's flag; false and true override it. Later handlers win.
+	Terminate *bool `json:"terminate,omitempty"`
 	// Usage replaces the tool's own usage in the session usage totals; nil keeps it.
 	// upstream: ToolResultEventResult.usage?: Usage
 	Usage *ai.Usage `json:"usage,omitempty"`

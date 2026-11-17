@@ -591,6 +591,12 @@ Differences from Pi, each tested: a `model` the host's registry does not hold ra
 
 An extension that draws the model's thinking itself, for example in an activity tree, calls `pi.ownThinkingRuns()` (Go `ext.OwnThinkingRuns(true)`, Rust `ext.own_thinking_runs(true)`, Python `ext.own_thinking_runs()`, Lisp `(own-thinking-runs ext)`) while it loads, and rewrites the visible run to an empty string with a Markdown transformer for `assistant-thinking`. The built-in message then draws no blank rows for a run that is hidden or empty (D214). Call it again with `false` through the runtime entry point (`ctx.OwnThinkingRuns(false)`, `ctx.own_thinking_runs(False)`, `ctx-own-thinking-runs`, Node `pi.ownThinkingRuns(false)`) to give the rows back; the flag is yours alone, the host ORs it with other extensions', and it leaves with your extension. In Node the call is a void setter ordered after your earlier UI calls; elsewhere it returns once the host applied it. `ownThinkingRuns` removes the spacing only; to also hide the thinking text, pair it with a Markdown transformer that rewrites the `assistant-thinking` text to empty (`pi.registerMarkdownTransformer` in Node, `MarkdownTransformer` in Go, `markdown_transformer` in Rust and Python).
 
+## Override tool-result termination (PiG only, D652)
+
+Return `terminate: true` or `terminate: false` from a `tool_result` handler to override the tool's termination flag. Omit it to keep the flag. Each handler sees the chained `event.terminate`; later handlers win. In-process Go uses `ToolResultEventResult.Terminate *bool`. Go SDK handlers return `map[string]any{"terminate": true}`; Node, Python and Rust return the same JSON member. Lisp uses `(pig:obj "terminate" t)` or `(pig:obj "terminate" :false)`.
+
+The agent ends the run after the batch only when every finalized result terminates. The extension decides whether errors permit termination. Content remains in the Session for the next prompt. This capability does not alter queued steering or follow-up behavior. Pi lacks this handler override; see [D652](additive-features.md#d652-tool-result-handlers-override-termination).
+
 ## Adding a new extension API surface
 
 1. Read upstream Pi behavior in Pi's `packages/coding-agent/docs/extensions.md` and the upstream source under `.upstream/current/`.

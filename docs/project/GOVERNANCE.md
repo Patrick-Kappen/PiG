@@ -45,7 +45,7 @@ The core committee is PiG's creator and its maintainers, as listed in [`docs/pro
 
 Use a pull request for a source, policy, governance, or release-process change. Record the decision and rationale in the pull request. A maintainer must approve the change before merge.
 
-PiG follows observable Pi behavior by default. Record an intentional user-visible or interoperability difference in [`docs/parity/DIVERGENCES.md`](../parity/DIVERGENCES.md). Apply the evidence requirements in [`AGENTS.md`](../../AGENTS.md).
+PiG follows observable Pi behavior by default. That is a preference: a difference is allowed when a maintainer explicitly approves it. Record an intentional user-visible or interoperability difference in [`docs/parity/DIVERGENCES.md`](../parity/DIVERGENCES.md). Apply the evidence requirements in [`AGENTS.md`](../../AGENTS.md).
 
 A governance change requires explicit approval from an active maintainer.
 

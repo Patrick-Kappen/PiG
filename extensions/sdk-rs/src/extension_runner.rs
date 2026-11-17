@@ -823,7 +823,7 @@ impl ExtensionRunner {
         self.call_async("emitToolCall", vec![event])
     }
 
-    /// `emitToolResult(event)`: a tool_result event whose handlers' edits chain; the result is the edits (`{content, details, isError, ...}`), null when none.
+    /// `emitToolResult(event)`: a tool_result event whose handlers' edits chain; the result is the edits (`{content, details, isError, terminate, ...}`), null when none. PiG also accepts boolean `terminate` from result handlers; omission keeps the tool flag and later handlers win (D652).
     pub fn emit_tool_result(&self, event: Value) -> io::Result<Value> {
         self.call_async("emitToolResult", vec![event])
     }
