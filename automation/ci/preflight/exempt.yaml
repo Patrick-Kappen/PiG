@@ -8,7 +8,7 @@
 
 exempt:
   # A fork sync (.github/fork/sync.sh) opens a pull request with the commits of its source: upstream's squash merges for
-  # main, main's commits for performance. Each of them was judged on the pull request that made it, and what these checks
+  # main. Each of them was judged on the pull request that made it, and what these checks
   # read went with that pull request: its description (template, depends-on, the `Fix:` answer bug-ledger and changelog
   # start from, the citation test-expectation asks for), the commits a changelog fragment and its fix markers name (a
   # squash merge replaces them) and the sign-off of each commit (a squash merge carries none of its own, and the sync's
