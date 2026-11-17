@@ -996,6 +996,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-9327bc7](#bf-9327bc7) | A closed Harness or Session no longer stays reachable from Go's timer heap | PiG's own defect | All platforms | 0.7.0 |
 | [BF-93319f4](#bf-93319f4) | The terminal UI worked example now describes the typed `/model` prefix in words | PiG's own defect | All platforms | 0.5.0 |
 | [BF-935506d](#bf-935506d) | An Anthropic OAuth request (a Claude subscription) names Claude Code 2.1.322 in its `user-agent` instead of… | A Pi defect that PiG fixed first | All platforms | Unreleased |
+| [BF-9389e48](#bf-9389e48) | CI only: the nightly run on main, a push to a `release/**` branch, a merge group and a dispatch run the full… | PiG's own defect | All platforms | Unreleased |
 | [BF-93b5de0](#bf-93b5de0) | A login refresh that took between ten and fifteen seconds while another pig process opened the credential… | PiG's own defect | All platforms | Unreleased |
 | [BF-93c09d6](#bf-93c09d6) | A local package source that is a file Node cannot import, such as a packed `.tgz`, fails to load as in Pi… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-93c09d6-2](#bf-93c09d6-2) | `pig install --validate-only` on a Package root validates every extension the Package names in… | PiG's own defect | All platforms | 0.5.0 |
@@ -15197,6 +15198,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Fix commits:** `935506dfa9` (2026-11-10), `d547ac9596` (2026-11-10)
 - **Tests:** `ai/anthropic_oauth_test.go::TestAnthropicClientUserAgent`, `ai/anthropic_oauth_test.go::TestAnthropicOnPayloadReplacesBetas`, `ai/anthropic_oauth_test.go::TestAnthropicRequestAuthShapes`, `ai/identity_oracle_test.go::TestAnthropicUserAgentHeaderReplacesTheClaudeCodeIdentityLikePi`, `ai/identity_oracle_test.go::TestProviderIdentityHeadersMatchPi`, `coding/anthropic_auth_test.go::TestBuildModelAnthropicEnvAuthRequestShapes`, `coding/cli/model_anthropic_auth_test.go::TestBuildModelAnthropicAuthRequestShapes`
 - **Release note:** An Anthropic OAuth request (a Claude subscription) names Claude Code 2.1.322 in its `user-agent` instead of 2.1.280, which Anthropic refuses for newer models with `claude_code_version_too_old` ("Claude Code 2.1.280 does not support this model"). Pi 1.5.0 sends 2.1.280; PiG follows Pi main a05e3a0 (D235). A configured `User-Agent` header still replaces it.
+
+### BF-9389e48
+
+**CI only: the nightly run on main, a push to a `release/**` branch, a merge group and a dispatch run the full…**
+
+- **Source:** PiG's own defect
+- **Symptom:** CI only: the nightly run on main, a push to a `release/**` branch, a merge group and a dispatch run the full job set again.
+- **Root cause:** The `Pre-flight verdict` job ran only on a pull request, and a skipped job skips every job behind it, so every such run since the pre-flight landed ran `Changed paths` and `Bookkeeping` only and failed `CI result` on the verification jobs it skipped.
+- **User impact:** An operation failed or was rejected
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `9389e4816f` (2026-11-16)
+- **Tests:** `test/ci-images/merge_queue_test.go::TestCIResultRequiresEveryPlannedJob`, `test/ci-images/wait_preflight_wiring_test.go::TestANeededJobOfCIRunsOnEveryEvent`
+- **Release note:** CI only: the nightly run on main, a push to a `release/**` branch, a merge group and a dispatch run the full job set again. The `Pre-flight verdict` job ran only on a pull request, and a skipped job skips every job behind it, so every such run since the pre-flight landed ran `Changed paths` and `Bookkeeping` only and failed `CI result` on the verification jobs it skipped. The verdict job now runs on every event and waits for the pre-flight only on a pull request. Released versions: none (CI only). <!-- cause: the verdict job's job-level `if: github.event_name == 'pull_request'` skipped it outside a pull request, GitHub skips the jobs that need a skipped job transitively (Bookkeeping's `!cancelled()` did not carry over to the jobs that need Bookkeeping), and the CI result test expected the verdict to be skipped outside a pull request, so no test ran a non-pull-request plan through the job graph -->
 
 ### BF-93b5de0
 
