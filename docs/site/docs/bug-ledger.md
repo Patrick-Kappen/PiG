@@ -249,6 +249,8 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-32e86a8](#bf-32e86a8) | Go, Python and Rust SDK: `theme.bold`, `italic`, `underline`, `inverse` and `strikethrough` now draw as Pi's… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-32fe8c4](#bf-32fe8c4) | The Durable core's Session opens a document watch, a conversation view and the task graph as a job on the… | PiG's own defect | All platforms | 0.7.0 |
 | [BF-331ab59](#bf-331ab59) | `pig status` reports the agent and project directories by the same resolved path before and after a run… | PiG's own defect | macOS | 0.7.0 |
+| [BF-332139a](#bf-332139a) | CI only: a pull request's secret scan now stops, with one error line, when it cannot compute the range of… | PiG's own defect | All platforms | Unreleased |
+| [BF-332139a-2](#bf-332139a-2) | CI only: a pull request's secret scan now covers what the pull request adds over its base (the merge base to… | PiG's own defect | All platforms | Unreleased |
 | [BF-333229c](#bf-333229c) | An HTTP 413 from any provider is treated as request-size overflow, so the agent compacts and retries instead… | PiG's own defect | All platforms | 0.5.2 |
 | [BF-334bb4b](#bf-334bb4b) | A Gemini or Mistral stream chunk with a member of an unexpected type no longer sorts the members of a tool… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-3351167](#bf-3351167) | The OAuth callback server reads an absolute-form request target with a scheme other than http or https, a… | PiG's own defect | All platforms | 0.5.0 |
@@ -785,6 +787,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-7a4a8e8](#bf-7a4a8e8) | fix duplicate jsstring import in tui/assistant_message_block.go | PiG's own defect | All platforms | Unreleased |
 | [BF-7a5e7d1](#bf-7a5e7d1) | fix(chord/nextnode/plugins): the bridged proxies' Go get takes the context first, as the merged host does | PiG's own defect | All platforms | Unreleased |
 | [BF-7b0f5d7](#bf-7b0f5d7) | A native extension provider's `filterAllModels` receives the models its `getAllModels` (or `getModels`)… | PiG's own defect | All platforms | 0.5.0 |
+| [BF-7b2669d](#bf-7b2669d) | `/reload` no longer hangs when extensions that share a packed process (Go, Rust, Python or Lisp) subscribe to… | PiG's own defect | All platforms | Unreleased |
 | [BF-7b59fe2](#bf-7b59fe2) | `pig piglet build --format binary` from a Pig source directory that is not a Git checkout (for example… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-7b92429](#bf-7b92429) | `find` and `grep` trim like JavaScript: `FindTool` trimmed each fd output line with `strings.TrimSpace` where… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-7ba3211](#bf-7ba3211) | A resumed session no longer holds its whole file in memory | PiG's own defect | macOS | 0.5.0 |
@@ -908,6 +911,7 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 | [BF-91e912a](#bf-91e912a) | Two PiG versions that share a config root (two installed versions, or PiG beside a Piglet Binary) no longer… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-91f9946](#bf-91f9946) | OpenRouter image generation reads the chat completions body as Pi does, checked against the pinned Pi in a… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-9208423](#bf-9208423) | fix(imageprocessing): an image with no pixels is not encoded as PNG | PiG's own defect | All platforms | Unreleased |
+| [BF-92101db](#bf-92101db) | A host whose parent link had closed before `Connect` registered it (a server that refused the WebSocket at… | PiG's own defect | All platforms | Unreleased |
 | [BF-924fe28](#bf-924fe28) | A provider written with the Go, Python or Lisp extension SDK now reaches the host with each stream event… | PiG's own defect | All platforms | Unreleased |
 | [BF-928e15c](#bf-928e15c) | A listener that fails while agent_start is dispatched now ends the run as in Pi (failure messages, no… | PiG's own defect | All platforms | 0.5.0 |
 | [BF-928e15c-10](#bf-928e15c-10) | Constrained-sampling errors quote tool and property names as Pi does (raw text between double quotes, not… | PiG's own defect | All platforms | 0.5.0 |
@@ -4844,6 +4848,34 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Fix commits:** `331ab59c12` (2026-11-03)
 - **Tests:** None recorded.
 - **Release note:** `pig status` reports the agent and project directories by the same resolved path before and after a run creates them. It resolved symbolic links only once a directory existed, so on macOS, where the temporary directory is `/var/...` and resolves to `/private/var/...`, the paths changed between the first run and the next.
+
+### BF-332139a
+
+**CI only: a pull request's secret scan now stops, with one error line, when it cannot compute the range of…**
+
+- **Source:** PiG's own defect
+- **Symptom:** CI only: a pull request's secret scan now stops, with one error line, when it cannot compute the range of commits to scan.
+- **Root cause:** The range script printed an open-ended `..<head>` and exited 0 when the base had no merge base with the head (unrelated histories, or a clone too shallow to reach the fork point), so the scan could cover no commits and pass; a missing or empty argument or a ref that is not a commit was not checked either.
+- **User impact:** Credential or permission exposure
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `332139af2f` (2026-11-15, #510)
+- **Tests:** `automation/ci/test_secret_scan_range.py`, `test/ci-images/merge_queue_test.go::TestSecretScanRunsInTheMergeGroup`
+- **Release note:** CI only: a pull request's secret scan now stops, with one error line, when it cannot compute the range of commits to scan. The range script printed an open-ended `..<head>` and exited 0 when the base had no merge base with the head (unrelated histories, or a clone too shallow to reach the fork point), so the scan could cover no commits and pass; a missing or empty argument or a ref that is not a commit was not checked either. A pull request that adds no commit over its base is now reported as having nothing to scan. Released versions: none (CI only). <!-- cause: secret-scan-range.sh took the merge base inside the arguments of printf, where a failing command does not trip set -e, so a failed git merge-base left an empty first sha and the script still printed the range and exited 0; no test ran it without a merge base. -->
+
+### BF-332139a-2
+
+**CI only: a pull request's secret scan now covers what the pull request adds over its base (the merge base to…**
+
+- **Source:** PiG's own defect
+- **Symptom:** A batch pull request that merged member branches cut from an older main used to fail the scan on secret-shaped test values already on main, and, because the scan followed only the first parent (`--first-parent`), the commits inside a merged member branch were not scanned at all.
+- **Root cause:** A batch pull request that merged member branches cut from an older main used to fail the scan on secret-shaped test values already on main, and, because the scan followed only the first parent (`--first-parent`), the commits inside a merged member branch were not scanned at all.
+- **User impact:** Credential or permission exposure
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `332139af2f` (2026-11-15, #510)
+- **Tests:** `automation/ci/test_secret_scan_range.py`, `test/ci-images/merge_queue_test.go::TestSecretScanRunsInTheMergeGroup`
+- **Release note:** CI only: a pull request's secret scan now covers what the pull request adds over its base (the merge base to its head) instead of everything from the parent of its oldest commit. A batch pull request that merged member branches cut from an older main used to fail the scan on secret-shaped test values already on main, and, because the scan followed only the first parent (`--first-parent`), the commits inside a merged member branch were not scanned at all. Released versions: none (CI only). <!-- cause: gitleaks-action scanned `<oldest pull request commit>^..<newest>` with --first-parent, which reaches back into main's history for an older-based member and skips every commit behind a merge, and no test built a batch of merged member branches -->
 
 ### BF-333229c
 
@@ -12256,6 +12288,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Tests:** `internal/codingagent/native_provider_filter_order_test.go::TestNativeProviderFilterAllModelsSeesTheProvidersOwnModels`
 - **Release note:** A native extension provider's `filterAllModels` receives the models its `getAllModels` (or `getModels`) returned, with their members in the order the provider wrote them, instead of copies with members sorted by name.
 
+### BF-7b2669d
+
+**`/reload` no longer hangs when extensions that share a packed process (Go, Rust, Python or Lisp) subscribe to…**
+
+- **Source:** PiG's own defect
+- **Symptom:** `/reload` no longer hangs when extensions that share a packed process (Go, Rust, Python or Lisp) subscribe to the event bus with `pi.events.on` while their factory runs.
+- **Root cause:** Fix-Commit:
+- **User impact:** Crash, hang or runaway process
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `7b2669dee6` (2026-11-17, #527)
+- **Tests:** `coding/extension/host/subprocess/reload_fused_events_test.go::TestHostReloadFusedFactoriesWithFactoryTimeSubscriptionsDeliverOnce`, `coding/extension/host/subprocess/retained_factory_bus_test.go::TestGoFactoryReloadRetainedMembersBesideAChangedMemberDeliverOnce`, `coding/extension/host/subprocess/retained_factory_bus_test.go::TestGoFactoryReloadWithFactoryTimeSubscriptionsCompletesAndDeliversOnce`, `test/extension-conformance/events_bridge_reload_test.go::TestNativeEventBusReloadKeepsEveryFactoryTimeListenerOnce`
+- **Release note:** `/reload` no longer hangs when extensions that share a packed process (Go, Rust, Python or Lisp) subscribe to the event bus with `pi.events.on` while their factory runs. The Host wrote the admissions of every retained member before it accepted the first connection. A runner starts each admitted factory on its own goroutine or thread and takes them in whatever order the scheduler picks, and a factory that calls the Host before it returns waits for the Host to serve its member's connection. When a later member took the factory turn first, the Host waited for an earlier member that could not start its factory, so the reload never returned. The Host now admits each retained member after the members before it have registered, which is the order Pi loads its factories in, and every listener hears an emit once after a reload. PiG 0.5.2 through 0.7.0 have the defect. <!-- cause: the Host admitted every retained member of a packed process before it accepted the first connection, while a factory that subscribes to the event bus waits for the Host to serve its own member's connection and the Host serves the members in order --> <!-- tests: coding/extension/host/subprocess/retained_factory_bus_test.go::TestGoFactoryReloadWithFactoryTimeSubscriptionsCompletesAndDeliversOnce, coding/extension/host/subprocess/retained_factory_bus_test.go::TestGoFactoryReloadRetainedMembersBesideAChangedMemberDeliverOnce, test/extension-conformance/events_bridge_reload_test.go::TestNativeEventBusReloadKeepsEveryFactoryTimeListenerOnce -->
+
 ### BF-7b59fe2
 
 **`pig piglet build --format binary` from a Pig source directory that is not a Git checkout (for example…**
@@ -13959,6 +14005,20 @@ Entries are listed by ID. The page carries no totals, so a pull request that add
 - **Fixed in:** Unreleased
 - **Fix commits:** `9208423356` (2026-10-29)
 - **Tests:** None recorded.
+
+### BF-92101db
+
+**A host whose parent link had closed before `Connect` registered it (a server that refused the WebSocket at…**
+
+- **Source:** PiG's own defect
+- **Symptom:** The host used to keep the dead link, bind every hold to it and wait on it, and the next `Connect` left a hold that was already set where it was.
+- **Root cause:** Fix-Commit:
+- **User impact:** An operation failed or was rejected
+- **Platform:** All platforms
+- **Fixed in:** Unreleased
+- **Fix commits:** `92101db09d` (2026-11-16, #525)
+- **Tests:** `chord/host/closed_link_registration_test.go::TestConnectAfterALinkClosedAtOnceHoldsTheReferencesAgainOverTheNextGoodLink`, `chord/host/closed_link_registration_test.go::TestConnectOverALinkTheEmbedderClosedBeforeKeepsNoUpstreamAndAHoldHasNoRoute`, `chord/host/closed_link_registration_test.go::TestWebSocketLinkOverASocketClosingOrClosedGivesAClosedLinkAlsoOneThatClosedAsItRegistered`, `chord/host/closed_link_registration_test.go::TestWebSocketLinksARefusalThatCameBeforeTheHostConnectedTheLinkHasNoRoute`, `chord/host/closed_link_registration_test.go::TestWebSocketLinksARefusalThatCameBeforeTheLinkWrappedTheSocketHasNoRoute`
+- **Release note:** A host whose parent link had closed before `Connect` registered it (a server that refused the WebSocket at once, a proxy that reset it) no longer keeps the dead link as its parent: its references wait for the next link, a hold with no other route fails at once with `no route to server`, and the next good `Connect` holds the references again. The host used to keep the dead link, bind every hold to it and wait on it, and the next `Connect` left a hold that was already set where it was. A WebSocket link made over a socket that had closed already is a closed link too; it used to stay open over the closed socket.
 
 ### BF-924fe28
 
