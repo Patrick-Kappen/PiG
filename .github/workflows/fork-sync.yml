@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MIT
 name: Fork sync
 
-# Fork only (Patrick-Kappen/PiG). Keeps the fork's two lines following their source, each through a pull request
-# that merges itself once the required checks pass (.github/fork/sync.sh):
+# Fork only (Patrick-Kappen/PiG). Brings upstream's main into the fork's main through a pull request that merges
+# itself once the required checks pass (.github/fork/sync.sh):
 #   upstream     MichaelKinsy/PiG main  ->  main         (sync/upstream)
-#   performance  this repository's main ->  performance  (sync/performance)
 # A conflict opens an issue instead, to resolve on the sync branch. Runs only by hand (Actions → Fork sync → Run
 # workflow); on the upstream repository it does nothing.
 on:
@@ -59,7 +58,3 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
         run: bash .github/fork/sync.sh upstream MichaelKinsy/PiG main main
-      - name: Main into performance
-        env:
-          GH_TOKEN: ${{ steps.app.outputs.token }}
-        run: bash .github/fork/sync.sh performance "$GITHUB_REPOSITORY" main performance

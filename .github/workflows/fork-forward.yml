@@ -2,9 +2,8 @@
 name: Fork forward
 
 # Fork only (Patrick-Kappen/PiG). Run by hand: Actions → Fork forward → Run workflow, pick a pull request of this
-# repository and where it goes (.github/fork/forward.sh):
-#   main      onto this repository's main, as a pull request here (a performance patch that main takes too)
-#   upstream  onto MichaelKinsy/PiG main, as a pull request there, from forward/upstream/pr-<n>
+# repository; it goes onto MichaelKinsy/PiG main, as a pull request there, from forward/upstream/pr-<n>
+# (.github/fork/forward.sh).
 # The commits are cherry-picked 1:1 and signed with the fork signing key, so they stay Verified.
 on:
   workflow_dispatch:
@@ -13,11 +12,6 @@ on:
         description: Pull request number in Patrick-Kappen/PiG
         required: true
         type: number
-      target:
-        description: Where it goes
-        required: true
-        type: choice
-        options: [main, upstream]
       draft:
         description: Open the new pull request as a draft
         type: boolean
@@ -26,7 +20,7 @@ on:
 permissions: {}
 
 concurrency:
-  group: fork-forward-${{ inputs.pr }}-${{ inputs.target }}
+  group: fork-forward-${{ inputs.pr }}
   cancel-in-progress: false
 
 jobs:
@@ -69,11 +63,10 @@ jobs:
           GH_TOKEN: ${{ steps.app.outputs.token }}
           UPSTREAM_TOKEN: ${{ secrets.UPSTREAM_PR_TOKEN }}
           PR: ${{ inputs.pr }}
-          TARGET: ${{ inputs.target }}
           DRAFT: ${{ inputs.draft }}
         run: |
-          if [ "$TARGET" = upstream ] && [ -z "$UPSTREAM_TOKEN" ]; then
+          if [ -z "$UPSTREAM_TOKEN" ]; then
             echo "::error::secret UPSTREAM_PR_TOKEN is not set"
             exit 1
           fi
-          bash .github/fork/forward.sh "$PR" "$TARGET" "$DRAFT"
+          bash .github/fork/forward.sh "$PR" "$DRAFT"
