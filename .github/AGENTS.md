@@ -79,7 +79,7 @@ The flow in `label` mode: push; the light run reports `CI result` red with the m
 | Node loader / ubuntu-24.04, windows-latest, macos-15 | queue | 9 | |
 | Linux / parity-2 | queue | 12 | The other hermetic parity hash shard |
 | Linux / portmap-1, portmap-2, portmap-3, portmap-4, portmap-5, portmap-6, portmap-7, portmap-8 | queue | 45 | |
-| Linux / test-conformance-1, test-conformance-2 | queue | 30 | Conformance of every SDK, in two halves of four shards |
+| Linux / test-conformance-1, test-conformance-2 | queue | 30 | Conformance of every SDK, in two halves of seven shards |
 | Linux / toolchains | queue | 7 | Race, integration, SDK (including `make lint-rust`) and extension corpus gates |
 | Node extensions | queue | 11 | |
 | Durable Cloudflare host | queue | 25 | |
@@ -94,7 +94,7 @@ Minutes are runner minutes, each job rounded up to the minute, from run 39510928
 
 Merge queue settings, in the `Default` ruleset, for `queue` mode: add the `merge_queue` rule with `merge_method` `SQUASH` (the ruleset's pull request rule allows only squash merges), `grouping_strategy` `ALLGREEN`, `check_response_timeout_minutes` 120, `max_entries_to_build` 2, `max_entries_to_merge` 3, `min_entries_to_merge` 1 and `min_entries_to_merge_wait_minutes` 5, then set `PIG_PR_CI_LIGHT` to `queue`. GitHub offers merge queues only in repositories owned by an organization, and `MichaelKinsy/PiG` is owned by a user account, so until the repository moves to an organization the variable is unset or `label`. Delete the variable to return pull requests to the full run.
 
-Secret scanning in the queue runs TruffleHog over the commits the queue added. `gitleaks-action` supports only `push`, `pull_request`, `workflow_dispatch` and `schedule` and fails the job on `merge_group`, so that step is skipped there; the pull request run has scanned the same commits.
+Secret scanning in the queue runs TruffleHog over the commits the queue added. `gitleaks-action` supports only `push`, `pull_request`, `workflow_dispatch` and `schedule` and fails the job on `merge_group`, so that step is skipped there; the pull request run has scanned the same commits. The pull request run does not use `gitleaks-action` for the scan: the action scans `<oldest pull request commit>^..<newest>` with `--first-parent`, which rescans main history a batch of older-based member branches merges past and hides the member commits behind the merge. The `Gitleaks (pull request)` step runs a checksum-pinned gitleaks over `automation/ci/secret-scan-range.sh` (`<merge-base of the base and the head>..<head>`) with `--no-merges` only. The script fails closed: when it cannot compute the range (an argument missing or empty, a ref that is not a commit, no merge base because the histories are unrelated or the clone is too shallow) it prints nothing on stdout, one line on stderr and exits 2, which ends the step; an empty range (`<sha>..<sha>`, the head already in the base) is the one answer "nothing to scan", which the step tells by its two equal shas.
 
 ### Nix vendor hash
 
