@@ -38,7 +38,9 @@ const (
 	baselineFile = "test/parity/portmap-unproven-baseline.txt"
 	reviewedFile = "test/parity/portmap-reviewed.json"
 	mutantsDir   = "test/parity/portmap-mutants"
-	inventoryGlb = "test/parity/interfaces/upstream-v*.json"
+	// oldMutantsFile held the mutants of every Pi file until they became mutantsDir. Nothing reads it, so a tree that has it fails (readMutants).
+	oldMutantsFile = mutantsDir + ".json"
+	inventoryGlb   = "test/parity/interfaces/upstream-v*.json"
 )
 
 // row is one PORT_MAP table row.

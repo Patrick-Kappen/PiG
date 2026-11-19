@@ -1128,9 +1128,11 @@ func TestReadMutants(t *testing.T) {
 	if err != nil || !reflect.DeepEqual(got, want) {
 		t.Fatalf("readMutants = %v, %v, want %v", got, err, want)
 	}
+	// The one file of all mutants is no longer read: a tree that still has it fails instead of proving no row by it.
 	for name, body := range map[string]string{
 		mutantsFileOf("packages/fx/src/bad.ts"): `{"packages/fx/src/bad.ts":[]}`,
 		mutantsDir + "/packages/fx/src/c.ts":    `[]`,
+		oldMutantsFile:                          `{"packages/fx/src/a.ts":[{"file":"lib/a.go","old":"x","new":"y"}]}`,
 	} {
 		write(name, body)
 		if _, err := readMutants(root); err == nil || !strings.Contains(err.Error(), name) {

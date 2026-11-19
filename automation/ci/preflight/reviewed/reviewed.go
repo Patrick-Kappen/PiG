@@ -23,6 +23,8 @@ const (
 	// Dir is the ledger's path in the repository. It holds one file per entry (Entry.File), so two branches that each
 	// add an entry add two files and never change the same one.
 	Dir = "test/parity/testprune-reviewed"
+	// OldFile held every entry until the ledger became Dir. Nothing reads it, so a tree that has it fails (ReadDir).
+	OldFile = Dir + ".toml"
 	// DivergenceDir is where the records of the divergences a DIVERGENCE entry cites live.
 	DivergenceDir = "docs/parity/divergences"
 	// MinCommitLen is the shortest commit prefix an entry may name; a shorter one matches nothing.
@@ -88,6 +90,12 @@ func ParseFiles(files map[string]string) ([]Entry, error) {
 // ReadDir reads the ledger of the tree at root, in the order of the file names. A tree without Dir holds no entries:
 // git keeps no empty directory, so a ledger whose last entry was deleted is one.
 func ReadDir(root string) ([]Entry, error) {
+	switch raw, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(OldFile))); {
+	case err == nil:
+		return nil, oldFileError(root, string(raw))
+	case !errors.Is(err, fs.ErrNotExist):
+		return nil, err
+	}
 	files := map[string]string{}
 	err := filepath.WalkDir(filepath.Join(root, filepath.FromSlash(Dir)), func(p string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
@@ -105,6 +113,29 @@ func ReadDir(root string) ([]Entry, error) {
 		return nil, err
 	}
 	return ParseFiles(files)
+}
+
+// oldFileError is why a tree with OldFile fails: a branch from before the ledger was a directory adds its rows there,
+// and a merge that keeps the file keeps rows that admit nothing. The error names the file of each entry that Dir does
+// not hold yet, which are the rows the branch added.
+func oldFileError(root, text string) error {
+	var doc struct {
+		Entry []Entry `toml:"entry"`
+	}
+	msg := OldFile + ": the ledger is one file per entry under " + Dir + "; delete this file"
+	if _, err := toml.Decode(text, &doc); err != nil {
+		return fmt.Errorf("%s and write each [[entry]] to <first %d characters of its commit>/<its path>.toml there (the file is not TOML: %w)", msg, MinCommitLen, err)
+	}
+	var moves []string
+	for _, e := range doc.Entry {
+		if _, err := os.Lstat(filepath.Join(root, filepath.FromSlash(e.File()))); err != nil {
+			moves = append(moves, fmt.Sprintf("the [[entry]] of commit %q and path %q to %s", e.Commit, e.Path, e.File()))
+		}
+	}
+	if len(moves) == 0 {
+		return fmt.Errorf("%s: %s holds each of its %d entries", msg, Dir, len(doc.Entry))
+	}
+	return fmt.Errorf("%s after moving %s (%s holds its other %d entries)", msg, strings.Join(moves, ", "), Dir, len(doc.Entry)-len(moves))
 }
 
 // DivergenceFile is the path of the record of divergence id.

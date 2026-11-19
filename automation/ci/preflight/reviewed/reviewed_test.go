@@ -106,6 +106,55 @@ func TestReadDir(t *testing.T) {
 	}
 }
 
+// TestReadDirFailsOnTheOldFile: a tree that still has the one-file ledger fails, and the error names the file of each
+// entry the directory does not hold yet, so a merge that kept the file cannot leave rows that admit nothing.
+func TestReadDirFailsOnTheOldFile(t *testing.T) {
+	root := t.TempDir()
+	write := func(name, text string) {
+		t.Helper()
+		p := filepath.Join(root, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(text), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	fileB := Dir + "/0123456789/b/b_test.go.toml"
+	write(fileA, entryText(commitA, "a/a_test.go"))
+	for _, tc := range []struct {
+		name, text string
+		want, not  []string
+	}{
+		{"an entry the directory lacks", entryText(commitA, "a/a_test.go") + entryText(commitA, "b/b_test.go"), []string{OldFile, "after moving", fileB, "its other 1 entries"}, []string{fileA}},
+		{"every entry is in the directory", entryText(commitA, "a/a_test.go"), []string{OldFile, "delete this file", "each of its 1 entries"}, []string{"moving"}},
+		{"no entry", "", []string{OldFile, "delete this file", "each of its 0 entries"}, []string{"moving"}},
+		{"not TOML", "[[entry\n", []string{OldFile, "delete this file", "not TOML"}, nil},
+	} {
+		write(OldFile, tc.text)
+		_, err := ReadDir(root)
+		if err == nil {
+			t.Fatalf("%s: a tree with %s must fail", tc.name, OldFile)
+		}
+		for _, w := range tc.want {
+			if !strings.Contains(err.Error(), w) {
+				t.Errorf("%s: the error does not say %q: %v", tc.name, w, err)
+			}
+		}
+		for _, w := range tc.not {
+			if strings.Contains(err.Error(), w) {
+				t.Errorf("%s: the error says %q: %v", tc.name, w, err)
+			}
+		}
+	}
+	if err := os.Remove(filepath.Join(root, filepath.FromSlash(OldFile))); err != nil {
+		t.Fatal(err)
+	}
+	if entries, err := ReadDir(root); err != nil || len(entries) != 1 {
+		t.Fatalf("without the old file the tree holds the entry of the directory: %+v, %v", entries, err)
+	}
+}
+
 func TestMatches(t *testing.T) {
 	e := Entry{Path: "a/a_test.go", Commit: "0123456789"}
 	full := "0123456789abcdef0123456789abcdef01234567"
