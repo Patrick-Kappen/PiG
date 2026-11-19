@@ -153,8 +153,22 @@ func TestKillTrackedDetachedChildrenReturnsAfterAPanicInTheSpawn(t *testing.T) {
 // leaves no server behind. Go runs no exit hooks, so the exits that skip the orderly session shutdown call
 // KillTrackedDetachedChildren, which also ends the MCP servers' groups. A server that has not answered `initialize`
 // is live too.
+//
+// This package does not link the MCP kill (a pig_strip_mcp build links no mcp): coding/mcpext registers it with
+// RegisterExitCleanup, and so does this test. Without the registration the server was never killed and the test passed
+// when its `sleep 60` ended by itself, after a minute; the server now outlives the wait, so only the kill ends it.
 func TestKillTrackedDetachedChildrenEndsRunningMCPStdioServers(t *testing.T) {
-	transport := mcp.NewStdioTransport(mcp.StdioTransportOptions{Command: "sleep", Args: []string{"60"}})
+	exitCleanupsMu.Lock()
+	registered := exitCleanupFns
+	exitCleanupsMu.Unlock()
+	t.Cleanup(func() {
+		exitCleanupsMu.Lock()
+		exitCleanupFns = registered
+		exitCleanupsMu.Unlock()
+	})
+	RegisterExitCleanup(mcp.KillLiveProcessGroups)
+
+	transport := mcp.NewStdioTransport(mcp.StdioTransportOptions{Command: "sleep", Args: []string{"600"}})
 	if err := transport.Start(); err != nil {
 		t.Fatal(err)
 	}
