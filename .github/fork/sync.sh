@@ -245,13 +245,15 @@ notes=$(mktemp)
 
 ensure_label sync 0e8a16 "A fork sync pull request"
 ensure_label "sync:$name" 0e8a16 "The $name fork sync"
+# A sync merges itself once the required checks pass, and with PIG_PR_CI_LIGHT=label only the full run passes CI result.
+ensure_label ci:full 5319e7 "Run the full CI set on this pull request"
 title="sync($name): $source_repo $source_branch $short into $target"
 if [[ -n $open_pr ]]; then
-	gh pr edit "$open_pr" --repo "$repo" --title "$title" --body-file "$notes" >/dev/null
+	gh pr edit "$open_pr" --repo "$repo" --title "$title" --body-file "$notes" --add-label ci:full >/dev/null
 	pr=$open_pr
 else
 	pr=$(gh pr create --repo "$repo" --head "$sync_branch" --base "$target" --title "$title" --body-file "$notes" \
-		--label sync --label "sync:$name" | sed -n 's|.*/pull/\([0-9]*\)$|\1|p')
+		--label sync --label "sync:$name" --label ci:full | sed -n 's|.*/pull/\([0-9]*\)$|\1|p')
 fi
 rm -f "$notes"
 if [[ -n $conflict_issue ]]; then

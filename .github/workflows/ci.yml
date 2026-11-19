@@ -178,7 +178,7 @@ jobs:
     # A failed verdict skips this job, every job after it, and fails CI result.
     # The fail-fast gate: every job that spends real minutes waits for it, so a stale generated file, a stale ledger, a missing
     # sign-off or a broken policy gate stops the run in minutes. It runs only what needs Go, Python and the Pi source mirror
-    # (make ci-bookkeeping): no oracle build, no npm install, no test binaries. Gates that need those stay in their shards.
+    # (make ci-bookkeeping-pr; make ci-bookkeeping outside a pull request): no oracle build, no npm install, no test binaries. Gates that need those stay in their shards.
     # A failure whose only cause is a committed file that make generate rewrites feeds the autofix workflow (item below).
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -264,7 +264,24 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          make -k -j4 -O ci-bookkeeping 2>&1 | tee "$RUNNER_TEMP/bookkeeping.log"
+          make -k -j4 -O ci-bookkeeping-pr 2>&1 | tee "$RUNNER_TEMP/bookkeeping.log"
+      # A stale committed report (make ci-bookkeeping-reports: the bug ledger, coverage, known gaps, the custom-factory ledger)
+      # fails no build, no test and no other gate of a pull request, and every change of its kind rewrites it, so a pull
+      # request does not compare them: with ci-bookkeeping-pr above this is the whole of make ci-bookkeeping, on every other event. Fork (Patrick-Kappen/PiG): a stale report warns and does not fail the run or hold back the jobs that
+      # wait for this one. The fork does not regenerate reports; a sync takes upstream's copies (.github/fork/README.md).
+      - name: Compare the committed reports
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        env:
+          CI: '1'
+        shell: bash
+        run: |
+          set -o pipefail
+          if ! make -k -j4 -O ci-bookkeeping-reports 2>&1 | tee "$RUNNER_TEMP/reports.log"; then
+            stale=$(sed -n 's/^make.*\*\*\* \[[^]]*: \([a-z-]*\)\] Error.*/\1/p' "$RUNNER_TEMP/reports.log" | sort -u | tr '\n' ' ')
+            echo "::warning::stale committed reports: ${stale:-see the log}"
+            echo "Stale committed reports: \`${stale:-see the log}\`. Regenerate with \`make generate\`." >> "$GITHUB_STEP_SUMMARY"
+          fi
       # When every failed gate is one whose remedy is regenerating committed files (automation/ci/autofix-gates.txt), regenerate
       # them here, check the failed gates pass on the result, and keep the changed files as an artifact. This job holds a read-only
       # token and runs the pull request's own code; the autofix workflow, which holds the write token, runs none of it. It reads

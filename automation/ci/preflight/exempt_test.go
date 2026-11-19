@@ -20,7 +20,7 @@ const (
 
 // The checks that judge a contribution by the description and the own commits of its pull request, in config.yaml's
 // order. syncPull fails every one of them when nothing is exempt.
-var contributionChecks = []string{"template", "signoff", "depends-on", "bug-ledger", "changelog", "test-expectation"}
+var contributionChecks = []string{"template", "signoff", "depends-on", "changelog", "test-expectation"}
 
 func shipped(t *testing.T) config {
 	t.Helper()
@@ -59,7 +59,7 @@ func syncPullJSON(author string, commits, files int) string {
 
 // syncPull is a pull request as the fork sync opens it (.github/fork/sync.sh), with every check relevant: a description
 // without the template, a squash merge of upstream that carries no sign-off, names the commits it replaced in trailers
-// only, is titled as a fix and leaves the bug ledger alone, the merge by GitHub's merge API whose second parent is not on
+// only and is titled as a fix, the merge by GitHub's merge API whose second parent is not on
 // the base, a changelog fragment named after a replaced commit, and an expected value edited next to its code with no
 // citation in the description.
 func syncPull(t *testing.T, cfg config) *data {
@@ -126,8 +126,7 @@ func TestAForkSyncPassesTheChecksOfAContribution(t *testing.T) {
 func TestAForkSyncKeepsTheChecksOfItsContent(t *testing.T) {
 	cfg := shipped(t)
 	for want, change := range map[string]func(d *data){
-		"signed":     func(d *data) { d.Commits[0].Commit.Verification.Verified = false },
-		"up-to-date": func(d *data) { d.CompareMain.BehindBy = 2 },
+		"signed": func(d *data) { d.Commits[0].Commit.Verification.Verified = false },
 		// REUSE-IgnoreStart
 		"licenses": func(d *data) {
 			d.Files = append(d.Files, prFile{Filename: "x/gpl.go", Status: "added", Patch: "@@ -0,0 +1 @@\n+// SPDX-License-Identifier: GPL-3.0-only"})

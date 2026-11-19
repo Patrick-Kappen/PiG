@@ -564,6 +564,7 @@ bug-ledger-refresh: ## Recompute every bug ledger entry from the history, as a r
 
 bug-ledger-check: ## Fail when a fix has no ledger entry, an entry names a missing test, or the committed ledger is stale
 	@go run ./automation/ci/bugledger -check
+	@PIG_REPORT_GATES=1 go test ./test/docs-drift/ -count=1 -run '^TestBugLedgerTestsExist$$'
 
 # release-notes-draft prints draft release notes for NOTES_VERSION (default: the current PiG release) from CHANGELOG.md, changelog.d, the bug fix ledger and the divergence records. It writes docs/release/<version>-release-notes-draft.md only when that file is absent, so it never overwrites an owner's edits; remove the file to regenerate it.
 NOTES_VERSION ?= $(shell sed -n 's/^const PigVersion = "\(.*\)"/\1/p' internal/coding/pigversion/pigversion.go)

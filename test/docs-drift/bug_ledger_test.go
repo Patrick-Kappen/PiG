@@ -84,7 +84,19 @@ func TestBugLedgerEntriesAreComplete(t *testing.T) {
 	}
 }
 
+// reportGate skips a test that compares a committed report with the rest of the tree unless PIG_REPORT_GATES is 1.
+// A pull request does not regenerate the reports (make ci-bookkeeping-reports, automation/make/ci.mk), so a test of one
+// would fail a pull request for a file its author did not write. make bug-ledger-check sets the variable.
+func reportGate(t *testing.T) {
+	t.Helper()
+	if os.Getenv("PIG_REPORT_GATES") != "1" {
+		t.Skip("a report gate: make bug-ledger-check runs it (PIG_REPORT_GATES=1), outside a pull request")
+	}
+}
+
+// A pull request that renames or removes a test an entry names does not regenerate the ledger, so this is a report gate.
 func TestBugLedgerTestsExist(t *testing.T) {
+	reportGate(t)
 	l, _ := readBugLedger(t)
 	checked := 0
 	for _, e := range l.Entries {
