@@ -2811,7 +2811,11 @@ func TestHostReportsABatchAndARegistryFailureToOnErrorWithTheirOwnFields(t *test
 	// The reload changes the title: its frame is the one the failing listener gets.
 	_, err = host.Reload([]HostFacet{{Name: "@app/info", Facet: infoFacet("b")}, {Name: "@app/names", Facet: registry}}, background, ReloadOptions{})
 	must(t, err)
-	_, _ = host.Registry(background, registries.Registry[any, any](names), GetOptions{})
+	// The read composes the registry, which fails and is reported at once; the value never becomes usable, so the read itself
+	// ends at its deadline with the compose's error. Under the host's default deadline that took 60 s.
+	if _, err = host.Registry(background, registries.Registry[any, any](names), rvWithin(5*time.Millisecond)); !errors.Is(err, composeBoom) {
+		t.Fatalf("host.registry = %v, want %v", err, composeBoom)
+	}
 
 	eventually(t, "a listener_error and a registry_failed are reported", func() bool {
 		var kinds []HostErrorKind
