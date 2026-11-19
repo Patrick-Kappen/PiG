@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/next/host/host_activity_test.go"
+commit = "0b76ae5e5feed52171c3a8bda3cc0edf9f38e33f"
+class = "CITE"
+cite = "packages/chord/test/next/host/activity.test.ts:67"
+reason = "The red commit expected a later watch of the activity to read references:1 for a host whose test holds one reference of its own to a local object. Pi's activity counts only holds that arrive over links and are served here, never the host's own references: activity.test.ts:67 (and :93) expects references: 0 with the counter got by host.get on the same host, and :111 expects only calls: 1 in the test this one mirrors. The expected text is now references 0, calls 1, as Pi's."

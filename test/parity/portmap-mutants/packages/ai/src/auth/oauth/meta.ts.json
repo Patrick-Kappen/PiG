@@ -1,0 +1,12 @@
+[
+ {
+  "file": "ai/oauth_meta.go",
+  "old": "\"1031625952748946\"",
+  "new": "\"1031625952748947\""
+ },
+ {
+  "file": "ai/oauth_meta.go",
+  "old": "Expires: p.now().Add(metaAPIKeyLifetime).UnixMilli(),",
+  "new": "Expires: p.now().Add(metaAPIKeyLifetime).UnixMilli() + 1,"
+ }
+]

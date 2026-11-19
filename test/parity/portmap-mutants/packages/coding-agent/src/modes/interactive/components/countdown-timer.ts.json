@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/countdown_timer.go",
+  "old": "\tif r > 0 {",
+  "new": "\tif r <= 0 {"
+ }
+]

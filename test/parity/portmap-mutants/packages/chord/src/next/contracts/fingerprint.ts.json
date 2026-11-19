@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/contracts/fingerprint.go",
+  "old": "slices.SortStableFunc(entries, func(a, b normalEntry) int { return compare16(a.name, b.name) })",
+  "new": "slices.SortStableFunc(entries, func(a, b normalEntry) int { return compare16(b.name, a.name) })"
+ }
+]

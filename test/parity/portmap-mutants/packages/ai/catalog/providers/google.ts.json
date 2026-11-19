@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/google.go",
+  "old": "\"gemini-flash-latest\"",
+  "new": "\"gemini-flash-latesZ\""
+ }
+]

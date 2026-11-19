@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/resolver.go",
+  "old": "if strings.HasPrefix(fragment, \"/\") {",
+  "new": "if strings.HasPrefix(fragment, \"//\") {"
+ }
+]

@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/codingagent/tools/bash_executor.go",
+  "old": "\"\\r\", \"\")",
+  "new": "\"\\r\", \" \")"
+ },
+ {
+  "file": "internal/codingagent/tools/bash_executor.go",
+  "old": "\tif cancelled {\n\t\texitCode = nil\n\t}",
+  "new": "\tif !cancelled {\n\t\texitCode = nil\n\t}"
+ },
+ {
+  "file": "internal/codingagent/tools/bash_executor.go",
+  "old": "for outputBytes > maxOutputBytes && len(outputChunks) > 1 {",
+  "new": "for outputBytes > maxOutputBytes*2 && len(outputChunks) > 1 {"
+ }
+]

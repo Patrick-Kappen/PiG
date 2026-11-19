@@ -1,0 +1,17 @@
+[
+ {
+  "file": "ai/model_utils.go",
+  "old": "input*2*float64(longWrite)",
+  "new": "input*3*float64(longWrite)"
+ },
+ {
+  "file": "ai/models_runtime_stream.go",
+  "old": "\"Provider is not configured: \"",
+  "new": "\"Provider not configured: \""
+ },
+ {
+  "file": "ai/models_runtime_auth.go",
+  "old": "\"Credential store delete failed for \"",
+  "new": "\"Credential store remove failed for \""
+ }
+]

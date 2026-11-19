@@ -1,0 +1,17 @@
+[
+ {
+  "file": "ai/text.go",
+  "old": "\tsep := \"\\n\"\n",
+  "new": "\tsep := \" \"\n"
+ },
+ {
+  "file": "ai/transcript.go",
+  "old": "Removed system prompt section \\\"%s\\\"",
+  "new": "Removed prompt section \\\"%s\\\""
+ },
+ {
+  "file": "ai/estimate.go",
+  "old": "parts = append(parts, strings.Join(texts, \"\\n\"))",
+  "new": "parts = append(parts, strings.Join(texts, \"\\n\\n\"))"
+ }
+]

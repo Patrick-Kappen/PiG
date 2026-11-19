@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/auth_providers.go",
+  "old": "return &AuthResult{Env: credentialEnv(credential), Source: \"AWS_PROFILE\"}, ctx.Err()",
+  "new": "return &AuthResult{Env: credentialEnv(credential), Source: \"AWS_PROFILE_ENV\"}, ctx.Err()"
+ }
+]

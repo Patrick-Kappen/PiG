@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/family_anthropic.go",
+  "old": "\"claude-opus-5\"",
+  "new": "\"claude-opus-Z\""
+ }
+]

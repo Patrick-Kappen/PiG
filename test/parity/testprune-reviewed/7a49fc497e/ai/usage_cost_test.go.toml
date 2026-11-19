@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/usage_cost_test.go"
+commit = "7a49fc497efa3e8674b98dc3fc3bcf1a1c8bf68d"
+class = "CITE"
+cite = "packages/ai/src/models.ts:1255"
+reason = "Pi 7c22a93d0 (#11178) writes `totalFromProvider: false` into the cost calculateCost prices from catalog rates (models.ts:1255), after total in the serialized cost (verified by running Pi's calculateCost, as the commit says), so each catalog-priced usage string expects the added `\"totalFromProvider\":false` member."

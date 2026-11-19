@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/xiaomi_token_plan_ams.go",
+  "old": "\"xiaomi-token-plan-ams\"",
+  "new": "\"xiaomi-token-plan-amZ\""
+ }
+]

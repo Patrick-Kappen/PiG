@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/contracts/params.go",
+  "old": "\"maxLength\", \"pattern\", \"format\"}",
+  "new": "\"maxLength\", \"format\"}"
+ }
+]

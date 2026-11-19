@@ -1,0 +1,12 @@
+[
+ {
+  "file": "coding/extension/builtin/toolsearch/toolsearch.go",
+  "old": "\treturn normalized == query || strings.HasSuffix(normalized, \"__\"+query)\n",
+  "new": "\treturn normalized == query\n"
+ },
+ {
+  "file": "coding/extension/builtin/toolsearch/toolsearch.go",
+  "old": "\t\t\treturn ranked[a].exact\n",
+  "new": "\t\t\treturn !ranked[a].exact\n"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/documents/transaction.go",
+  "old": "\te.draft = nil\n\te.retire = true",
+  "new": "\te.draft = nil\n\te.retire = false"
+ }
+]

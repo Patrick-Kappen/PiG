@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/state/derive.go",
+  "old": "if beforeKind != framedNoValue {",
+  "new": "if beforeKind == framedNoValue {"
+ }
+]

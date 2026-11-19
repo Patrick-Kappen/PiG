@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/host/loader.go",
+  "old": "\t\tName: info.name,\n",
+  "new": "\t\tName: info.name + \"?\",\n"
+ }
+]

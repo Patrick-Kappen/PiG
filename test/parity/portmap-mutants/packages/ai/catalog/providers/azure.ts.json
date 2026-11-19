@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/azure.go",
+  "old": "\"gpt-5.4\"",
+  "new": "\"gpt-5.Z\""
+ }
+]

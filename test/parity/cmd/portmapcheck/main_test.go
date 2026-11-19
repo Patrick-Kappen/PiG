@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"slices"
 	"strconv"
@@ -397,15 +398,19 @@ func TestInstallingTheOracleInvalidatesTheCache(t *testing.T) {
 	}
 }
 
-// markerFixture is a Pi file with no ledger member, a Go test that carries `// pi:` and runs the cited code, and a mutants file.
+// markerFixture is a Pi file with no ledger member, a Go test that carries `// pi:` and runs the cited code, and the file of the Pi
+// file's mutants, the JSON list mutants; with no mutants the file is absent.
 func markerFixture(t *testing.T, testBody, mutants string) string {
 	t.Helper()
-	root := fixture(t, "lib/widget.go, lib/widget_test.go", "✅", map[string]string{
+	files := map[string]string{
 		"go.mod":             "module fixture\n\ngo 1.26\n",
 		"lib/widget.go":      "package lib\n\ntype Widget struct{ Name string }\n\nfunc (w Widget) Hello() string { return \"hello \" + w.Name }\n",
 		"lib/widget_test.go": testBody,
-		mutantsFile:          mutants,
-	}, nil, nil)
+	}
+	if mutants != "" {
+		files[mutantsFileOf("packages/fx/src/widget.ts")] = mutants
+	}
+	root := fixture(t, "lib/widget.go, lib/widget_test.go", "✅", files, nil, nil)
 	if err := os.WriteFile(filepath.Join(root, "test/parity/interfaces/upstream-v1.0.0.json"), []byte(`{"packages":[],"interfaces":[]}`), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -417,20 +422,21 @@ func markerFixture(t *testing.T, testBody, mutants string) string {
 func TestMarkerRowIsProvenByCoverageAndAKilledMutant(t *testing.T) {
 	const marked = "package lib\n\nimport \"testing\"\n\n// pi: packages/fx/src/widget.ts\nfunc TestWidget(t *testing.T) {\n\tif (Widget{Name: \"a\"}).Hello() != \"hello a\" {\n\t\tt.Fatal(\"hello\")\n\t}\n}\n"
 	const slack = "package lib\n\nimport \"testing\"\n\n// pi: packages/fx/src/widget.ts\nfunc TestWidget(t *testing.T) { _ = Widget{Name: \"a\"}.Hello() }\n"
-	twice := `{"packages/fx/src/widget.ts":[{"file":"lib/widget.go","old":"\"hello \" + w.Name","new":"\"bye \" + w.Name"}]}`
-	killer := `{"packages/fx/src/widget.ts":[{"file":"lib/widget.go","old":"\"hello \" + w.Name","new":"\"bye \" + w.Name"}]}`
+	twice := `[{"file":"lib/widget.go","old":"\"hello \" + w.Name","new":"\"bye \" + w.Name"}]`
+	killer := `[{"file":"lib/widget.go","old":"\"hello \" + w.Name","new":"\"bye \" + w.Name"}]`
 	for _, tc := range []struct {
 		name, body, mutants, want string
 	}{
 		{"coverage and a killed mutant", marked, killer, ""},
-		{"no mutant listed", marked, `{}`, "names no mutant"},
+		{"no mutant listed", marked, ``, "test/parity/portmap-mutants/packages/fx/src/widget.ts.json names no mutant"},
+		{"an empty list of mutants", marked, `[]`, "names no mutant"},
 		{"the old text is ambiguous (two sites)", marked, twice, "the old text occurs 2 times, not once"},
 		{"the tests assert nothing: the mutant survives", slack, killer, "no listed mutant makes the marker tests fail (the tests would pass without the cited code) [lib/widget.go: the tests passed with the mutant]"},
-		{"the mutant text is absent from the file", marked, `{"packages/fx/src/widget.ts":[{"file":"lib/widget.go","old":"nope","new":"x"}]}`, "the old text occurs 0 times, not once"},
-		{"the mutant does not compile", marked, `{"packages/fx/src/widget.ts":[{"file":"lib/widget.go","old":"\"hello \" + w.Name","new":"undefined"}]}`, "the mutant did not build: "},
-		{"the mutant panics: the slack test only executes the code", slack, `{"packages/fx/src/widget.ts":[{"file":"lib/widget.go","old":"\"hello \" + w.Name","new":"func() string { panic(w.Name) }()"}]}`, "the mutant panicked: panic: a"},
-		{"the mutant edits the evidence test", slack, `{"packages/fx/src/widget.ts":[{"file":"lib/widget_test.go","old":"_ = Widget","new":"t.Fatal(); _ = Widget"}]}`, "is a test file"},
-		{"the mutant edits an uncited file", marked, `{"packages/fx/src/widget.ts":[{"file":"lib/other.go","old":"Unrelated","new":"X"}]}`, "is not a cited file"},
+		{"the mutant text is absent from the file", marked, `[{"file":"lib/widget.go","old":"nope","new":"x"}]`, "the old text occurs 0 times, not once"},
+		{"the mutant does not compile", marked, `[{"file":"lib/widget.go","old":"\"hello \" + w.Name","new":"undefined"}]`, "the mutant did not build: "},
+		{"the mutant panics: the slack test only executes the code", slack, `[{"file":"lib/widget.go","old":"\"hello \" + w.Name","new":"func() string { panic(w.Name) }()"}]`, "the mutant panicked: panic: a"},
+		{"the mutant edits the evidence test", slack, `[{"file":"lib/widget_test.go","old":"_ = Widget","new":"t.Fatal(); _ = Widget"}]`, "is a test file"},
+		{"the mutant edits an uncited file", marked, `[{"file":"lib/other.go","old":"Unrelated","new":"X"}]`, "is not a cited file"},
 	} {
 		root := markerFixture(t, tc.body, tc.mutants)
 		if strings.HasPrefix(tc.name, "the old text is ambiguous") {
@@ -579,7 +585,9 @@ func sharedFixture(t *testing.T) string {
 		"lib/c_test.go": "package lib\n\nimport \"testing\"\n\n// pi: packages/fx/src/c.ts\nfunc TestC(t *testing.T) { _ = C(); t.Fatal(\"red\") }\n",
 		"test/parity/interfaces/upstream-v1.0.0.json": `{"packages":[],"interfaces":[]}`,
 		"test/parity/interfaces/mapping-v1.0.0.json":  `{"mappings":[]}`,
-		mutantsFile: `{"packages/fx/src/a.ts":[` + mutant("A") + `],"packages/fx/src/b.ts":[` + mutant("B") + `],"packages/fx/src/c.ts":[` + mutant("C") + `]}`,
+		mutantsFileOf("packages/fx/src/a.ts"):         `[` + mutant("A") + `]`,
+		mutantsFileOf("packages/fx/src/b.ts"):         `[` + mutant("B") + `]`,
+		mutantsFileOf("packages/fx/src/c.ts"):         `[` + mutant("C") + `]`,
 		"docs/parity/PORT_MAP.md": "| upstream | pig | status |\n|---|---|---|\n" +
 			"| `packages/fx/src/a.ts` | `lib/a.go, lib/a_test.go` | ✅ |\n" +
 			"| `packages/fx/src/b.ts` | `lib/b.go, lib/b_test.go` | ✅ |\n" +
@@ -657,8 +665,8 @@ func TestAKilledMutantIsCachedWithItsRecord(t *testing.T) {
 		t.Errorf("second run built %d test binaries, want 1 (b and c rerun)", got)
 	}
 	// Editing a's mutant to one that survives must not reuse the record that its old mutant was killed.
-	surviving := `{"packages/fx/src/a.ts":[{"file":"lib/a.go","old":"return \"A\"","new":"return \"A\""}]}`
-	if err := os.WriteFile(filepath.Join(root, mutantsFile), []byte(surviving), 0o644); err != nil {
+	surviving := `[{"file":"lib/a.go","old":"return \"A\"","new":"return \"A\""}]`
+	if err := os.WriteFile(filepath.Join(root, mutantsFileOf("packages/fx/src/a.ts")), []byte(surviving), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	res, err = checkWith(root, true)
@@ -923,7 +931,7 @@ func brokenGo(t *testing.T, match, out string) {
 // the real cause and leaves the row INFRASTRUCTURE, never MARKER-UNPROVEN; a mutation that merely does not compile stays "not killed".
 func TestInfrastructureFailuresAreNotFindingsAboutARow(t *testing.T) {
 	const marked = "package lib\n\nimport \"testing\"\n\n// pi: packages/fx/src/widget.ts\nfunc TestWidget(t *testing.T) {\n\tif (Widget{Name: \"a\"}).Hello() != \"hello a\" {\n\t\tt.Fatal(\"hello\")\n\t}\n}\n"
-	const mutant = `{"packages/fx/src/widget.ts":[{"file":"lib/widget.go","old":"\"hello \" + w.Name","new":"\"bye \" + w.Name"}]}`
+	const mutant = `[{"file":"lib/widget.go","old":"\"hello \" + w.Name","new":"\"bye \" + w.Name"}]`
 	for _, tc := range []struct{ name, match, out string }{
 		{"the mutant's build cache is on a full disk", "-overlay", "compile: write $WORK/b001/_pkg_.a: no space left on device"},
 		{"the compiler is killed during the mutant's build", "-overlay", "go: error obtaining buildID for go tool compile: signal: killed"},
@@ -1047,7 +1055,7 @@ func TestMutantReplaysLeaveTheSharedBuildCacheAlone(t *testing.T) {
 		t.Skip("the stand-in go is a shell script")
 	}
 	const marked = "package lib\n\nimport \"testing\"\n\n// pi: packages/fx/src/widget.ts\nfunc TestWidget(t *testing.T) {\n\tif (Widget{Name: \"a\"}).Hello() != \"hello a\" {\n\t\tt.Fatal(\"hello\")\n\t}\n}\n"
-	const mutant = `{"packages/fx/src/widget.ts":[{"file":"lib/widget.go","old":"\"hello \" + w.Name","new":"\"bye \" + w.Name"}]}`
+	const mutant = `[{"file":"lib/widget.go","old":"\"hello \" + w.Name","new":"\"bye \" + w.Name"}]`
 	realCache := strings.TrimSpace(goEnv(t, "GOCACHE"))
 	real, err := exec.LookPath("go")
 	if err != nil {
@@ -1092,4 +1100,46 @@ func goEnv(t *testing.T, name string) string {
 		t.Fatal(err)
 	}
 	return string(out)
+}
+
+// TestReadMutants: each Pi file's mutants are the JSON list in the file named after it, and a file that is not one fails by name.
+func TestReadMutants(t *testing.T) {
+	root := t.TempDir()
+	if got, err := readMutants(root); err != nil || len(got) != 0 {
+		t.Fatalf("a tree without %s lists no mutant: %v %v", mutantsDir, got, err)
+	}
+	write := func(name, body string) {
+		t.Helper()
+		p := filepath.Join(root, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(mutantsFileOf("packages/fx/src/a.ts"), `[{"file":"lib/a.go","old":"x","new":"y"}]`)
+	write(mutantsFileOf("packages/fx/README.md"), `[{"file":"lib/b.go","old":"1","new":"2"},{"file":"lib/b.go","old":"3","new":"4"}]`)
+	got, err := readMutants(root)
+	want := map[string][]mutant{
+		"packages/fx/src/a.ts":  {{File: "lib/a.go", Old: "x", New: "y"}},
+		"packages/fx/README.md": {{File: "lib/b.go", Old: "1", New: "2"}, {File: "lib/b.go", Old: "3", New: "4"}},
+	}
+	if err != nil || !reflect.DeepEqual(got, want) {
+		t.Fatalf("readMutants = %v, %v, want %v", got, err, want)
+	}
+	// The one file of all mutants is no longer read: a tree that still has it fails instead of proving no row by it.
+	for name, body := range map[string]string{
+		mutantsFileOf("packages/fx/src/bad.ts"): `{"packages/fx/src/bad.ts":[]}`,
+		mutantsDir + "/packages/fx/src/c.ts":    `[]`,
+		oldMutantsFile:                          `{"packages/fx/src/a.ts":[{"file":"lib/a.go","old":"x","new":"y"}]}`,
+	} {
+		write(name, body)
+		if _, err := readMutants(root); err == nil || !strings.Contains(err.Error(), name) {
+			t.Errorf("%s must be an error naming it: %v", name, err)
+		}
+		if err := os.Remove(filepath.Join(root, filepath.FromSlash(name))); err != nil {
+			t.Fatal(err)
+		}
+	}
 }

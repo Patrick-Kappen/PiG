@@ -1,0 +1,22 @@
+[
+ {
+  "file": "tui/alt_screen_flash.go",
+  "old": "widthx.TruncateToWidth(\" \"+entry.message+\" \", width, \"\", false)",
+  "new": "widthx.TruncateToWidth(\" \"+entry.message, width, \"\", false)"
+ },
+ {
+  "file": "tui/alt_screen_flash.go",
+  "old": "\"\\x1b[7m\" + message + \"\\x1b[27m\"",
+  "new": "\"\\x1b[7m\" + message + \"\\x1b[0m\""
+ },
+ {
+  "file": "tui/alt_screen_flash.go",
+  "old": "\t\tif removed {\n",
+  "new": "\t\tif !removed {\n"
+ },
+ {
+  "file": "tui/alt_screen_flash.go",
+  "old": "c.entries = append(c.entries[:i], c.entries[i+1:]...)",
+  "new": "c.entries = c.entries[:i]"
+ }
+]

@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/modelgen/modeldata/model_data.go",
+  "old": "out.WriteString(\":{\")",
+  "new": "out.WriteString(\":[\")"
+ },
+ {
+  "file": "internal/modelgen/modeldata/model_data_json.go",
+  "old": "result == \"true\"",
+  "new": "result == \"truz\""
+ }
+]

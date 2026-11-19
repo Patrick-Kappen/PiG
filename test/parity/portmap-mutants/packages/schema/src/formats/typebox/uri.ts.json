@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_uri.go",
+  "old": "bool { return uriRE.MatchString(value) }",
+  "new": "bool { return !uriRE.MatchString(value) }"
+ }
+]

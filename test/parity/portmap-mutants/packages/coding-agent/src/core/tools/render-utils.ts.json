@@ -1,0 +1,27 @@
+[
+ {
+  "file": "tui/tool_call_args.go",
+  "old": "\tif len(trimmed) == 0 || !json.Valid(trimmed) {",
+  "new": "\tif len(trimmed) != 0 || !json.Valid(trimmed) {"
+ },
+ {
+  "file": "internal/codingagent/tools/render_text_output.go",
+  "old": "\t\t\tif mimeType == \"\" {",
+  "new": "\t\t\tif mimeType != \"\" {"
+ },
+ {
+  "file": "internal/codingagent/tool_render_shell.go",
+  "old": "\treturn strings.ReplaceAll(text, \"\\r\", \"\")",
+  "new": "\treturn text"
+ },
+ {
+  "file": "internal/codingagent/tool_render.go",
+  "old": "\treturn strings.ReplaceAll(s, \"\\t\", \"   \")",
+  "new": "\treturn strings.ReplaceAll(s, \"\\t\", \"  \")"
+ },
+ {
+  "file": "tui/tool_path_render.go",
+  "old": "ToolOutput, \"...\")",
+  "new": "ToolOutput, \"..\")"
+ }
+]

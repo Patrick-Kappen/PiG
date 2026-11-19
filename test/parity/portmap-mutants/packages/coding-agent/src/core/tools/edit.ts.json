@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/codingagent/tools/edit.go",
+  "old": "\"Successfully replaced %d block(s) in %s.\"",
+  "new": "\"Successfully replaced %d blocks in %s.\""
+ },
+ {
+  "file": "internal/codingagent/tools/edit.go",
+  "old": "detail = \"Error code: \" + code",
+  "new": "detail = \"Error: \" + err.Error()"
+ },
+ {
+  "file": "internal/codingagent/tools/edit.go",
+  "old": "normalized := normalizeToLF(content)",
+  "new": "normalized := content"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/opencode_go.go",
+  "old": "\"opencode-go\"",
+  "new": "\"opencode-gZ\""
+ }
+]

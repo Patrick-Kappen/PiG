@@ -6,20 +6,20 @@ SPDX-License-Identifier: MIT
 
 One line per failure that reached CI and could have been caught before the push, or that looks like a code failure but is not one. Each line gives the symptom, the cause, and the local remedy. The linked documents remain the authority for each rule; this list only points at them. Add a line when a new kind of failure costs a CI round.
 
-Before every push, run `make ci-bookkeeping ci-preflight ci-drift ci-contracts` (the contract gate of [Test economy](test-economy.md)). It catches most of the items below in minutes, where each missed one costs a CI round of an hour or more.
+Before every push, run `make ci-bookkeeping-pr ci-preflight ci-drift ci-contracts` (the contract gate of [Test economy](test-economy.md)). It catches most of the items below in minutes, where each missed one costs a CI round of an hour or more.
 
 ## Pre-flight
 
 - `template` ❌: the PR body lacks `Tracking:`, `Depends on:`, `Fix:` or `User-facing:`; start from `.github/pull_request_template.md`.
 - `signoff` ❌: a commit, often a quick fixup, was made without `git commit --signoff`.
 - `up-to-date` ❌: the branch is behind `main`; rebase on `origin/main` before you push.
-- `bug-ledger` or `changelog` ❌: a fix commit has no ledger entry or fragment; run `make bug-ledger`, add `changelog.d/<lane>-<sha>.md`, or add a `Bug-Ledger: exempt` trailer ([Contributing](../../.github/CONTRIBUTING.md), step 9).
+- `changelog` ❌: a fix or user-facing change has no fragment; add `changelog.d/<lane>-<sha>.md` ([Contributing](../../.github/CONTRIBUTING.md), step 9).
 - A rejected pre-flight skips every heavy job; read the pre-flight comment on the pull request, not the red `CI result`.
 
 ## Bookkeeping
 
 - `TestChangelogFragmentsFollowTheRules`: the fragment name or a `<!-- fix: <sha> -->` marker names a commit that a rebase, squash or amend replaced; rename it to the new SHA.
-- `bug-ledger-check`: a commit titled as a fix has no ledger entry; run `make bug-ledger` and commit both ledger files.
+- `bug-ledger-check` (outside a pull request, `make ci-bookkeeping-reports`): a commit titled as a fix has no ledger entry; run `make bug-ledger` on `main` and commit both ledger files.
 - `divergence-quality` `missing SCRUTINIZED:approved`: a new `D<n>` record in `docs/additive-features.md` or `docs/parity/DIVERGENCES.md` lacks its approval marker.
 - `sdk-bundles-drift`: an SDK source or dependency changed without regenerating its compressed copy; run `make sdk-bundles` (autofix has no generator for it).
 - `##[error]note: test/parity/testprune-reviewed.toml: prunable ledger entry`: a note, not the failure; look for the `make: *** [...] Error` line.

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/contracts/names.go",
+  "old": "c == '~'",
+  "new": "c == '!'"
+ }
+]

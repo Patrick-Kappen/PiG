@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/llama/huggingface.go",
+  "old": "[2]string{\"limit\", \"20\"},",
+  "new": "[2]string{\"limit\", \"21\"},"
+ },
+ {
+  "file": "internal/codingagent/llama/huggingface.go",
+  "old": "[2]string{\"filter\", \"gguf\"},",
+  "new": "[2]string{\"filter\", \"gguff\"},"
+ }
+]

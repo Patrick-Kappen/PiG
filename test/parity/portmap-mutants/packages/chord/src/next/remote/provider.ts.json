@@ -1,0 +1,12 @@
+[
+ {
+  "file": "chord/next/host/remote_provider.go",
+  "old": "Code: data.CodeAborted, Message: fmt.Sprintf(\"call %d: aborted by its caller\", id)",
+  "new": "Code: data.CodeUnavailable, Message: fmt.Sprintf(\"call %d: aborted by its caller\", id)"
+ },
+ {
+  "file": "chord/next/host/remote_provider.go",
+  "old": "Code: data.CodeNotReady, Message: fmt.Sprintf(\"hold %d: not bound yet\", served.id)",
+  "new": "Code: data.CodeUnavailable, Message: fmt.Sprintf(\"hold %d: not bound yet\", served.id)"
+ }
+]

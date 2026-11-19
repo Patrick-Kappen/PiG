@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/evals/cli.go",
+  "old": "slices.SortFunc(files, compareUTF16)",
+  "new": "slices.SortFunc(files, strings.Compare)"
+ },
+ {
+  "file": "internal/evals/cli.go",
+  "old": "if images.WithDocs.ID == images.WithoutDocs.ID {",
+  "new": "if images.WithDocs.ID != images.WithoutDocs.ID {"
+ },
+ {
+  "file": "cmd/pig-evals/main.go",
+  "old": "[]string{\"PI_PROVIDER\", \"PI_MODEL\", \"PI_EVAL_RUNS_PER_VARIANT\"}",
+  "new": "[]string{\"PI_PROVIDER\", \"PI_EVAL_RUNS_PER_VARIANT\"}"
+ }
+]

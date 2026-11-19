@@ -1,0 +1,22 @@
+[
+ {
+  "file": "tui/alt_screen_search.go",
+  "old": "startCol = span.startCol + max(start, span.textStart) - span.textStart",
+  "new": "startCol = span.startCol + min(start, span.textStart) - span.textStart"
+ },
+ {
+  "file": "tui/alt_screen_search.go",
+  "old": "segments[n-1].Row == span.row && startCol <= segments[n-1].EndCol",
+  "new": "segments[n-1].Row == span.row && startCol < segments[n-1].EndCol"
+ },
+ {
+  "file": "tui/alt_screen_search.go",
+  "old": "changed = sourceChanged || i.normalizedQuery == nil || normalizedQuery != *i.normalizedQuery",
+  "new": "changed = true"
+ },
+ {
+  "file": "tui/alt_screen_search.go",
+  "old": "regexp.MustCompile(\"(?i)\" + regexp.QuoteMeta(normalizedQuery))",
+  "new": "regexp.MustCompile(regexp.QuoteMeta(normalizedQuery))"
+ }
+]

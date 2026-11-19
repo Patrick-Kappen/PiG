@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/plugins/plugins_discover.go",
+  "old": "return compareUTF16(a.Name, b.Name) })",
+  "new": "return compareUTF16(b.Name, a.Name) })"
+ }
+]

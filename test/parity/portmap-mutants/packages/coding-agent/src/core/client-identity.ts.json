@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/client_identity.go",
+  "old": "\tif settings.IsInstallTelemetryEnabled() {",
+  "new": "\tif !settings.IsInstallTelemetryEnabled() {"
+ }
+]

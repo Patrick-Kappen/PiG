@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/nextnode/plugins/plugins_node_lifecycle_test.go"
+commit = "3090be6e3aef3fe0ea59cf69ae7afc53cd7ccc82"
+class = "NOBEHAVIOR"
+cite = ""
+reason = "The one value the pre-flight counts as changed is a string the test itself prints and waits for, not an expectation of behavior: the probe call that Close has to wait for printed `slow call running` and now prints `held call running`, and the test's OnOutput watches for that line to know the call has started. The call itself changed from a 2 s setTimeout to a wait on a file the test creates, which is why it is named `held`. The 200 ms stop grace is the same in the old and the new test, and no duration is an expected value. The production change of the commit is a test seam only: NodeHost.startAfter, which Close calls where it called time.NewTimer, defaults to afterTimer, the same wall-time timer (a Reset of the single timer became stopping it and starting a timer for closeTimeout plus the grace, with the same lengths and the same kill), so Close behaves as before outside a test that replaces the seam. Pi has no such host or test (its workers stop a child with one GRACE kill, workers.ts #shutdown), and no Pi line is behind the sentinel, so no Pi-derived expectation moved."

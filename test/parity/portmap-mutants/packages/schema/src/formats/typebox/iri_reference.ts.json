@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_iri_reference.go",
+  "old": "\treturn err == nil\n}",
+  "new": "\treturn err != nil\n}"
+ }
+]

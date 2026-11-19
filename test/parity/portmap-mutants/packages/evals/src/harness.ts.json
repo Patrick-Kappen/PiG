@@ -1,0 +1,22 @@
+[
+ {
+  "file": "internal/evals/harness.go",
+  "old": "provider, id = jsstring.Trim(provider), jsstring.Trim(id)",
+  "new": "provider, id = provider, jsstring.Trim(id)"
+ },
+ {
+  "file": "internal/evals/harness.go",
+  "old": "!strings.HasPrefix(name, \"PI_EVAL_\")",
+  "new": "!strings.HasPrefix(name, \"PI_EVAL_X\")"
+ },
+ {
+  "file": "internal/evals/harness.go",
+  "old": "!= *options.ExpectedPiDocumentation {",
+  "new": "== *options.ExpectedPiDocumentation {"
+ },
+ {
+  "file": "internal/evals/harness.go",
+  "old": "cwdStart < documentationEnd",
+  "new": "cwdStart > documentationEnd"
+ }
+]

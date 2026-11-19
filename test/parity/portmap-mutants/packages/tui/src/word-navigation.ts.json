@@ -1,0 +1,17 @@
+[
+ {
+  "file": "tui/word_navigation.go",
+  "old": "\tcase last.IsWordLike:\n",
+  "new": "\tcase !last.IsWordLike:\n"
+ },
+ {
+  "file": "tui/word_navigation.go",
+  "old": "\t\t\tinRun = true\n",
+  "new": "\t\t\tinRun = false\n"
+ },
+ {
+  "file": "tui/word_navigation.go",
+  "old": "strings.IndexAny(current.Segment, punctuationChars)",
+  "new": "strings.LastIndexAny(current.Segment, punctuationChars)"
+ }
+]

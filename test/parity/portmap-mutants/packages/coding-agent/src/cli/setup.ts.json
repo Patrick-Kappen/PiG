@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/cli/setup_cli.go",
+  "old": "_ = os.Setenv(\"PI_CODING_AGENT\", \"true\")",
+  "new": "_ = os.Setenv(\"PI_CODING_AGENT\", \"false\")"
+ }
+]

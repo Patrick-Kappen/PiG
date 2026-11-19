@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/link/values.go",
+  "old": "*segments = append(*segments, typed)",
+  "new": "*segments = append((*segments)[:0], typed)"
+ }
+]

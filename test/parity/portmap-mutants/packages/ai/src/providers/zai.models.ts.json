@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"glm-4.7\",\n\t\tProvider:             \"zai\",\n\t\tDisplayName:          \"GLM-4.7\",\n",
+  "new": "\t\tID:                   \"glm-4.7\",\n\t\tProvider:             \"zai\",\n\t\tDisplayName:          \"GLM-4.7!\",\n"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/shared.go",
+  "old": "sharedRegexes.bySource[source] = weak.Make(re)",
+  "new": "_ = weak.Make(re)"
+ }
+]

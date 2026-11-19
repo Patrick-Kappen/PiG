@@ -1,0 +1,12 @@
+[
+ {
+  "file": "coding/cli/project_trust_context.go",
+  "old": "prompts:     hasUI && mode == appModeInteractive,",
+  "new": "prompts:     hasUI,"
+ },
+ {
+  "file": "coding/cli/project_trust_context.go",
+  "old": "message = codingagent.ChalkApply(\"\\x1b[31m\", \"\\x1b[39m\", message)",
+  "new": "message = codingagent.ChalkApply(\"\\x1b[32m\", \"\\x1b[39m\", message)"
+ }
+]

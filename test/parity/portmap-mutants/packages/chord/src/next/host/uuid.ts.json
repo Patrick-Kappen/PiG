@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_uuid.go",
+  "old": "\t\tstate.sequence++\n",
+  "new": "\t\t_ = state.sequence\n"
+ }
+]

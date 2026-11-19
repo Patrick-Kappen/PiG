@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/session/session_adoption_test.go"
+commit = "b2b58d7fed3a746f4f3aff3969fd72aa8a7ad49b"
+class = "CITE"
+cite = "packages/durable/test/session-adoption.test.ts:47"
+reason = "Pi e5c6182b: Storage.commit takes batches and a receive callback that gives the Session's durability receipt (session-adoption.test.ts:47, :57); the Session adopts and publishes once Storage resolved. The Go test follows the same order logs. The expected order is Pi's."

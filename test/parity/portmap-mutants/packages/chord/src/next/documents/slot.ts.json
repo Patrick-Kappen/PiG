@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/documents/slot.go",
+  "old": "if definition.Version < current.Version {",
+  "new": "if definition.Version > current.Version {"
+ }
+]

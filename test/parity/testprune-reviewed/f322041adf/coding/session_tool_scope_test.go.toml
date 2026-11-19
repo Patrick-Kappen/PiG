@@ -1,0 +1,6 @@
+[[entry]]
+path = "coding/session_tool_scope_test.go"
+commit = "f322041adf29d06ebac9dc58733d32c8b3a881d4"
+class = "CITE"
+cite = "packages/coding-agent/src/core/agent-session.ts:1557"
+reason = "The test is this range's own test that the Session registry admits the intersection of --tools/--exclude-tools and the Piglet scope (Pi's _isAllowedTool, agent-session.ts:1557-1561, 3571-3574); the commit replaces the predicate form of the scope with the data form, and the expectations are the same intersection."

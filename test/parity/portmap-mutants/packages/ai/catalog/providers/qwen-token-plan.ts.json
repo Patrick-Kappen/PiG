@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/qwen_token_plan.go",
+  "old": "\"https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1\"",
+  "new": "\"https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/vZ\""
+ }
+]

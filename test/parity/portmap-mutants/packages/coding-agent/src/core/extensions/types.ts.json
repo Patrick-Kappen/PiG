@@ -1,0 +1,27 @@
+[
+ {
+  "file": "coding/extension/context.go",
+  "old": "\tif c.actions.IsIdle == nil {\n\t\treturn true, nil",
+  "new": "\tif c.actions.IsIdle == nil {\n\t\treturn false, nil"
+ },
+ {
+  "file": "coding/extension/ui.go",
+  "old": "ExtensionUIDialogOptions) (bool, error) {\n\treturn false, nil\n}\nfunc (*noopUIContext) Input",
+  "new": "ExtensionUIDialogOptions) (bool, error) {\n\treturn true, nil\n}\nfunc (*noopUIContext) Input"
+ },
+ {
+  "file": "coding/extension/runtime_state.go",
+  "old": "\tif r.staleMessage != \"\" {\n\t\treturn errors.New(r.staleMessage)",
+  "new": "\tif r.staleMessage == \"\" {\n\t\treturn errors.New(r.staleMessage)"
+ },
+ {
+  "file": "coding/extension/api.go",
+  "old": "orderedjson.UnmarshalFields(data, (*plain)(p), \"details\")",
+  "new": "orderedjson.UnmarshalFields(data, (*plain)(p), \"detailz\")"
+ },
+ {
+  "file": "coding/extension/opaque_types.go",
+  "old": "orderedjson.UnmarshalFields(data, (*plain)(r), \"details\")",
+  "new": "orderedjson.UnmarshalFields(data, (*plain)(r), \"detailz\")"
+ }
+]

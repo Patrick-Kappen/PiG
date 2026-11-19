@@ -1,0 +1,17 @@
+[
+ {
+  "file": "coding/nested_tool_calls.go",
+  "old": "MaxArgumentBytesTotal: 32 * 1024",
+  "new": "MaxArgumentBytesTotal: 64 * 1024"
+ },
+ {
+  "file": "coding/nested_tool_calls.go",
+  "old": "id := fmt.Sprintf(\"%s/%d\", callerID, scope.nextID)",
+  "new": "id := fmt.Sprintf(\"%s/%d\", callerID, scope.nextID+1)"
+ },
+ {
+  "file": "coding/nested_tool_calls.go",
+  "old": "exclusive = tool.ExecutionMode() == agent.ToolModeSequential",
+  "new": "exclusive = tool.ExecutionMode() != agent.ToolModeSequential"
+ }
+]

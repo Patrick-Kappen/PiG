@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/builtin_providers.go",
+  "old": "func CloudflareWorkersAIProvider() *ModelsProvider { return builtinProvider(\"cloudflare-workers-ai\") }",
+  "new": "func CloudflareWorkersAIProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

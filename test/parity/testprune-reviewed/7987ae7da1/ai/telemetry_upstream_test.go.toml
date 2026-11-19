@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/telemetry_upstream_test.go"
+commit = "7987ae7da13447ef81e271cc0e91c1d59859b143"
+class = "CITE"
+cite = "packages/ai/src/telemetry.ts:24"
+reason = "Pi keeps a span's attributes in insertion order (a JS object, copied with Object.entries in telemetry memory.ts:110-115), and the request span records the start attributes in the order of its schema (provider, api, model, the scalar reasoning, ai telemetry.ts:24-29) followed by the end attributes (stop, usage.input, usage.output, usage.cache_read, usage.cache_write, cost.total, response.id, :31-38); the metrics take provider, model, then kind or stop (:76-90). The expected SpanAttributes are an ordered list in Pi's order (not a map), an event without attributes has none, and the metric attribute keys are compared in order instead of as a set."

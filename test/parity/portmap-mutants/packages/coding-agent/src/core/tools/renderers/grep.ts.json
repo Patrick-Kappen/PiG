@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/tool_render_list.go",
+  "old": "\t\treturn 15\n",
+  "new": "\t\treturn 14\n"
+ },
+ {
+  "file": "tui/tool_execution.go",
+  "old": "\" limit \"+jsTemplateString(limit))",
+  "new": "\" limits \"+jsTemplateString(limit))"
+ }
+]

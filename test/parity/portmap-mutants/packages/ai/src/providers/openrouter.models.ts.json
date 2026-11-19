@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"~anthropic/claude-fable-latest\",\n\t\tProvider:             \"openrouter\",\n\t\tDisplayName:          \"Anthropic: Claude Fable Latest\",\n",
+  "new": "\t\tID:                   \"~anthropic/claude-fable-latest\",\n\t\tProvider:             \"openrouter\",\n\t\tDisplayName:          \"Anthropic: Claude Fable Latest!\",\n"
+ }
+]

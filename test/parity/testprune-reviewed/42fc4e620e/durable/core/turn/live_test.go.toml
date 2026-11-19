@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/core/turn/live_test.go"
+commit = "42fc4e620ef0b4ccf6a3c4a7b1a1818a98955298"
+class = "CITE"
+cite = "packages/durable/src/harness/live.ts:179"
+reason = "Pi f3255de7 makes endRun record `runFailure` in pi.live when a run ends without an answer (live.ts:179-212) and keeps it until a later run starts: the core's EndRun, and the run ends of its generation, now leave `{runFailure: {taskId, inputs, reason, detail?}}` where pi.live was empty, so the turn tests expect that document after an aborted, faulted, orphaned or model-error run and after the compactions of a failed run end."

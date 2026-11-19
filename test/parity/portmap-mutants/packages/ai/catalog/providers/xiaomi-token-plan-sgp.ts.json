@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/xiaomi_token_plan_sgp.go",
+  "old": "\"xiaomi-token-plan-sgp\"",
+  "new": "\"xiaomi-token-plan-sgZ\""
+ }
+]

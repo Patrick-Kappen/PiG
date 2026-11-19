@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"@cf/deepseek-ai/deepseek-v4-flash-0731\",\n\t\tProvider:             \"cloudflare-workers-ai\",\n\t\tDisplayName:          \"DeepSeek V4 Flash 0731\",\n",
+  "new": "\t\tID:                   \"@cf/deepseek-ai/deepseek-v4-flash-0731\",\n\t\tProvider:             \"cloudflare-workers-ai\",\n\t\tDisplayName:          \"DeepSeek V4 Flash 0731!\",\n"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_idn_hostname.go",
+  "old": "bool { return idna.IsIdnHostname(value) }",
+  "new": "bool { return !idna.IsIdnHostname(value) }"
+ }
+]

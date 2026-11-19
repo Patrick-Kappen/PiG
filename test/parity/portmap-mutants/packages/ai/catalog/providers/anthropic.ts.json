@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/anthropic.go",
+  "old": "\"claude-fable-5\"",
+  "new": "\"claude-fable-Z\""
+ }
+]

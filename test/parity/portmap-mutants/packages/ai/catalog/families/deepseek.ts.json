@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/family_deepseek.go",
+  "old": "\"thinkingFormat\"",
+  "new": "\"thinkingFormaZ\""
+ }
+]

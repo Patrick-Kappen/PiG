@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/openai.go",
+  "old": "req.PromptCacheRetention = new(\"24h\")",
+  "new": "req.PromptCacheRetention = new(\"1h\")"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/remote_remote_object.go",
+  "old": "if _, twice := retirements[target]; twice {",
+  "new": "if _, twice := retirements[target]; !twice {"
+ }
+]

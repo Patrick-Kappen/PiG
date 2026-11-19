@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/define.go",
+  "old": "\t\t\tinput = Strings(\"text\", \"image\")\n",
+  "new": "\t\t\tinput = Strings(\"text\")\n"
+ }
+]

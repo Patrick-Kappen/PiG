@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_backoff.go",
+  "old": "return min(previous*2, maxDelay)",
+  "new": "return min(previous*3, maxDelay)"
+ }
+]

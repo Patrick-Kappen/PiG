@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/cache_affinity_e2e_upstream_test.go"
+commit = "4fe586eeb84a5fcbf7076f76fa17af6ec14d777c"
+class = "CITE"
+cite = "packages/ai/src/api/openai-responses.ts:409"
+reason = "A bulk edit of the preceding commit ae40b2b820 had dropped `\"reasoning\":{\"effort\":\"none\"}` from the expected body of the gpt-5.4 case; this commit restores it, which is Pi's own request: a reasoning model sent without a reasoning option gets reasoning.effort of its thinkingLevelMap off entry, `none` for gpt-5.4 (openai-responses.ts:409-411). The expected body is the one the test had before ae40b2b820."

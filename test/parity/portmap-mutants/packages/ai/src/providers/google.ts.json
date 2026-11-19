@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/builtin_providers_google_openai_together.go",
+  "old": "func GoogleProvider() *ModelsProvider { return builtinProvider(\"google\") }",
+  "new": "func GoogleProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

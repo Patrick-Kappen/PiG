@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/data/args.go",
+  "old": "accepted.Version == version && accepted.Fingerprint == fingerprint",
+  "new": "accepted.Version == version || accepted.Fingerprint == fingerprint"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/interactive_api_key_login.go",
+  "old": "\tif method == nil {",
+  "new": "\tif method != nil {"
+ }
+]

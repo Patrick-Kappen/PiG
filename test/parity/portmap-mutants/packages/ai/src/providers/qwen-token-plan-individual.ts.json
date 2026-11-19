@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "return builtinProvider(\"qwen-token-plan-individual\")",
+  "new": "return builtinProvider(\"qwen-token-plan\")"
+ }
+]

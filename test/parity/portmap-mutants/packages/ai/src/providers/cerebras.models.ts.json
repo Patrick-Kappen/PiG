@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"gpt-oss-120b\",\n\t\tProvider:             \"cerebras\",\n\t\tDisplayName:          \"GPT OSS 120B\",\n",
+  "new": "\t\tID:                   \"gpt-oss-120b\",\n\t\tProvider:             \"cerebras\",\n\t\tDisplayName:          \"GPT OSS 120B!\",\n"
+ }
+]

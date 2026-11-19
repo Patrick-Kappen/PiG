@@ -1,0 +1,6 @@
+[[entry]]
+path = "coding/extension/host/subprocess/runtime_node_send_idle_test.go"
+commit = "2323d94ce79cad45512f3e1bafe9e4e1cde84608"
+class = "CITE"
+cite = "packages/coding-agent/src/core/agent-session.ts:2404"
+reason = "Pi's sendCustomMessage with triggerTurn awaits _startRun (agent-session.ts:2404), which sets _isAgentRunActive before its first await (1895), so ctx.isIdle() is busy in every extension until the sending handler awaits or returns. The Host now holds that answer for every extension, so the test's handler reports its reads through setSessionName and covers a read by another extension while the sender has not yet yielded, and no longer polls a result file."

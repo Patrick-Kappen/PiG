@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -21,6 +22,53 @@ type mutant struct {
 	New  string `json:"new"`
 }
 
+// mutantsFileOf is the file that lists the mutants of the Pi file pi: mutantsDir, the path of the Pi file, and ".json".
+// Each Pi file has a file of its own, so two branches that each add the mutants of a Pi file add two files and never
+// change the same one.
+func mutantsFileOf(pi string) string { return mutantsDir + "/" + pi + ".json" }
+
+// readMutants reads the mutants of every Pi file under root: each file of mutantsDir is the JSON list of the Pi file
+// its name gives. A tree without mutantsDir lists no mutant; a file that is not such a list fails, it is not skipped.
+func readMutants(root string) (map[string][]mutant, error) {
+	// A branch from before the mutants were a directory adds its mutants to oldMutantsFile; a merge that keeps the file
+	// keeps mutants that prove no row.
+	if _, err := os.Lstat(filepath.Join(root, filepath.FromSlash(oldMutantsFile))); err == nil {
+		return nil, fmt.Errorf("%s: the mutants are one file per Pi file under %s; delete this file and write the list of each of its Pi files to %s", oldMutantsFile, mutantsDir, mutantsFileOf("<Pi file>"))
+	} else if !errors.Is(err, fs.ErrNotExist) {
+		return nil, err
+	}
+	mutants := map[string][]mutant{}
+	dir := filepath.Join(root, filepath.FromSlash(mutantsDir))
+	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		rel, err := filepath.Rel(dir, p)
+		if err != nil {
+			return err
+		}
+		name := mutantsDir + "/" + filepath.ToSlash(rel)
+		pi, ok := strings.CutSuffix(filepath.ToSlash(rel), ".json")
+		if !ok {
+			return fmt.Errorf("%s: not the mutants of a Pi file; they are in %s/<Pi file>.json", name, mutantsDir)
+		}
+		b, err := os.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		var list []mutant
+		if err := json.Unmarshal(b, &list); err != nil {
+			return fmt.Errorf("%s: %w", name, err)
+		}
+		mutants[pi] = list
+		return nil
+	})
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, err
+	}
+	return mutants, nil
+}
+
 // onlyMarkerReason reports whether the marker is the sole reason a row is unproven.
 func onlyMarkerReason(res result) bool {
 	return len(res.Reasons) == 1 && strings.HasPrefix(res.Reasons[0], "MARKER-UNPROVEN")
@@ -33,7 +81,7 @@ func onlyMarkerReason(res result) bool {
 // then neither proven nor MARKER-UNPROVEN, and the check fails as an infrastructure error.
 func mutantProblem(root string, res result, mutants []mutant, replays *replayCaches) (why, infra string) {
 	if len(mutants) == 0 {
-		return "MARKER-UNPROVEN: portmap-mutants.json names no mutant of a cited file for this row", ""
+		return "MARKER-UNPROVEN: " + mutantsFileOf(res.Row.Pi) + " names no mutant of a cited file for this row", ""
 	}
 	cited := res.Cited
 	var notes []string // what each replay that did not kill its mutant showed, so a row is never unproven without a reason

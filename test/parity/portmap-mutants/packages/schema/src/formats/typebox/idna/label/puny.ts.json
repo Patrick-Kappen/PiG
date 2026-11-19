@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/internal/idna/label_puny.go",
+  "old": "if !hasNonAscii {",
+  "new": "if hasNonAscii {"
+ }
+]

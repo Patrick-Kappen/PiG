@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/cli/auth_check.go",
+  "old": "\tif refresh {\n\t\tresolved, err",
+  "new": "\tif !refresh {\n\t\tresolved, err"
+ }
+]

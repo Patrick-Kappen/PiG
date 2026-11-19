@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/compaction/utils.go",
+  "old": "\tif path == \"\" {",
+  "new": "\tif path != \"\" {"
+ }
+]

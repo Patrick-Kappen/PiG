@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/typesafe.go",
+  "old": "\"typesafe/jev-latest\"",
+  "new": "\"typesafe/jev-latesZ\""
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/compression.go",
+  "old": "if float64(len(inflated)) > limit {",
+  "new": "if float64(len(inflated)) >= limit {"
+ }
+]

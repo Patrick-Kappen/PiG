@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"accounts/fireworks/models/deepseek-v4p1-flash\",\n\t\tProvider:             \"fireworks\",\n\t\tDisplayName:          \"DeepSeek V4.1 Flash\",\n",
+  "new": "\t\tID:                   \"accounts/fireworks/models/deepseek-v4p1-flash\",\n\t\tProvider:             \"fireworks\",\n\t\tDisplayName:          \"DeepSeek V4.1 Flash!\",\n"
+ }
+]

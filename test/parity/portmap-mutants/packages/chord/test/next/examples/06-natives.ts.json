@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_native.go",
+  "old": "if state.kind == nativeUnopened || state.kind == nativeOpening {",
+  "new": "if state.kind != nativeUnopened || state.kind == nativeOpening {"
+ }
+]

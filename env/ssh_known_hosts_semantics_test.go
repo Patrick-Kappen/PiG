@@ -10,7 +10,6 @@ import (
 	"strings"
 	"sync"
 	"testing"
-	"time"
 )
 
 const (
@@ -147,14 +146,30 @@ func TestConnectSshHandsItsVerifiedDaemonToTheFirstStart(t *testing.T) {
 	if checks() != 1 {
 		t.Fatalf("ConnectSsh checked the daemon %d times, want 1", checks())
 	}
-	// The scripted ssh answers a launch only when its stdin ends, so the start cannot be seen to finish. A start that checks the daemon again does it
-	// before it launches, within moments of its request; the test gives it three seconds.
-	startCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	_, _ = connection.Request(startCtx, "hello", Json{}, RequestOptions{})
+	// The scripted ssh answers a launch only when its stdin ends, so the start does not finish by itself, and a start takes no cancellation
+	// (Connection.connect): a request with a deadline still waited the 30 s after which the connection gives up on a silent daemon. A start
+	// that checks the daemon again does it before it launches (sshConnectionFor's CommandFunc), so the launch is the moment to count the
+	// checks, and Close then ends the start.
+	ended := make(chan struct{})
+	go func() {
+		defer close(ended)
+		_, _ = connection.Request(context.Background(), "hello", Json{}, RequestOptions{})
+	}()
+	eventually(t, "the first start launching the daemon", func() bool {
+		select {
+		case <-ended:
+			return true
+		default:
+		}
+		connection.mu.Lock()
+		defer connection.mu.Unlock()
+		return connection.session != nil
+	})
 	if checks() != 1 {
 		t.Fatalf("the first start checked the daemon again: %d checks, want the 1 of ConnectSsh", checks())
 	}
+	connection.Close()
+	<-ended
 }
 
 // ssh.ts:224-250 changeKnownHosts chains the changes to one file (knownHostsChanges), so concurrent accepts each read the

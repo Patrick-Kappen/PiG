@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/branch_summary.go",
+  "old": "\t\tif event.Type != MouseClick || event.Button != MouseButtonLeft {",
+  "new": "\t\tif event.Type == MouseClick || event.Button != MouseButtonLeft {"
+ }
+]

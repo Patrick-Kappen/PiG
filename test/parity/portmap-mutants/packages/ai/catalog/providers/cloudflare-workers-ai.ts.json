@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/cloudflare_workers_ai.go",
+  "old": "\"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1\"",
+  "new": "\"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/vZ\""
+ }
+]

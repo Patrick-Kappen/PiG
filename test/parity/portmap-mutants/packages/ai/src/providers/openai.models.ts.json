@@ -1,0 +1,17 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"chat-latest\",\n\t\tProvider:             \"openai\",\n\t\tDisplayName:          \"Chat Latest\",\n",
+  "new": "\t\tID:                   \"chat-latest\",\n\t\tProvider:             \"openai\",\n\t\tDisplayName:          \"Chat Latest!\",\n"
+ },
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tAPI:                  \"openai-responses\",\n\t\tBaseURL:              \"https://api.openai.com/v1\",\n\t\tCompat:               &generatedCompats[0],\n\t\tInputLimits:          &generatedInputLimits[5],\n\t\tContextWindow:        400000,\n",
+  "new": "\t\tAPI:                  \"openai-responses\",\n\t\tBaseURL:              \"https://api.openai.com/v1\",\n\t\tInputLimits:          &generatedInputLimits[5],\n\t\tContextWindow:        400000,\n"
+ },
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tgeneratedRows[ref.row].PromptCache = generatedMap(generatedPromptCachesPairs[ref.element])",
+  "new": "\t\t_ = generatedMap(generatedPromptCachesPairs[ref.element])"
+ }
+]

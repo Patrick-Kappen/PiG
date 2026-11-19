@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"unicode/utf8"
+
+	"github.com/MichaelKinsy/PiG/automation/ci/preflight/reviewed"
 )
 
 // printedBy runs the whole check on d and returns the job log and the PR comment.
@@ -162,7 +164,7 @@ func TestAdmittedExpectationTextCannotStartAWorkflowCommand(t *testing.T) {
 				d := &data{
 					Files:          ledgerFiles(ledgerTestA),
 					Commits:        []prCommit{commit(ledgerCommitA, "a: b", true)},
-					ReviewedLedger: ledgerRow(ledgerCommitA, ledgerTestA, "NOBEHAVIOR", cite, reason),
+					ReviewedLedger: ledgerOf(ledgerRow(ledgerCommitA, ledgerTestA, "NOBEHAVIOR", cite, reason)),
 					CommitFiles:    changedBy([]string{ledgerTestA}, ledgerCommitA),
 				}
 				log, md := printedBy(t, d)
@@ -216,7 +218,7 @@ func TestAdmittedExpectationTextIsInertInTheComment(t *testing.T) {
 			d := &data{
 				Files:          ledgerFiles(ledgerTestA),
 				Commits:        []prCommit{commit(ledgerCommitA, "a: b", true)},
-				ReviewedLedger: ledgerRow(ledgerCommitA, ledgerTestA, "NOBEHAVIOR", tc.cite, tc.reason),
+				ReviewedLedger: ledgerOf(ledgerRow(ledgerCommitA, ledgerTestA, "NOBEHAVIOR", tc.cite, tc.reason)),
 				CommitFiles:    changedBy([]string{ledgerTestA}, ledgerCommitA),
 			}
 			_, md := printedBy(t, d)
@@ -299,11 +301,37 @@ func TestUnreadableLedgerTextCannotStartAWorkflowCommand(t *testing.T) {
 	d := &data{
 		Files:          ledgerFiles(ledgerTestA),
 		Commits:        []prCommit{commit(ledgerCommitA, "a: b", true)},
-		ReviewedLedger: "[[entry]]\npath = \"x\"\n::error::injected = 1\nreason = \"a\n::add-mask::y\"\n",
+		ReviewedLedger: ledgerOf("[[entry]]\npath = \"x\"\n::error::injected = 1\nreason = \"a\n::add-mask::y\"\n"),
 	}
 	log, _ := printedBy(t, d)
 	if cmds := workflowCommands(log); len(cmds) != 1 || !strings.HasPrefix(cmds[0], "::error title=pre-flight test-expectation #7::") {
 		t.Errorf("the log runs %q, want the one error of the finding:\n%s", cmds, log)
+	}
+}
+
+// An entry in a file that is not the file of its commit and path is reported with both names; the commit and the path
+// are text of the pull request.
+func TestMisplacedLedgerEntryCannotStartAWorkflowCommand(t *testing.T) {
+	for _, h := range hostileTexts {
+		t.Run(h.name, func(t *testing.T) {
+			d := &data{
+				Files:   ledgerFiles(ledgerTestA),
+				Commits: []prCommit{commit(ledgerCommitA, "a: b", true)},
+				ReviewedLedger: map[string]string{
+					reviewed.Entry{Path: ledgerTestA, Commit: ledgerCommitA}.File(): ledgerRow(ledgerCommitA[:10]+h.text, "a/"+h.text+"_test.go", "NOBEHAVIOR", "", "r"),
+				},
+			}
+			log, _ := printedBy(t, d)
+			if cmds := workflowCommands(log); len(cmds) != 1 || !strings.HasPrefix(cmds[0], "::error title=pre-flight test-expectation #7::") {
+				t.Fatalf("the log runs %q, want the one error of the finding:\n%q", cmds, log)
+			}
+			if legacyLeft(log) {
+				t.Errorf("the log holds the sequence of a legacy workflow command:\n%q", log)
+			}
+			if !strings.Contains(log, "belongs in") {
+				t.Errorf("the finding is missing:\n%q", log)
+			}
+		})
 	}
 }
 
@@ -321,7 +349,7 @@ func TestClippedNoticeIsNotAStoredVerdict(t *testing.T) {
 	d := &data{
 		Files:          ledgerFiles(ledgerTestA),
 		Commits:        []prCommit{commit(ledgerCommitA, "a: b", true)},
-		ReviewedLedger: ledgerRow(ledgerCommitA, ledgerTestA, "NOBEHAVIOR", "", reason),
+		ReviewedLedger: ledgerOf(ledgerRow(ledgerCommitA, ledgerTestA, "NOBEHAVIOR", "", reason)),
 		CommitFiles:    changedBy([]string{ledgerTestA}, ledgerCommitA),
 	}
 	d.Repo, d.PR, d.Mode, d.Relevant = "o/r", 7, modeFull, []string{"test-expectation"}

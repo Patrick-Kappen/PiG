@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_regex.go",
+  "old": "bool { return ecmaregex.Valid(value) }",
+  "new": "bool { return !ecmaregex.Valid(value) }"
+ }
+]

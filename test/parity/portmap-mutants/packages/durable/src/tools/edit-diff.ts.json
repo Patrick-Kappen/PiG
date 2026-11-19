@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/tools/diff_string.go",
+  "old": "return generateDiffString(oldContent, newContent, 4)",
+  "new": "return generateDiffString(oldContent, newContent, 3)"
+ }
+]

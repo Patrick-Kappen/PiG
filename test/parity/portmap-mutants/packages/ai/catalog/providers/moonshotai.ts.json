@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/moonshotai.go",
+  "old": "\"kimi-k2.7-code\"",
+  "new": "\"kimi-k2.7-codZ\""
+ }
+]

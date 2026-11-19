@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/experimental.go",
+  "old": "if os.Getenv(\"PI_EXPERIMENTAL\") == \"1\" {",
+  "new": "if os.Getenv(\"PI_EXPERIMENTAL\") != \"1\" {"
+ }
+]

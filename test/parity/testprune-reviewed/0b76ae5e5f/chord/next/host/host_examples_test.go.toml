@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/next/host/host_examples_test.go"
+commit = "0b76ae5e5feed52171c3a8bda3cc0edf9f38e33f"
+class = "CITE"
+cite = "packages/chord/test/next/host/native.test.ts:199"
+reason = "The changed expectations are the Go form of Pi's examples (test/next/examples/*.ts, which run the host and print what it reports) corrected to what Pi's host does. 06-natives: a close that threw while the host closes is returned by host.close as an AggregateError and not reported; only a close past its timeout is (native.ts:118-122; native.test.ts:199-200 expects the aggregate), so close_failed leaves the reported list. 07 and 11: an activation failure's message carries the object, `example.mirror(1): no mirror configured`, as object.test.ts:187 and :201 expect `app.svc(1): bug` and `app.svc(1): offline`. 14-flow-control.ts:93: a paused tab's end of the link holds what arrives, so the tab shows no characters (0, and an empty text for the slow tab of the relay) where the red commit expected the window's first two appends. The remaining flagged lines are descriptions of waits (the run rerun, the router with /files, the mirror's failed state)."

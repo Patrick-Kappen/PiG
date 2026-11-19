@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func MetaProvider() *ModelsProvider { return builtinProvider(\"meta\") }",
+  "new": "func MetaProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

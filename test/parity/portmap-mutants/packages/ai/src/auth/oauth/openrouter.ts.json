@@ -1,0 +1,12 @@
+[
+ {
+  "file": "ai/oauth_openrouter.go",
+  "old": "1<<53 - 1",
+  "new": "1<<53 - 2"
+ },
+ {
+  "file": "ai/oauth_openrouter.go",
+  "old": "\"S256\",\n\t})",
+  "new": "\"plain\",\n\t})"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/http/request.go",
+  "old": "NewHttpFailure(400, \"the body is no JSON\")",
+  "new": "NewHttpFailure(422, \"the body is no JSON\")"
+ }
+]

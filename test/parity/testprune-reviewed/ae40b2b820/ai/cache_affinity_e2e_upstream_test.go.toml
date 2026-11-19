@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/cache_affinity_e2e_upstream_test.go"
+commit = "ae40b2b82015ae8fa212c7b33ff71dc9f3d01615"
+class = "CITE"
+cite = "packages/ai/test/openai-codex-cache-affinity-e2e.test.ts:10"
+reason = "Pi fdce48eb (#11173) removes gpt-5.5 from openai-codex, and Pi's codex cache-affinity e2e test takes openai-codex/gpt-6.1-sol (openai-codex-cache-affinity-e2e.test.ts:10), so the Codex case's provider model and the model of its expected request body change to gpt-6.1-sol. The same commit also dropped the `reasoning` member from the gpt-5.4 case's expected body by a bulk edit; that was a mistake and 4fe586eeb8 restores it (reviewed there)."

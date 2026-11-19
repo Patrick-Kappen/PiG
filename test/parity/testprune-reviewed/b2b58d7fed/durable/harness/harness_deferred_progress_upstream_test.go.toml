@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/harness/harness_deferred_progress_upstream_test.go"
+commit = "b2b58d7fed3a746f4f3aff3969fd72aa8a7ad49b"
+class = "CITE"
+cite = "packages/durable/test/harness-deferred-progress.test.ts:164-165"
+reason = "Pi defers a generation attempt like the partials (harness-deferred-progress.test.ts:164: the attempt is presentation, deferred: none of it was stored; :165 expects the stored live document has no generation). The earlier Go test expected the stored attempt 1. The expected value (none stored) is Pi's."

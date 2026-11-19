@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/session/session_watches_test.go"
+commit = "832ba8ca17c8489b66d0f33e16df9f6b6eb3ff92"
+class = "CITE"
+cite = "packages/durable/src/session/session.ts:1231"
+reason = "Pi 8b0caefc folds a retirement into the call of the pending commits, which reports it with the last value (`retired: true`, no ops, session.ts:1231; chord watch.ts:267-316 folds the pending frames), and the watch goes on instead of closing: the test that expected one nil delivery with a root ops list and a closed watch expects one change with the retirement flag and the last value; every listener receives a WatchChange."

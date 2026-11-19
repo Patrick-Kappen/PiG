@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func QwenTokenPlanProvider() *ModelsProvider { return builtinProvider(\"qwen-token-plan\") }",
+  "new": "func QwenTokenPlanProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

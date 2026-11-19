@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"claude-haiku-5-5\",\n\t\tProvider:             \"opencode-go\",\n\t\tDisplayName:          \"Claude Haiku 5.5\",\n",
+  "new": "\t\tID:                   \"claude-haiku-5-5\",\n\t\tProvider:             \"opencode-go\",\n\t\tDisplayName:          \"Claude Haiku 5.5!\",\n"
+ }
+]

@@ -1,0 +1,17 @@
+[
+ {
+  "file": "tui/model_select.go",
+  "old": "\tif m.scopeText != nil {",
+  "new": "\tif m.scopeText == nil {"
+ },
+ {
+  "file": "tui/model_select.go",
+  "old": "\t\tnoAuth:      len(scoped) == 0,",
+  "new": "\t\tnoAuth:      len(scoped) != 0,"
+ },
+ {
+  "file": "tui/model_selector_runtime.go",
+  "old": "\tcase asDefault && c.onSelectAsDefault != nil:",
+  "new": "\tcase false:"
+ }
+]

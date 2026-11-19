@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/resolvepath/resolvepath.go",
+  "old": "return strings.ToUpper(match[1]) + `:\\` +",
+  "new": "return match[1] + `:\\` +"
+ },
+ {
+  "file": "internal/codingagent/paths.go",
+  "old": "\"http:\", \"https:\", \"ssh:\", BuiltinPathPrefix}",
+  "new": "\"http:\", \"https:\", BuiltinPathPrefix}"
+ }
+]

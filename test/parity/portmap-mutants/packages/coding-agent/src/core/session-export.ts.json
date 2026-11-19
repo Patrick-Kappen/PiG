@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/session_export.go",
+  "old": "Version: CurrentSessionVersion, ID",
+  "new": "Version: CurrentSessionVersion + 1, ID"
+ }
+]

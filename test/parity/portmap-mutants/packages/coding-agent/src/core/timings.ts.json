@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/timings/timings.go",
+  "old": "if t.ms >= 0 {",
+  "new": "if t.ms > 0 {"
+ }
+]

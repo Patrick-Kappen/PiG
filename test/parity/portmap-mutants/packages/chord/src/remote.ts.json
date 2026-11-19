@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/host/remote.go",
+  "old": "target.decoder.Decode(frame.Ops)",
+  "new": "target.decoder.Decode(nil)"
+ }
+]

@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/session/session_definitions_test.go"
+commit = "71b4b1e3b6a5cf2d9f2fb089267b91138c614e70"
+class = "CITE"
+cite = "packages/durable/src/documents.ts:89"
+reason = "Pi 5c1736f8 makes `checkpointWhen` a required member of every document definition (documents.ts:89, types.ts:78: `checkpointWhen(value, ops, info): boolean`, no optional marker), so DefineDoc and DefineDocFamily panic without CheckpointWhen or CheckpointWhenRaw; the definitions in the test (which defined none) carry `CheckpointWhen` returning false, and the cases that expect a rejection of a bad kind or version still reject for that reason, not for the missing member."

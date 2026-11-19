@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/harness/harness_live_deltas_test.go"
+commit = "b2b58d7fed3a746f4f3aff3969fd72aa8a7ad49b"
+class = "CITE"
+cite = "packages/durable/test/harness-live-deltas.test.ts:117"
+reason = "Pi observeCommits (harness-live-deltas.test.ts:117, :341, :384) sees a held (deferred) pi.live operation as part of the stored commit that takes it, first; the Go test collects the same operations through observeStoredLiveOps. The expected operations are Pi's."

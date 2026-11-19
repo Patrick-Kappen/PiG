@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/harness/tool_structured_output_test.go"
+commit = "30940806a9688959174fb1b02b8b50d6cf8de24e"
+class = "CITE"
+cite = "packages/durable/src/harness/tool.ts:790"
+reason = "Pi 6536f801 checks a structured output with pi-schema (tool.ts:790 compile with formats and unresolvedRefs: reject), so invalid_structured_output messages carry pi-schema's wording (`expected number, got string`) instead of TypeBox's."

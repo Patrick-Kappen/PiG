@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_time.go",
+  "old": "\tif sec < 60 {\n\t\treturn true\n\t}",
+  "new": "\tif sec < 60 {\n\t\treturn false\n\t}"
+ }
+]

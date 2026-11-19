@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_date_time.go",
+  "old": "return IsDate(value[:at]) && IsTime(value[at+1:])",
+  "new": "return !(IsDate(value[:at]) && IsTime(value[at+1:]))"
+ }
+]

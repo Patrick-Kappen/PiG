@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/user_agent_release_cache_test.go"
+commit = "dcc5ef43ee75a3d4110b5159424fa0ab4d016428"
+class = "CITE"
+cite = "packages/ai/src/utils/identity.ts:75"
+reason = "Pi adc5fa9f80 and 04a93bad8f move the client User-Agent into the ai package as formatUserAgent(identity?) (identity.ts:75), where PiG's PiUserAgent() was; with no identity it is the same string, so the test calls FormatUserAgent(nil) and expects the same kernel release in the string."

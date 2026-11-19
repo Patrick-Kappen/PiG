@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/export/ansi_html.go",
+  "old": "\tif index < 0 {",
+  "new": "\tif index >= 0 {"
+ }
+]

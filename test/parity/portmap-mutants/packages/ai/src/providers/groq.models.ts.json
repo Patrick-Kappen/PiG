@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"llama-3.1-8b-instant\",\n\t\tProvider:             \"groq\",\n\t\tDisplayName:          \"Llama 3.1 8B\",\n",
+  "new": "\t\tID:                   \"llama-3.1-8b-instant\",\n\t\tProvider:             \"groq\",\n\t\tDisplayName:          \"Llama 3.1 8B!\",\n"
+ }
+]

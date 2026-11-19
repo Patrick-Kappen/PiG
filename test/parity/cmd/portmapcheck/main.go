@@ -37,8 +37,10 @@ const (
 	portMapFile  = "docs/parity/PORT_MAP.md"
 	baselineFile = "test/parity/portmap-unproven-baseline.txt"
 	reviewedFile = "test/parity/portmap-reviewed.json"
-	mutantsFile  = "test/parity/portmap-mutants.json"
-	inventoryGlb = "test/parity/interfaces/upstream-v*.json"
+	mutantsDir   = "test/parity/portmap-mutants"
+	// oldMutantsFile held the mutants of every Pi file until they became mutantsDir. Nothing reads it, so a tree that has it fails (readMutants).
+	oldMutantsFile = mutantsDir + ".json"
+	inventoryGlb   = "test/parity/interfaces/upstream-v*.json"
 )
 
 // row is one PORT_MAP table row.
@@ -192,11 +194,9 @@ func checkShard(root string, needCoverage bool, shard shardSpec) ([]result, erro
 		}
 	}
 	markers := readMarkers(root)
-	var mutants map[string][]mutant
-	if b, err := os.ReadFile(filepath.Join(root, mutantsFile)); err == nil {
-		if err := json.Unmarshal(b, &mutants); err != nil {
-			return nil, fmt.Errorf("%s: %w", mutantsFile, err)
-		}
+	mutants, err := readMutants(root)
+	if err != nil {
+		return nil, err
 	}
 	var candidates []row
 	for _, r := range rows {

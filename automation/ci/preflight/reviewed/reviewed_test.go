@@ -3,21 +3,155 @@
 package reviewed
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
 
-func TestParse(t *testing.T) {
-	good := "[[entry]]\npath = \"a/a_test.go\"\ncommit = \"0123456789abcdef\"\nclass = \"NOBEHAVIOR\"\ncite = \"\"\nreason = \"r\"\n"
-	entries, err := Parse(good)
-	if err != nil || len(entries) != 1 || entries[0].Path != "a/a_test.go" || entries[0].Class != "NOBEHAVIOR" {
-		t.Fatalf("Parse(good) = %+v, %v", entries, err)
+const (
+	commitA = "0123456789abcdef0123456789abcdef01234567"
+	fileA   = Dir + "/0123456789/a/a_test.go.toml"
+)
+
+func entryText(commit, file string) string {
+	return "[[entry]]\npath = \"" + file + "\"\ncommit = \"" + commit + "\"\nclass = \"NOBEHAVIOR\"\ncite = \"\"\nreason = \"r\"\n"
+}
+
+func TestEntryFile(t *testing.T) {
+	for _, tc := range []struct {
+		commit string
+		want   string
+	}{
+		{commitA, fileA},
+		{commitA[:10], fileA},
+		{commitA[:12], fileA},
+		{"01234", Dir + "/01234/a/a_test.go.toml"},
+		{"", Dir + "//a/a_test.go.toml"},
+	} {
+		if got := (Entry{Path: "a/a_test.go", Commit: tc.commit}).File(); got != tc.want {
+			t.Errorf("File() of commit %q = %s, want %s", tc.commit, got, tc.want)
+		}
 	}
-	if entries, err := Parse(""); err != nil || len(entries) != 0 {
-		t.Fatalf("an empty ledger holds no entries: %+v, %v", entries, err)
+	if !InDir(fileA) || InDir(Dir) || InDir(Dir+".toml") || InDir(Dir+"-old/x.toml") {
+		t.Error("InDir holds exactly the files under Dir")
 	}
-	if _, err := Parse("[[entry]\npath = "); err == nil || !strings.Contains(err.Error(), File) {
-		t.Fatalf("a malformed ledger must be an error naming %s: %v", File, err)
+}
+
+func TestParseEntry(t *testing.T) {
+	e, err := ParseEntry(fileA, entryText(commitA, "a/a_test.go"))
+	if err != nil || e.Path != "a/a_test.go" || e.Commit != commitA || e.Class != "NOBEHAVIOR" {
+		t.Fatalf("ParseEntry = %+v, %v", e, err)
+	}
+	for _, tc := range []struct {
+		name string
+		file string
+		text string
+		want string
+	}{
+		{"not TOML", fileA, "[[entry]\npath = ", fileA},
+		{"an empty file", fileA, "", "holds 0 entries"},
+		{"two entries", fileA, entryText(commitA, "a/a_test.go") + entryText(commitA, "a/a_test.go"), "holds 2 entries"},
+		{"the file of another path", Dir + "/0123456789/a/b_test.go.toml", entryText(commitA, "a/a_test.go"), "belongs in " + fileA},
+		{"the file of another commit", Dir + "/ffffffffff/a/a_test.go.toml", entryText(commitA, "a/a_test.go"), "belongs in " + fileA},
+		{"a file outside the commit's directory", Dir + "/a_test.go.toml", entryText(commitA, "a/a_test.go"), "belongs in " + fileA},
+		{"a path that leaves the directory", fileA, entryText(commitA, "../../a/a_test.go"), "belongs in "},
+	} {
+		if _, err := ParseEntry(tc.file, tc.text); err == nil || !strings.Contains(err.Error(), tc.want) || !strings.Contains(err.Error(), tc.file) {
+			t.Errorf("%s: error %v, want one naming %s and %q", tc.name, err, tc.file, tc.want)
+		}
+	}
+}
+
+func TestParseFiles(t *testing.T) {
+	fileB := Dir + "/0123456789/b/b_test.go.toml"
+	entries, err := ParseFiles(map[string]string{fileB: entryText(commitA, "b/b_test.go"), fileA: entryText(commitA, "a/a_test.go")})
+	if err != nil || len(entries) != 2 || entries[0].Path != "a/a_test.go" || entries[1].Path != "b/b_test.go" {
+		t.Fatalf("ParseFiles = %+v, %v, want the entries in the order of the file names", entries, err)
+	}
+	if entries, err := ParseFiles(nil); err != nil || len(entries) != 0 {
+		t.Fatalf("no file is no entry: %+v, %v", entries, err)
+	}
+	if _, err := ParseFiles(map[string]string{fileA: entryText(commitA, "a/a_test.go"), fileB: ""}); err == nil || !strings.Contains(err.Error(), fileB) {
+		t.Fatalf("one unreadable file must be an error naming it: %v", err)
+	}
+}
+
+func TestReadDir(t *testing.T) {
+	root := t.TempDir()
+	if entries, err := ReadDir(root); err != nil || len(entries) != 0 {
+		t.Fatalf("a tree without the directory holds no entries: %+v, %v", entries, err)
+	}
+	write := func(name, text string) {
+		t.Helper()
+		p := filepath.Join(root, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(text), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	commitB := "ffffffffff" + commitA[10:]
+	write(fileA, entryText(commitA, "a/a_test.go"))
+	write(Dir+"/ffffffffff/deep/er/b_test.go.toml", entryText(commitB, "deep/er/b_test.go"))
+	entries, err := ReadDir(root)
+	if err != nil || len(entries) != 2 || entries[0].Commit != commitA || entries[1].Path != "deep/er/b_test.go" {
+		t.Fatalf("ReadDir = %+v, %v", entries, err)
+	}
+	// Every file under the directory is an entry: one that is not fails, it is not skipped.
+	write(Dir+"/README.md", "notes\n")
+	if _, err := ReadDir(root); err == nil || !strings.Contains(err.Error(), Dir+"/README.md") {
+		t.Fatalf("a file that is no entry must be an error naming it: %v", err)
+	}
+}
+
+// TestReadDirFailsOnTheOldFile: a tree that still has the one-file ledger fails, and the error names the file of each
+// entry the directory does not hold yet, so a merge that kept the file cannot leave rows that admit nothing.
+func TestReadDirFailsOnTheOldFile(t *testing.T) {
+	root := t.TempDir()
+	write := func(name, text string) {
+		t.Helper()
+		p := filepath.Join(root, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(text), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	fileB := Dir + "/0123456789/b/b_test.go.toml"
+	write(fileA, entryText(commitA, "a/a_test.go"))
+	for _, tc := range []struct {
+		name, text string
+		want, not  []string
+	}{
+		{"an entry the directory lacks", entryText(commitA, "a/a_test.go") + entryText(commitA, "b/b_test.go"), []string{OldFile, "after moving", fileB, "its other 1 entries"}, []string{fileA}},
+		{"every entry is in the directory", entryText(commitA, "a/a_test.go"), []string{OldFile, "delete this file", "each of its 1 entries"}, []string{"moving"}},
+		{"no entry", "", []string{OldFile, "delete this file", "each of its 0 entries"}, []string{"moving"}},
+		{"not TOML", "[[entry\n", []string{OldFile, "delete this file", "not TOML"}, nil},
+	} {
+		write(OldFile, tc.text)
+		_, err := ReadDir(root)
+		if err == nil {
+			t.Fatalf("%s: a tree with %s must fail", tc.name, OldFile)
+		}
+		for _, w := range tc.want {
+			if !strings.Contains(err.Error(), w) {
+				t.Errorf("%s: the error does not say %q: %v", tc.name, w, err)
+			}
+		}
+		for _, w := range tc.not {
+			if strings.Contains(err.Error(), w) {
+				t.Errorf("%s: the error says %q: %v", tc.name, w, err)
+			}
+		}
+	}
+	if err := os.Remove(filepath.Join(root, filepath.FromSlash(OldFile))); err != nil {
+		t.Fatal(err)
+	}
+	if entries, err := ReadDir(root); err != nil || len(entries) != 1 {
+		t.Fatalf("without the old file the tree holds the entry of the directory: %+v, %v", entries, err)
 	}
 }
 

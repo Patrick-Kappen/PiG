@@ -184,10 +184,19 @@ func startSpriteSession(t *testing.T, binary, pigHome, agentDir string, args ...
 	return s
 }
 
+// await returns once marker has appeared after mark and the output has then been quiet for 300 ms, so the next step
+// meets a finished render.
 func (s *spriteSession) await(stage string, mark int, marker string) {
 	s.t.Helper()
-	budget := testbudget.Wait(s.t)
-	deadline := time.Now().Add(budget)
+	s.awaitMarker(stage, mark, marker)
+	s.output.waitQuiet(mark, []byte(marker), 300*time.Millisecond, testbudget.Wait(s.t))
+}
+
+// awaitMarker returns once marker has appeared after mark. It is the wait for output that does not go quiet, such as a
+// running animation: await would wait out its whole budget for the quiet that follows.
+func (s *spriteSession) awaitMarker(stage string, mark int, marker string) {
+	s.t.Helper()
+	deadline := time.Now().Add(testbudget.Wait(s.t))
 	for time.Now().Before(deadline) {
 		select {
 		case <-s.exited:
@@ -195,7 +204,6 @@ func (s *spriteSession) await(stage string, mark int, marker string) {
 		default:
 		}
 		if bytes.Contains(s.output.since(mark), []byte(marker)) {
-			s.output.waitQuiet(mark, []byte(marker), 300*time.Millisecond, budget)
 			return
 		}
 		time.Sleep(20 * time.Millisecond)
@@ -321,6 +329,7 @@ func TestFullscreenClickOnTheHeaderHeadPlaysTheAnimation(t *testing.T) {
 	if bytes.Contains(s.output.since(mark), []byte("to return")) {
 		t.Fatal("a click on the version played the animation")
 	}
+	// The animation keeps drawing after its hint, so the output does not go quiet: the hint ends the test.
 	mark = s.send("\x1b[<0;4;3M\x1b[<0;4;3m")
-	s.await("clicking the head", mark, "to return")
+	s.awaitMarker("clicking the head", mark, "to return")
 }

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/chat_viewport.go",
+  "old": "scrollbar = string(tui.ScrollbarAuto)",
+  "new": "scrollbar = string(tui.ScrollbarHidden)"
+ }
+]

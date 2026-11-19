@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/internal/idna/idn_hostname.go",
+  "old": "r == 0xff61:",
+  "new": "r == 0xff62:"
+ }
+]

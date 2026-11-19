@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/nextnode/plugins/plugins_examples_test.go"
+commit = "afb14da124492fad80b73f5f5e8abc07915b47dc"
+class = "CITE"
+cite = "packages/chord/test/next/examples/36-plugin-failures/main.ts:139"
+reason = "Example 36 step 4 asserts what Pi's script prints and the first port left unchecked: the status reference's kinds `loading` then `live` (main.ts:139) and the final greeter reload's report (`plugins: changed @example/greeter`, `objects: example.greeting swapped`, `failed @example/weather: ...`, main.ts:151). The example 35 case reads notes and the server's types through one observing server host that routes both Node hosts."

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/oauth_kimi.go",
+  "old": "\tcase \"slow_down\":\n",
+  "new": "\tcase \"slow_dowZ\":\n"
+ }
+]

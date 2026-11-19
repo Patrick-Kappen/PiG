@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/state/batch.go",
+  "old": "for i := 0; i < len(b.flushes); i++ {",
+  "new": "for i := 0; i < len(b.flushes)-1; i++ {"
+ }
+]

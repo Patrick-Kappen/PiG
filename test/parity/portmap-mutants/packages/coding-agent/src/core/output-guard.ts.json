@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/output_guard.go",
+  "old": "func IsStdoutTakenOver() bool {",
+  "new": "func IsStdoutTakenOver() bool { return false\n"
+ }
+]

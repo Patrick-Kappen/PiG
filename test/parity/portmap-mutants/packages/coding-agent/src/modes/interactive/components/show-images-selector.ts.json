@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/show_images_selector.go",
+  "old": "\t\tif onSelect != nil {",
+  "new": "\t\tif onSelect == nil {"
+ }
+]

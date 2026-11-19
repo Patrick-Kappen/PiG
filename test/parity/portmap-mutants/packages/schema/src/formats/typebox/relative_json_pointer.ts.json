@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_relative_json_pointer.go",
+  "old": "bool { return relativeJsonPointerRE.MatchString(value) }",
+  "new": "bool { return !relativeJsonPointerRE.MatchString(value) }"
+ }
+]

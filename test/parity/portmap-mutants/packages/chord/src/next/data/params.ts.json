@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/data/params.go",
+  "old": "parts = append(parts, contract.Name, key)",
+  "new": "parts = append(parts, key, contract.Name)"
+ }
+]

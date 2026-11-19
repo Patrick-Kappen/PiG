@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/source_vercel.go",
+  "old": "\"https://ai-gateway.vercel.sh/v1/models\"",
+  "new": "\"https://ai-gateway.vercel.sh/v1/modelZ\""
+ }
+]

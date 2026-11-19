@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func AntLingProvider() *ModelsProvider { return builtinProvider(\"ant-ling\") }",
+  "new": "func AntLingProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

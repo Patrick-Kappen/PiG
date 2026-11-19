@@ -1,0 +1,17 @@
+[
+ {
+  "file": "ai/errors.go",
+  "old": "length-maxChars)\n",
+  "new": "length-maxChars+1)\n"
+ },
+ {
+  "file": "ai/errors.go",
+  "old": "return fmt.Sprintf(\"%d: %s\", *norm.Status, message)",
+  "new": "return fmt.Sprintf(\"%d %s\", *norm.Status, message)"
+ },
+ {
+  "file": "ai/errors.go",
+  "old": "const MaxProviderErrorBodyChars = 4000",
+  "new": "const MaxProviderErrorBodyChars = 3999"
+ }
+]

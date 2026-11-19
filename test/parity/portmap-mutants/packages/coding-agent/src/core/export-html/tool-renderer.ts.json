@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/codingagent/slash_session_handlers.go",
+  "old": "tools = sc.ToolRenderers()",
+  "new": "tools = nil"
+ },
+ {
+  "file": "internal/codingagent/export/tool_renderer.go",
+  "old": "for end > start && isBlankRenderedLine(lines[end-1]) {",
+  "new": "for end > start && isBlankRenderedLine(lines[end-1]) && false {"
+ },
+ {
+  "file": "internal/codingagent/export/ansi_html.go",
+  "old": "<div class=\"ansi-line\">",
+  "new": "<div class=\"ansi-lines\">"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/http/upgrades.go",
+  "old": "const defaultLinkPayload = 1024 * 1024",
+  "new": "const defaultLinkPayload = 2 * 1024 * 1024"
+ }
+]

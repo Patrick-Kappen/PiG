@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/rpc33_provider_scratch_test.go"
+commit = "76f780d05da3ad93c499858912fe47c5b61ab356"
+class = "CITE"
+cite = "packages/ai/src/api/openai-completions.ts:655"
+reason = "Pi f715a15c1 sets a streamed tool call's arguments from its ToolCallArgumentsStream (openai-completions.ts:655, and the matching lines of every provider) instead of keeping partialArgs, partialJson, streamIndex and customInput on the content block: the observed blocks hold only type, id, name and arguments, so the expected block lists lose the scratch members."

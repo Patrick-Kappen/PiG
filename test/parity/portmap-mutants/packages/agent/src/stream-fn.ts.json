@@ -1,0 +1,7 @@
+[
+ {
+  "file": "agent/stream_fn.go",
+  "old": "\tdefaultStream.fn = fn\n",
+  "new": "\tdefaultStream.fn = nil\n"
+ }
+]

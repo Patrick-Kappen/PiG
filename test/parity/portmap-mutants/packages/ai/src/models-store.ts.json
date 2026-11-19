@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_store.go",
+  "old": "s.entries[providerID] = entry.Clone()",
+  "new": "s.entries[providerID] = entry"
+ }
+]

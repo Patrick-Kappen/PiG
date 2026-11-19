@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/plugins/plugins_runtime.go",
+  "old": "return host.LoadReport{Failed: failures(wire.Failed)}, nil",
+  "new": "return host.LoadReport{}, nil"
+ }
+]

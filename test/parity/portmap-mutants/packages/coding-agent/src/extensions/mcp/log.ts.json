@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/mcpext/log.go",
+  "old": "level := \"info\"",
+  "new": "level := \"notice\""
+ }
+]

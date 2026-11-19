@@ -182,18 +182,6 @@ func TestOpenTerminalRunsAProgramInATerminalWithInputResizingAndItsExitCode(t *t
 	})
 }
 
-// eventually polls what only the system can tell, with no event to wait for.
-func eventually(t *testing.T, what string, check func() bool) {
-	t.Helper()
-	deadline := time.Now().Add(terminalTestTimeout)
-	for !check() {
-		if time.Now().After(deadline) {
-			t.Fatalf("%s did not happen", what)
-		}
-		time.Sleep(20 * time.Millisecond)
-	}
-}
-
 // Pi 1.2.0 packages/env/test/terminal.test.ts:74 "reports the job in the foreground, not the shell at its prompt"
 // Pi source: packages/env/src/terminal.ts:77 (foreground), packages/env/src/terminal.ts:22 (TerminalForeground.pid)
 // and packages/env/src/terminal.ts:23 (TerminalForeground.name).

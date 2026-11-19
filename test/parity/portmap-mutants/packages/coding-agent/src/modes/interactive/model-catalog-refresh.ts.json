@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/model_catalog_refresh.go",
+  "old": "\tif active == nil {\n",
+  "new": "\tif active == nil || true {\n"
+ }
+]

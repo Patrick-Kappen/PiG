@@ -1,0 +1,17 @@
+[
+ {
+  "file": "ai/compat.go",
+  "old": "\tif hasExplicitAPIKey(options.APIKey) {\n\t\treturn options\n\t}\n\tapiKey :=",
+  "new": "\tif !hasExplicitAPIKey(options.APIKey) {\n\t\treturn options\n\t}\n\tapiKey :="
+ },
+ {
+  "file": "ai/compat.go",
+  "old": "apiKey == \"\" || apiKey == envAuthenticated",
+  "new": "apiKey == \"\" || apiKey != envAuthenticated"
+ },
+ {
+  "file": "ai/compat.go",
+  "old": "strings.HasPrefix(modelProviderID(model), \"cloudflare-\")",
+  "new": "strings.HasPrefix(modelProviderID(model), \"cloudflare_\")"
+ }
+]

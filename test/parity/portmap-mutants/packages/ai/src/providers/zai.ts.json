@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func ZaiProvider() *ModelsProvider { return builtinProvider(\"zai\") }",
+  "new": "func ZaiProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

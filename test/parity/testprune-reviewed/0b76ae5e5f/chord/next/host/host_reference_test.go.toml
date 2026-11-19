@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/next/host/host_reference_test.go"
+commit = "0b76ae5e5feed52171c3a8bda3cc0edf9f38e33f"
+class = "CITE"
+cite = "packages/chord/test/next/host/reference.test.ts:177"
+reason = "The flat-memory test keeps Pi's threshold, a growth under 500,000 bytes over 10,000 calls (reference.test.ts:177); it now fails only when two rounds in a row grow past it, because the Go heap carries the garbage of other tests' background work in one round, which a leak (about 350 B per call, reference.test.ts:176) shows in both; the failure message names both rounds. The keyed-state test waits for the first view's teardown (a task) before asserting that the shared source stays and is then dropped, as reference.test.ts:491-496 expects after its flushed()."

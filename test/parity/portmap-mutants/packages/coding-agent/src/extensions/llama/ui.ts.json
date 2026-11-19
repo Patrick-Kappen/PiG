@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/llama/ui.go",
+  "old": "\t\tdetails = append(details, \"loaded\")\n",
+  "new": "\t\tdetails = append(details, \"ready\")\n"
+ },
+ {
+  "file": "internal/codingagent/llama/ui.go",
+  "old": "const searchMaxVisible = 10",
+  "new": "const searchMaxVisible = 9"
+ }
+]

@@ -62,7 +62,7 @@ func TestRuleTestExpectationSkipsToolingDirectoriesOfMain(t *testing.T) {
 		{"a provenance file that is not TOML", "[[tooling]\nprefix = ", "", []string{toolingTest}, resultFail, "test/testdata-provenance.toml", 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			d := &data{Files: ledgerFiles(tc.tests...), ReviewedLedger: tc.ledger, Commits: []prCommit{commit(ledgerCommitA, "a: b", true)}}
+			d := &data{Files: ledgerFiles(tc.tests...), ReviewedLedger: ledgerOf(tc.ledger), Commits: []prCommit{commit(ledgerCommitA, "a: b", true)}}
 			o := r.run(d, p, toolingEnv(t, tc.provenance))
 			if o.result != tc.result || !strings.Contains(o.reason, tc.reason) || len(o.notices) != tc.notices {
 				t.Fatalf("outcome %+v, want %s %q with %d notice(s)", o, tc.result, tc.reason, tc.notices)

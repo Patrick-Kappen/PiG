@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/session/transaction.go",
+  "old": "\t\t\tKind:           value.Kind,\n\t\t\tModel:          value.Model,",
+  "new": "\t\t\tKind:           value.Kind + \"x\",\n\t\t\tModel:          value.Model,"
+ }
+]

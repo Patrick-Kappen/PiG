@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/imageprocessing/images.go",
+  "old": "mime == image.MimeType && hint == \"\")",
+  "new": "mime == image.MimeType && hint != \"\")"
+ }
+]

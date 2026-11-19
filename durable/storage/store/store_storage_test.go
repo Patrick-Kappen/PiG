@@ -4,7 +4,7 @@ package store
 // pi: packages/durable/src/storage/store/documents.ts
 // pi: packages/durable/src/storage/store/queries.ts
 // StoreStorage runs on these modules, which Pi's public entry point does not export, so the conformance suite below is what
-// proves them: each mutant of portmap-mutants.json fails it (tables.ts is marked in store_storage_commit_test.go).
+// proves them: each mutant of test/parity/portmap-mutants fails it (tables.ts is marked in store_storage_commit_test.go).
 
 // Ports packages/durable/test/store-storage.test.ts
 //

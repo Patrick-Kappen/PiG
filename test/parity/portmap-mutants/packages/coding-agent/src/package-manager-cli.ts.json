@@ -1,0 +1,17 @@
+[
+ {
+  "file": "coding/cli/package_commands.go",
+  "old": "\"Unknown option %s for %q.\"",
+  "new": "\"Unknown flag %s for %q.\""
+ },
+ {
+  "file": "coding/cli/package_commands.go",
+  "old": "\"Missing %s source.\"",
+  "new": "\"No %s source.\""
+ },
+ {
+  "file": "coding/cli/package_command_trust.go",
+  "old": "settings.SetProjectTrusted(decision != nil && *decision)",
+  "new": "settings.SetProjectTrusted(true)"
+ }
+]

@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/model_registry.go",
+  "old": "\tif len(errs) > 0 {\n\t\treturn nil, \"Invalid models.json schema:",
+  "new": "\tif len(errs) > 1 {\n\t\treturn nil, \"Invalid models.json schema:"
+ },
+ {
+  "file": "internal/codingagent/model_registry.go",
+  "old": "strings.Join(errs, \"\\n\")",
+  "new": "strings.Join(errs, \"\\n\\n\")"
+ }
+]

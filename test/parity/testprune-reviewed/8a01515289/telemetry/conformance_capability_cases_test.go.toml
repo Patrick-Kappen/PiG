@@ -1,0 +1,6 @@
+[[entry]]
+path = "telemetry/conformance_capability_cases_test.go"
+commit = "8a01515289e7382bbefcc61ed66dff855ad5eccc"
+class = "CITE"
+cite = "packages/telemetry/src/testing/conformance.ts:51"
+reason = "The ported conformance suite of Pi (telemetry/src/testing/conformance.ts) names its cases \"carries adapter capabilities through contexts and spans\" (:51), \"copies instrument metadata and measurement attributes\" (:109) and \"links / ignores links added after source settlement\" (:149) where PiG's older suite had \"copies inputs and suppresses invalid measurements atomically\" and \"suppresses malformed links atomically and ignores settled sources\", so the lists of the cases each broken store must fail use Pi's names and gain the capabilities case."

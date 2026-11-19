@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/mistral.go",
+  "old": "req.ReasoningEffort = \"high\"",
+  "new": "req.ReasoningEffort = \"low\""
+ }
+]

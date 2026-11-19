@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/startup_ui.go",
+  "old": "retainStartupInput(dispatchStartupInput(component, input))",
+  "new": "dispatchStartupInput(component, input)"
+ },
+ {
+  "file": "internal/codingagent/startup_ui.go",
+  "old": "stopAndDrain(true)",
+  "new": "stopAndDrain(false)"
+ }
+]

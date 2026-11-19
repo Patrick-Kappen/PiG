@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/contracts/snapshot.go",
+  "old": "closed := node.Value(\"additionalProperties\") == false",
+  "new": "closed := node.Value(\"additionalProperties\") == true"
+ }
+]

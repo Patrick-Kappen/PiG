@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/cli/builtin_extensions.go",
+  "old": "\tinline := llamaInlineExtensions()\n\tfor _, entry := range builtin.All(options) {\n\t\tinline = append(inline, extension.NamedInlineExtension{Name: entry.Name, Factory: entry.Factory, Replaceable: entry.Replaceable, Builtin: true})\n\t}\n\treturn inline\n",
+  "new": "\tvar inline []extension.InlineExtension\n\tfor _, entry := range builtin.All(options) {\n\t\tinline = append(inline, extension.NamedInlineExtension{Name: entry.Name, Factory: entry.Factory, Replaceable: entry.Replaceable, Builtin: true})\n\t}\n\treturn append(inline, llamaInlineExtensions()...)\n"
+ }
+]

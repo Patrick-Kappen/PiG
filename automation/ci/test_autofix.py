@@ -118,8 +118,12 @@ class ParseTests(unittest.TestCase):
         self.assertFalse([p for p in patterns if p.startswith(".github/workflows")])
         # Every gate is a bookkeeping gate, so its failure reaches this tool's log.
         makefile = (autofix.ROOT / "automation/make/ci.mk").read_text()
-        line = next(l for l in makefile.splitlines() if l.startswith("ci-bookkeeping:"))
-        bookkeeping = line.split(":", 1)[1].split()
+        bookkeeping = [
+            gate
+            for line in makefile.splitlines()
+            if line.startswith(("ci-bookkeeping-pr:", "ci-bookkeeping-reports:"))
+            for gate in line.split(":", 1)[1].split()
+        ]
         for gate, _ in gates:
             self.assertIn(gate, bookkeeping)
 

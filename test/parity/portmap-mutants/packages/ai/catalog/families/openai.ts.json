@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/family_openai.go",
+  "old": "\"tiers\"",
+  "new": "\"tierZ\""
+ }
+]

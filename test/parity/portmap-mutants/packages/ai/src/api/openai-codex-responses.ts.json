@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/openai_codex_responses.go",
+  "old": "return raw + \"/codex/responses\"",
+  "new": "return raw + \"/codex/response\""
+ }
+]

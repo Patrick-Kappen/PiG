@@ -1,0 +1,17 @@
+[
+ {
+  "file": "tui/kill_ring.go",
+  "old": "\t\t\t\treturn text + last\n",
+  "new": "\t\t\t\treturn last + text\n"
+ },
+ {
+  "file": "tui/kill_ring.go",
+  "old": "\tk.ring = append([]string{last}, k.ring[:len(k.ring)-1]...)",
+  "new": "\tk.ring = append([]string{last}, k.ring[1:]...)"
+ },
+ {
+  "file": "tui/kill_ring.go",
+  "old": "if accumulate && len(k.ring) > 0 {",
+  "new": "if accumulate && len(k.ring) > 1 {"
+ }
+]

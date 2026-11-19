@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/link/errors.go",
+  "old": "if kind == \"chord\" {",
+  "new": "if kind == \"chard\" {"
+ }
+]

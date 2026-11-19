@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_email.go",
+  "old": "bool { return emailRE.MatchString(value) }",
+  "new": "bool { return !emailRE.MatchString(value) }"
+ }
+]

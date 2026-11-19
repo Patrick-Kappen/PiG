@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/images/exif.go",
+  "old": "little := data[tiff] == 0x49 && data[tiff+1] == 0x49",
+  "new": "little := false"
+ }
+]

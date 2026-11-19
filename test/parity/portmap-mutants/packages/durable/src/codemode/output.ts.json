@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/codemode/output.go",
+  "old": "head = \"Script timed out: \" + failure.Message",
+  "new": "head = \"Script timeout: \" + failure.Message"
+ }
+]

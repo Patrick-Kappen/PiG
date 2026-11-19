@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/harness/harness_restart_failure_test.go"
+commit = "b2b58d7fed3a746f4f3aff3969fd72aa8a7ad49b"
+class = "CITE"
+cite = "packages/durable/test/harness-restart-failure.test.ts:775-776"
+reason = "Pi e5c6182b: harness-restart-failure.test.ts:775-776 expects the retention checks of a generation round to be at most 49 per round (group commit coalesces some reconcile passes), no lower bound; the Go test keeps Pi's upper bound and drops the lower one that counted the pre-group-commit passes."

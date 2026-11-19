@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_unbound.go",
+  "old": "principal != nil && revoked(principal)",
+  "new": "principal != nil && !revoked(principal)"
+ }
+]

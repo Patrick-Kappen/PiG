@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/jobs_records.go",
+  "old": "\t\tif reason == cutReload {\n",
+  "new": "\t\tif reason != cutReload {\n"
+ }
+]

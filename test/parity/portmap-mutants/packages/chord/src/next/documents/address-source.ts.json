@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/documents/address_source.go",
+  "old": "if prepared.Base() == before && !source.retired {",
+  "new": "if prepared.Base() != before && !source.retired {"
+ }
+]

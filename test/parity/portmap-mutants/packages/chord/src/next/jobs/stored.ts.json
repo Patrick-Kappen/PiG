@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/jobs_stored.go",
+  "old": "record.Set(\"finishFailures\", float64(finishFailures))",
+  "new": "record.Set(\"finishFailures\", float64(finishFailures+1))"
+ }
+]

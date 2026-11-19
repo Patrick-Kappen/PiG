@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/harness/harness_inbox_test.go"
+commit = "8153bc7a9e2627452f2460cb96c9edd75098fcf6"
+class = "CITE"
+cite = "packages/durable/src/harness/generation.ts:729"
+reason = "Pi 38ff99177 makes a tool round that requests a handoff append the handoff's reset and continue the run in the new context (generation.ts:729-741), ending it only when the round also terminates: the cases that expected the run to end on the tool-calling answer expect the continuing run's answer, the transcript with the new generation's answer, and the follow-ups after it."

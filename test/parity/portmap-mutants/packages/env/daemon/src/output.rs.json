@@ -1,0 +1,7 @@
+[
+ {
+  "file": "env/daemon/output.go",
+  "old": "case len(o.control) > 0:",
+  "new": "case false:"
+ }
+]

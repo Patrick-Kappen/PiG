@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/env/node/shell_test.go"
+commit = "4fd80d1cb2cd846ac6b4c6842f357121ff8aba0f"
+class = "CITE"
+cite = "packages/durable/src/env/node.ts:209"
+reason = "Pi 28bea006 and 61060ddf match the legacy WSL bash launcher under the actual Windows directory (isLegacyWslBashPath, node.ts:209-218: SystemRoot's System32 and Sysnative, no match when SystemRoot is not a drive path, the conventional C:\\Windows paths only when SystemRoot is unset or empty), and Pi's env-node.test.ts \"selects command transport for %s (SystemRoot=%j)\" (env-node.test.ts:664) covers it: the single case becomes the table of shell path, SystemRoot and the expected argument (`-s` for a launcher under the actual directory, `-c` otherwise)."

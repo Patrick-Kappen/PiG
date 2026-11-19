@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/builtin_providers.go",
+  "old": "func HuggingFaceProvider() *ModelsProvider { return builtinProvider(\"huggingface\") }",
+  "new": "func HuggingFaceProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

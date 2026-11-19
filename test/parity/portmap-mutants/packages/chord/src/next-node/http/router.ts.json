@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/http/router.go",
+  "old": "segment != \".\" && segment != \"..\" &&",
+  "new": "segment != \".\" &&"
+ }
+]

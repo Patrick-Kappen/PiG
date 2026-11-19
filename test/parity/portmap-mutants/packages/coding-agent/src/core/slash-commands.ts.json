@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/slash_commands.go",
+  "old": "Description: \"Open settings menu\"",
+  "new": "Description: \"Open settings menus\""
+ },
+ {
+  "file": "internal/codingagent/extension_host_info.go",
+  "old": "Name: \"skill:\" + skill.Name,",
+  "new": "Name: skill.Name,"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/tools/path_utils.go",
+  "old": "strings.TrimPrefix(normalized, \"@\")",
+  "new": "normalized"
+ }
+]

@@ -1,0 +1,17 @@
+[
+ {
+  "file": "coding/extension_bridge.go",
+  "old": "trimmed == \"\" || trimmed == \"false\" || trimmed == \"null\"",
+  "new": "trimmed == \"\" || trimmed == \"null\""
+ },
+ {
+  "file": "coding/extension_bridge.go",
+  "old": "return &bridgeTool{def: rt.Definition, declaration",
+  "new": "return &bridgeTool{def: extension.ToolDefinition{Name: rt.Definition.Name, Description: rt.Definition.Description, Parameters: rt.Definition.Parameters}, declaration"
+ },
+ {
+  "file": "coding/extension_bridge.go",
+  "old": "if b.def.ExecutionMode == \"sequential\" {",
+  "new": "if b.def.ExecutionMode != \"sequential\" {"
+ }
+]

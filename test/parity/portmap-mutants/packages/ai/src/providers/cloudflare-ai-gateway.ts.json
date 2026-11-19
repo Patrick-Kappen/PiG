@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func CloudflareAIGatewayProvider() *ModelsProvider { return builtinProvider(\"cloudflare-ai-gateway\") }",
+  "new": "func CloudflareAIGatewayProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

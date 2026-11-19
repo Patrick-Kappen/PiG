@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/ant_ling.go",
+  "old": "\"name\"",
+  "new": "\"namZ\""
+ }
+]

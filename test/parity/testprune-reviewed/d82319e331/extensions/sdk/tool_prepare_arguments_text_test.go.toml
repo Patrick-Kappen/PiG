@@ -1,0 +1,6 @@
+[[entry]]
+path = "extensions/sdk/tool_prepare_arguments_text_test.go"
+commit = "d82319e331f39f021bff28b38e9eb85afbdc7381"
+class = "CITE"
+cite = "packages/agent/src/agent-loop.ts:886"
+reason = "Pi passes prepared.args to afterToolCall, the same validated arguments passed to execution. The tool_result handler therefore reads the event input through ToolInput, just as the tool_call handler does; the test expects the host's ordered input instead of an empty string. Mutation replies remain exclusive to tool_call."

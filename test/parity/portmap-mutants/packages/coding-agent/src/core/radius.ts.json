@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/radius.go",
+  "old": "\tif !ok {\n\t\tgateway = ai.DefaultRadiusGateway",
+  "new": "\tif !ok || gateway == \"\" {\n\t\tgateway = ai.DefaultRadiusGateway"
+ },
+ {
+  "file": "internal/codingagent/radius.go",
+  "old": "const EnvRadiusGateway = \"PI_RADIUS_GATEWAY\"",
+  "new": "const EnvRadiusGateway = \"PI_RADIUS_GATEWAY_\""
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/workers/workers_control.go",
+  "old": "Code: string(chord.Code), Reason: string(chord.Reason)}",
+  "new": "Code: \"\", Reason: string(chord.Reason)}"
+ }
+]

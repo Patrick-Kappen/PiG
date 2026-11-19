@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/minimax_cn.go",
+  "old": "\"https://api.minimaxi.com/anthropic\"",
+  "new": "\"https://api.minimaxi.com/anthropiZ\""
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"gemini-2.5-flash\",\n\t\tProvider:             \"google-vertex\",\n\t\tDisplayName:          \"Gemini 2.5 Flash\",\n",
+  "new": "\t\tID:                   \"gemini-2.5-flash\",\n\t\tProvider:             \"google-vertex\",\n\t\tDisplayName:          \"Gemini 2.5 Flash!\",\n"
+ }
+]

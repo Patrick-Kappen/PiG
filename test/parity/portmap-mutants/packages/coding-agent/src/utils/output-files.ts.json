@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/outputfiles/outputfiles.go",
+  "old": "\tf, err := create(path)\n\tif err != nil {",
+  "new": "\tf, err := create(path)\n\tif err == nil {"
+ }
+]

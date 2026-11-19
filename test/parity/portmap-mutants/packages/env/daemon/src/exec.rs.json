@@ -1,0 +1,7 @@
+[
+ {
+  "file": "env/daemon/exec.go",
+  "old": "failure.Extra = Object{\"spillPath\": executionError.SpillPath}",
+  "new": "failure.Extra = nil"
+ }
+]

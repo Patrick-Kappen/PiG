@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/internal/idna/format_bidi.go",
+  "old": "return !isRtl || !sawEN || !sawAN",
+  "new": "return !isRtl || !sawEN && !sawAN"
+ }
+]

@@ -1,0 +1,17 @@
+[
+ {
+  "file": "ai/node_http_proxy.go",
+  "old": "case \"https\", \"wss\":\n\t\treturn 443",
+  "new": "case \"https\", \"wss\":\n\t\treturn 444"
+ },
+ {
+  "file": "ai/node_http_proxy.go",
+  "old": "hostname == host || strings.HasSuffix(hostname, \".\"+host)",
+  "new": "hostname == host"
+ },
+ {
+  "file": "ai/node_http_proxy.go",
+  "old": "if noProxy == \"*\" {",
+  "new": "if noProxy == \"-\" {"
+ }
+]

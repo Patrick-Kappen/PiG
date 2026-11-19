@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/openrouter_cost_test.go"
+commit = "a9015090a506009d6d0354e68a229e39717d665a"
+class = "CITE"
+cite = "packages/ai/src/utils/openrouter-cost.ts:34"
+reason = "Pi cae8d69e5 (#10286) replaces usage.cost.total with OpenRouter's reported cost and sets usage.cost.totalFromProvider = true (openrouter-cost.ts:30-35 for a non-BYOK request, :53 for BYOK), and leaves the catalog total and the flag unset when the accounting is incomplete or invalid; the ported openrouter-cost.test.ts table gains the expected flag, true exactly for the cases that take the reported cost."

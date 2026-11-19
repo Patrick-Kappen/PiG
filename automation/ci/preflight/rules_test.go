@@ -243,7 +243,8 @@ func TestRuleUpToDate(t *testing.T) {
 }
 
 func TestRuleFixLedger(t *testing.T) {
-	r, p := shippedRule(t, "bug-ledger")
+	// config.yaml has no check of this rule (see unusedRules), so the test gives it the parameters a check would.
+	r, p := builtinRules["fix-ledger"], params{"ledger": "docs/bug-ledger.json", "help": "run `make bug-ledger` and commit docs/bug-ledger.json and docs/site/docs/bug-ledger.md"}
 	fixCommit := commit("aaaaaaaaaa", "exec: fix the stall race", true)
 	plain := commit("bbbbbbbbbb", "exec: tidy", true)
 	ledger := prFile{Filename: "docs/bug-ledger.json"}
@@ -368,6 +369,13 @@ func TestRuleNoAdvisories(t *testing.T) {
 	}
 }
 
+// unusedRules are the built-in rules config.yaml has no check of, and why. A repository turns one back on with a check in
+// config.yaml; the rule and its tests stay so that it can.
+var unusedRules = map[string]string{
+	"up-to-date": "a pull request that is behind its base is not a fault of the pull request: every merge to the base made every open pull request fail, and the branch ruleset decides whether a merge needs an up-to-date branch",
+	"fix-ledger": "docs/bug-ledger.json is a report; it is compared outside a pull request (make ci-bookkeeping-reports)",
+}
+
 func TestShippedRulesAreAllUsed(t *testing.T) {
 	cfg, err := loadConfig(configYAML)
 	if err != nil {
@@ -378,8 +386,16 @@ func TestShippedRulesAreAllUsed(t *testing.T) {
 		used[c.Rule] = true
 	}
 	for name := range builtinRules {
-		if !used[name] {
+		if _, unused := unusedRules[name]; !used[name] && !unused {
 			t.Errorf("built-in rule %q is used by no check of config.yaml", name)
+		}
+	}
+	for name := range unusedRules {
+		if _, ok := builtinRules[name]; !ok {
+			t.Errorf("unusedRules names %q, which is not a built-in rule", name)
+		}
+		if used[name] {
+			t.Errorf("unusedRules names %q, which a check of config.yaml uses; delete the entry", name)
 		}
 	}
 }

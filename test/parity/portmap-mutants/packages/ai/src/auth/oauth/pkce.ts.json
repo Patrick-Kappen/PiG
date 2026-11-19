@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/pkce.go",
+  "old": "make([]byte, 32)",
+  "new": "make([]byte, 31)"
+ }
+]

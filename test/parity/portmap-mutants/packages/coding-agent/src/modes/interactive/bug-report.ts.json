@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/slash_bug.go",
+  "old": "\"Description: %s\\nTranscript: %s",
+  "new": "\"Descriptio: %s\\nTranscript: %s"
+ }
+]

@@ -1,0 +1,6 @@
+[[entry]]
+path = "codemode/deterministic_test.go"
+commit = "d1af7aece304c704c75b1bc32e8690dbeedf0d8f"
+class = "CITE"
+cite = "packages/codemode/src/runtime/vm.ts:212"
+reason = "A deterministic VM that is told a result number it cannot take crashes with crashMessage of the Error vm.ts:212 throws, `Error: Result 2 has sequence number 5, expected 1 or later, once` (crashMessage, vm.ts:156-158, names the error). The test expected the message without `Error: `; Pi's own frames, recorded by TestWireBehaviorMatchesPi, carry the prefix."

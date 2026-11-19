@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/checks.go",
+  "old": "func never(any) bool  { return false }",
+  "new": "func never(any) bool  { return true }"
+ }
+]

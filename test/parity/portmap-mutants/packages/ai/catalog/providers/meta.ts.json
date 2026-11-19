@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/meta.go",
+  "old": "\"openai-responses\"",
+  "new": "\"openai-responseZ\""
+ }
+]

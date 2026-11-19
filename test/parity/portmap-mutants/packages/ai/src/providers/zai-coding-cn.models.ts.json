@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"glm-4.6v\",\n\t\tProvider:             \"zai-coding-cn\",\n\t\tDisplayName:          \"GLM-4.6V\",\n",
+  "new": "\t\tID:                   \"glm-4.6v\",\n\t\tProvider:             \"zai-coding-cn\",\n\t\tDisplayName:          \"GLM-4.6V!\",\n"
+ }
+]

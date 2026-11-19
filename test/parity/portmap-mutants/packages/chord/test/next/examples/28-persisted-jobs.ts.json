@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/jobs_run_states.go",
+  "old": "if each == nil || !found || tracker == nil {",
+  "new": "if each != nil || !found || tracker == nil {"
+ }
+]

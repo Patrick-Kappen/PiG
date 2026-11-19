@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/session_share.go",
+  "old": "CustomType: \"pi.share\",",
+  "new": "CustomType: \"pi.shared\","
+ }
+]

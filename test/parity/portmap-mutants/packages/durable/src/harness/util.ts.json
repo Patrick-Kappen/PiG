@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/harness/util.go",
+  "old": "\tif ctx.Err() != nil {\n\t\twaiter.err = context.Cause(ctx)",
+  "new": "\tif ctx.Err() == nil {\n\t\twaiter.err = context.Cause(ctx)"
+ }
+]

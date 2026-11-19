@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/nextnode/compression_test.go"
+commit = "ff5017db9e8dbbeef61da454b37d8e552500f19f"
+class = "CITE"
+cite = "packages/chord/src/next-node/compression.ts:17"
+reason = "Pi passes Math.max(1, Math.min(limit, buffer.MAX_LENGTH)) to inflateRawSync as maxOutputLength (compression.ts:17): Math.min and Math.max return NaN for a NaN limit, Node takes its default maximum for a NaN maxOutputLength, and the check `inflated.byteLength > limit` (:18) is false against NaN, so Pi returns the bytes. The NaN-limit expectation was corrupt and is the bytes."

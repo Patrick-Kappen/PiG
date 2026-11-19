@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/cli/main.go",
+  "old": "printHelp(os.Stdout, chalkStdoutColor(), extensionHelpFlags(build.Extensions)...)",
+  "new": "printHelp(os.Stderr, chalkStdoutColor(), extensionHelpFlags(build.Extensions)...)"
+ }
+]

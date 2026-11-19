@@ -1,0 +1,22 @@
+[
+ {
+  "file": "internal/evals/docker.go",
+  "old": "{\"PI_EVAL_SANDBOX_UID\", \"65532\"}",
+  "new": "{\"PI_EVAL_SANDBOX_UID\", \"65533\"}"
+ },
+ {
+  "file": "internal/evals/docker.go",
+  "old": "if status != 0 || jsstring.Trim(stdout) == \"\" {",
+  "new": "if status != 0 {"
+ },
+ {
+  "file": "internal/evals/docker.go",
+  "old": "\"--read-only\", ",
+  "new": "\"--read-write\", "
+ },
+ {
+  "file": "internal/evals/docker.go",
+  "old": "if status != 0 {\n\t\treturn \"\", fmt.Errorf(\"%s eval discovery failed.\", variant)",
+  "new": "if status == 0 {\n\t\treturn \"\", fmt.Errorf(\"%s eval discovery failed.\", variant)"
+ }
+]

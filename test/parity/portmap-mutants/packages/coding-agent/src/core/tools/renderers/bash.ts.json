@@ -1,0 +1,22 @@
+[
+ {
+  "file": "tui/shell_renderers.go",
+  "old": "\" (timeout \"+jsTemplateString(timeout)+\"s)\"",
+  "new": "\" (timeout \"+jsTemplateString(timeout)+\"ms)\""
+ },
+ {
+  "file": "tui/shell_renderers.go",
+  "old": "if minutes < 60 {",
+  "new": "if minutes < 61 {"
+ },
+ {
+  "file": "internal/codingagent/tool_render_shell.go",
+  "old": "MaxVisualLines: bashPreviewLines,",
+  "new": "MaxVisualLines: bashPreviewLines + 1,"
+ },
+ {
+  "file": "internal/codingagent/tool_render_shell.go",
+  "old": "\"Truncated: showing \"",
+  "new": "\"Truncated showing \""
+ }
+]

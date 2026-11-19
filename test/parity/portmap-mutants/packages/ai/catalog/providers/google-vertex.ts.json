@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/google_vertex.go",
+  "old": "\"https://{location}-aiplatform.googleapis.com\"",
+  "new": "\"https://{location}-aiplatform.googleapis.coZ\""
+ }
+]

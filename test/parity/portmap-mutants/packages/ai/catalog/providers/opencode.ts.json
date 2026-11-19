@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/opencode.go",
+  "old": "\"opencode:deepseek-v4-flash\"",
+  "new": "\"opencode:deepseek-v4-flasZ\""
+ }
+]

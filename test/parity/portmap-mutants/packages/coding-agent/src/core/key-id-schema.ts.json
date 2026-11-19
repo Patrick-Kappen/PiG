@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/key_id_schema.go",
+  "old": "var keyIDModifiers = [...]string{\"ctrl\", \"shift\", \"alt\", \"super\"}",
+  "new": "var keyIDModifiers = [...]string{\"ctrl\", \"shift\", \"alt\"}"
+ }
+]

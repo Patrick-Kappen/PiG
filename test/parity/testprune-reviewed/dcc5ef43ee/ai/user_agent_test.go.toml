@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/user_agent_test.go"
+commit = "dcc5ef43ee75a3d4110b5159424fa0ab4d016428"
+class = "CITE"
+cite = "packages/ai/src/utils/identity.ts:75"
+reason = "Pi adc5fa9f80 and 04a93bad8f make the User-Agent formatUserAgent(identity?) (identity.ts:75), computed from a ClientIdentity, whose absence gives the default string; the expected prefixes and the Codex WebSocket headers' User-Agent are those of FormatUserAgent(nil), and the Codex header builder takes the identity target and identity (identity.ts:141, getIdentityHeaders)."

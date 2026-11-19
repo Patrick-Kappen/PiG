@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/remote_hold.go",
+  "old": "message.RetryIn = link.Some(int(max(0, *shown.RetryAt",
+  "new": "message.RetryIn = link.Some(int(min(0, *shown.RetryAt"
+ }
+]

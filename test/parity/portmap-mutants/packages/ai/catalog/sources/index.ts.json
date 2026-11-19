@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/sources.go",
+  "old": "\"https://radius.pi.dev\"",
+  "new": "\"https://radius.pi.deZ\""
+ }
+]

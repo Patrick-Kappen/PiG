@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func MinimaxProvider() *ModelsProvider { return builtinProvider(\"minimax\") }",
+  "new": "func MinimaxProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

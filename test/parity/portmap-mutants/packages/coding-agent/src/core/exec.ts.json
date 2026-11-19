@@ -1,0 +1,27 @@
+[
+ {
+  "file": "coding/extension/exec.go",
+  "old": "if value != math.Trunc(value) || value < 0 || value > float64(execMaxStringLength) {",
+  "new": "if value != math.Trunc(value) || value < -1 || value > float64(execMaxStringLength) {"
+ },
+ {
+  "file": "coding/extension/exec.go",
+  "old": "if truncated && result.Code == 0 {",
+  "new": "if truncated && result.Code == 7 {"
+ },
+ {
+  "file": "coding/extension/exec.go",
+  "old": "chunk = chunk[:max(remaining, 0)]",
+  "new": "chunk = chunk[:max(remaining, 0)/2]"
+ },
+ {
+  "file": "coding/extension/exec.go",
+  "old": "\tif !truncated {\n\t\tstdout.WriteString(stdoutDecode.Decode(nil, false))",
+  "new": "\tif truncated {\n\t\tstdout.WriteString(stdoutDecode.Decode(nil, false))"
+ },
+ {
+  "file": "coding/extension/exec.go",
+  "old": "result.Code = max(state.ExitCode(), 0)",
+  "new": "result.Code = state.ExitCode()"
+ }
+]

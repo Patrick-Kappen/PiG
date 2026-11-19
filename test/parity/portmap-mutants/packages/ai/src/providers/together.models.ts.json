@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"deepseek-ai/DeepSeek-V4-Pro-0813\",\n\t\tProvider:             \"together\",\n\t\tDisplayName:          \"DeepSeek V4 Pro 0813\",\n",
+  "new": "\t\tID:                   \"deepseek-ai/DeepSeek-V4-Pro-0813\",\n\t\tProvider:             \"together\",\n\t\tDisplayName:          \"DeepSeek V4 Pro 0813!\",\n"
+ }
+]

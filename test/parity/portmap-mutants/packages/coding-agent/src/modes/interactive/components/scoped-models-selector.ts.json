@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/scoped_models_list.go",
+  "old": "\tif cfg.EnabledModelIDs != nil {",
+  "new": "\tif cfg.EnabledModelIDs == nil {"
+ }
+]

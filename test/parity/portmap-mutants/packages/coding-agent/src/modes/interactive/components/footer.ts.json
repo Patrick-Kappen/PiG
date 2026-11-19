@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/status_line.go",
+  "old": "\tif footerData != nil {",
+  "new": "\tif footerData == nil {"
+ }
+]

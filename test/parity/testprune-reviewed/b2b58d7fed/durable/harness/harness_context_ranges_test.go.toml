@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/harness/harness_context_ranges_test.go"
+commit = "b2b58d7fed3a746f4f3aff3969fd72aa8a7ad49b"
+class = "CITE"
+cite = "packages/durable/test/harness-context.test.ts:452,458,736,746"
+reason = "Pi e5c6182b: the kept range takes each committed entry and the Session knows the bounds, so only a first read scans: harness-context.test.ts:452 and :458 expect the extension and the edit read to scan 0 rows, :736 and :746 the repeated reads 0. The earlier Go counts (4, 2) were the pre-group-commit scans. The expected values (0) are Pi's."

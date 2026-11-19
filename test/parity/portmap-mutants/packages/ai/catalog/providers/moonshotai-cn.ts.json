@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/moonshotai_cn.go",
+  "old": "\"https://api.moonshot.cn/v1\"",
+  "new": "\"https://api.moonshot.cn/vZ\""
+ }
+]

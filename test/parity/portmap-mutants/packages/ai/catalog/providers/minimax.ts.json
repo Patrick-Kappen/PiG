@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/minimax.go",
+  "old": "\"MiniMax-M2\"",
+  "new": "\"MiniMax-MZ\""
+ }
+]

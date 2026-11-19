@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"kimi-k2.6\",\n\t\tProvider:             \"moonshotai\",\n\t\tDisplayName:          \"Kimi K2.6\",\n",
+  "new": "\t\tID:                   \"kimi-k2.6\",\n\t\tProvider:             \"moonshotai\",\n\t\tDisplayName:          \"Kimi K2.6!\",\n"
+ }
+]

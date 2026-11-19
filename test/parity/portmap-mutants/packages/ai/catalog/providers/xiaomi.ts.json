@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/xiaomi.go",
+  "old": "\"supportsReasoningEffort\"",
+  "new": "\"supportsReasoningEfforZ\""
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func KimiCodingProvider() *ModelsProvider { return builtinProvider(\"kimi-coding\") }",
+  "new": "func KimiCodingProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

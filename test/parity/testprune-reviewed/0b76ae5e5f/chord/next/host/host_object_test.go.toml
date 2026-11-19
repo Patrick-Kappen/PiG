@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/next/host/host_object_test.go"
+commit = "0b76ae5e5feed52171c3a8bda3cc0edf9f38e33f"
+class = "CITE"
+cite = "packages/chord/test/next/host/object.test.ts:193"
+reason = "The red commit's Go test expected the factory of a broken failure to have run 4 times after the last get; Pi's test (object.test.ts:177-193) expects bug toHaveBeenCalledTimes(3): the 2 of :190 (the core's activation at load and the first get's) and the third get of the ended object. The first value was wrong against Pi, now 3. The other changed lines move the clock through advanceSettled."

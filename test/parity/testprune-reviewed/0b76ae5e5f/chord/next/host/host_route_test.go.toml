@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/next/host/host_route_test.go"
+commit = "0b76ae5e5feed52171c3a8bda3cc0edf9f38e33f"
+class = "CITE"
+cite = "packages/chord/test/next/host/route.test.ts:210"
+reason = "route.test.ts:210 expects the third resolve (toHaveLength(3)) after the second drop; the Go test waits for it (a Go link settles on tasks the clock does not wait for) and then for the reference live on its worker, with the same expected count. The other flagged strings are descriptions of waits; the resolver's context value is expected as in route.test.ts:373, compared on a slice under a mutex."

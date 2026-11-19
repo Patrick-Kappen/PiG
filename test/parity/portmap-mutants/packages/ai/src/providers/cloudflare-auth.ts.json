@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/auth_providers.go",
+  "old": "source := cloudflareAPIKey",
+  "new": "source := \"CLOUDFLARE_KEY\""
+ }
+]

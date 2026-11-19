@@ -1,7 +1,7 @@
 package store
 
 // pi: packages/durable/src/storage/store/tables.ts
-// The refusals below run through EncodeIndexed, which no public entry point of Pi exports; its mutant in portmap-mutants.json fails them.
+// The refusals below run through EncodeIndexed, which no public entry point of Pi exports; its mutant in test/parity/portmap-mutants fails them.
 
 // Ports packages/durable/test/store-storage-commit.test.ts
 //

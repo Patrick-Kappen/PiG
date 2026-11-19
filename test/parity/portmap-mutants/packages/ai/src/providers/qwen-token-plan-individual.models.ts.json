@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"deepseek-v4-flash-0731\",\n\t\tProvider:             \"qwen-token-plan-individual\",\n\t\tDisplayName:          \"DeepSeek V4 Flash 0731\",\n",
+  "new": "\t\tID:                   \"deepseek-v4-flash-0731\",\n\t\tProvider:             \"qwen-token-plan-individual\",\n\t\tDisplayName:          \"DeepSeek V4 Flash 0731!\",\n"
+ }
+]

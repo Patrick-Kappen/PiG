@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/documents/transaction.go",
+  "old": "if tx.state != txCommitting || tx.token.Sealed() {",
+  "new": "if tx.state != txCommitting && tx.token.Sealed() {"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"Ling-2.6-1T\",\n\t\tProvider:             \"ant-ling\",\n\t\tDisplayName:          \"Ling 2.6 1T\",\n",
+  "new": "\t\tID:                   \"Ling-2.6-1T\",\n\t\tProvider:             \"ant-ling\",\n\t\tDisplayName:          \"Ling 2.6 1T!\",\n"
+ }
+]

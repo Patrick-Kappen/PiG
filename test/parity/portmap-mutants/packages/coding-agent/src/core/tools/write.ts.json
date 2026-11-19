@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/tools/write.go",
+  "old": "\"Successfully wrote to \" + p.Path",
+  "new": "\"Wrote \" + p.Path"
+ },
+ {
+  "file": "internal/codingagent/tools/write.go",
+  "old": "ops.Mkdir(filepath.Dir(path))",
+  "new": "ops.Mkdir(path)"
+ }
+]

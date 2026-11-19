@@ -1,0 +1,6 @@
+[[entry]]
+path = "automation/ci/changelogfrag/main_test.go"
+commit = "2719b6854d8fb4a81f69a6ef4bd3be561daa6f86"
+class = "NOBEHAVIOR"
+cite = ""
+reason = "The changelog fragment tool is PiG-original CI automation with no Pi counterpart, so no Pi line governs it. The fold now refuses any fragment, legacy or not, whose \"### Fixed\" bullet has no `<!-- fix: <sha> -->` marker, so the fold tests' fixture bullets carry a marker and their expected CHANGELOG text carries it too, and a new test pins the refusal of an unmarked bullet and the acceptance of a marked one, for a legacy and a normal fragment."

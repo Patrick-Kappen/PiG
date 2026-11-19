@@ -59,19 +59,6 @@ checks:
     reads: [pull, depends-on]
     rule: depends-on-merged
 
-  - name: up-to-date
-    when: {always: true}
-    stage: cheap
-    reads: [pull, compare-main]
-    rule: up-to-date
-
-  - name: bug-ledger
-    when: {always: true}
-    stage: cheap
-    reads: [pull, commits, files]
-    rule: fix-ledger
-    with: {ledger: docs/bug-ledger.json, help: 'run `make bug-ledger` and commit docs/bug-ledger.json and docs/site/docs/bug-ledger.md'}
-
   - name: changelog
     when: {always: true}
     stage: cheap

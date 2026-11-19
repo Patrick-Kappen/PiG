@@ -1,0 +1,7 @@
+[
+ {
+  "file": "env/daemon/fs.go",
+  "old": "\"Path is a directory: rm returned EISDIR (is a directory) \"+path",
+  "new": "\"Path is a directory: \"+path"
+ }
+]

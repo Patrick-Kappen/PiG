@@ -1,0 +1,6 @@
+[[entry]]
+path = "schema/formats/oracle_test.go"
+commit = "1de91268b66ee9f62f8e82f3b2edf178e89bcb17"
+class = "NOBEHAVIOR"
+cite = ""
+reason = "The test replays rows of Pi's own formats (packages/schema/src/formats/index.ts) generated under Node 24. The commit moves the generator out of the test comment into testdata/gen, adds rows with lone surrogates (decoded as WTF-8 instead of U+FFFD, the repo's JS-string convention), and raises the row-count floor from the corpus it now replays; no Pi behavior changes, the new rows' expectations are Pi's results."

@@ -1,0 +1,6 @@
+[[entry]]
+path = "telemetry/memory_ids_detached_test.go"
+commit = "4ca61cee8c939660e13fe5a86c60c7b98890c1f7"
+class = "CITE"
+cite = "packages/telemetry/src/memory.ts:110"
+reason = "Pi records a span's and an event's attributes as an object copied with Object.entries (memory.ts:110-115), keeping insertion order and copying array values, so PiG's SpanAttributes is an ordered list of Attr values (Set and Value replace the map index): the detached-copy test builds the attributes with Attr and reads them with Value, and expects the same copied values (n stays 1, the list keeps its first element)."

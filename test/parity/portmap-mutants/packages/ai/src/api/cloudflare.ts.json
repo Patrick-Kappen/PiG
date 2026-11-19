@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/cloudflare.go",
+  "old": "{CLOUDFLARE_ACCOUNT_ID}/ai\"",
+  "new": "{CLOUDFLARE_ACCOUNT_ID}/ai/\""
+ }
+]

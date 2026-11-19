@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_deadline.go",
+  "old": "d.remaining = max(0, d.remaining-time.Duration(d.loop.Now()-d.started)*time.Millisecond)",
+  "new": "d.remaining = max(0, d.remaining+time.Duration(d.loop.Now()-d.started)*time.Millisecond)"
+ }
+]

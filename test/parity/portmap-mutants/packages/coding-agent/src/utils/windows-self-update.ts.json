@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/windows_self_update.go",
+  "old": "strings.ToLower(filepath.Base(current)) == \"node_modules\"",
+  "new": "filepath.Base(current) == \"node_modules\""
+ },
+ {
+  "file": "internal/codingagent/windows_self_update.go",
+  "old": "copyQuarantinedImage(quarantinePath, loadedFile)",
+  "new": "error(nil)"
+ }
+]

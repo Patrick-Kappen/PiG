@@ -1,0 +1,7 @@
+[
+ {
+  "file": "env/daemon/window.go",
+  "old": "p.skipped.endsWithNewline = strings.HasSuffix(text, \"\\n\")",
+  "new": "p.skipped.endsWithNewline = false"
+ }
+]

@@ -1,0 +1,22 @@
+[
+ {
+  "file": "codemode/cloudflare/cloudflare.go",
+  "old": "MaxMemoryLimitBytes: DefaultRemoteMemoryLimitBytes}",
+  "new": "MaxMemoryLimitBytes: DefaultRemoteMemoryLimitBytes / 2}"
+ },
+ {
+  "file": "codemode/cloudflare/cloudflare.go",
+  "old": "\t\tmemory = DefaultRemoteMemoryLimitBytes\n",
+  "new": "\t\tmemory = DefaultRemoteMemoryLimitBytes * 2\n"
+ },
+ {
+  "file": "codemode/cloudflare/cloudflare.go",
+  "old": "\toptions.Wasm = func() ([]byte, error) { return QuickJSWasm(), nil }",
+  "new": "\toptions.Wasm = func() ([]byte, error) { return nil, nil }"
+ },
+ {
+  "file": "codemode/cloudflare/cloudflare.go",
+  "old": "\tcodemode.ServeRemote(ctx, request, exchange, codemode.ServeOptions{MaxInterruptBudget: budget, MaxMemoryLimitBytes: memory})",
+  "new": "\tcodemode.ServeRemote(ctx, request, exchange, codemode.ServeOptions{MaxInterruptBudget: budget})"
+ }
+]

@@ -1,0 +1,17 @@
+[
+ {
+  "file": "agent/queue.go",
+  "old": "\tif q.mode == QueueModeAll {\n",
+  "new": "\tif q.mode != QueueModeAll {\n"
+ },
+ {
+  "file": "agent/queue.go",
+  "old": "\t\tif message.User != nil {\n",
+  "new": "\t\tif message.User == nil {\n"
+ },
+ {
+  "file": "agent/queue.go",
+  "old": "\tq.messages = q.messages[len(drained):]\n",
+  "new": "\tq.messages = q.messages[:0]\n"
+ }
+]

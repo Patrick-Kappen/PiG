@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/build.go",
+  "old": "\"maxWidth\"",
+  "new": "\"maxWidtZ\""
+ }
+]

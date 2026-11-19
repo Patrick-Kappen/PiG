@@ -1,0 +1,7 @@
+[
+ {
+  "file": "env/daemon/watch.go",
+  "old": "return Object{\"kind\": \"change\", \"overflow\": true, \"mode\": \"polling\"}",
+  "new": "return Object{\"kind\": \"change\", \"overflow\": true, \"mode\": \"native\"}"
+ }
+]

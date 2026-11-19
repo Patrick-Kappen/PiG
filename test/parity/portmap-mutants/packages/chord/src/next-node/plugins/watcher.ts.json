@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/plugins/plugins_watcher.go",
+  "old": "latest <= snapshot.Plugins[name]",
+  "new": "latest < snapshot.Plugins[name]"
+ }
+]

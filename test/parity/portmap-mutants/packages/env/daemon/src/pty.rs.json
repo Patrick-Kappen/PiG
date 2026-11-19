@@ -1,0 +1,7 @@
+[
+ {
+  "file": "env/daemon/pty.go",
+  "old": "JSON: Object{\"kind\": \"started\", \"pid\": proc.pid}",
+  "new": "JSON: Object{\"kind\": \"begun\", \"pid\": proc.pid}"
+ }
+]

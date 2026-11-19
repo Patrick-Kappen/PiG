@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/plugins/plugins_runtime.go",
+  "old": "Plugin: failure.Plugin, Error",
+  "new": "Plugin: \"\", Error"
+ }
+]

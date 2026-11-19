@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/images/node/node.go",
+  "old": "return reply{result: result, err: err}",
+  "new": "_ = err\n\treturn reply{result: result}"
+ }
+]

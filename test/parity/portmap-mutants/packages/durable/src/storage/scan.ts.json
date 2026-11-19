@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/storage/internal/scan/scan.go",
+  "old": "requested != nil && *requested != order",
+  "new": "requested != nil && *requested == order"
+ }
+]

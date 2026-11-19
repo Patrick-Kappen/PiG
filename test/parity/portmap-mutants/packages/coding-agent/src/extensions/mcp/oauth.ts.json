@@ -1,0 +1,12 @@
+[
+ {
+  "file": "coding/mcpext/oauth.go",
+  "old": "challengeScope = oauth.StepUpScope(grantedScope, challengeScope)",
+  "new": "challengeScope = oauth.StepUpScope(grantedScope[:0], challengeScope)"
+ },
+ {
+  "file": "coding/mcpext/oauth.go",
+  "old": "\tif challenge.Error == \"insufficient_scope\" {\n\t\treturn oauth.NewMcpOAuthAuthorizationRequiredError()",
+  "new": "\tif challenge.Error == \"insufficient_scope_\" {\n\t\treturn oauth.NewMcpOAuthAuthorizationRequiredError()"
+ }
+]

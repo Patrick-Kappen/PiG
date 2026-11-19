@@ -62,6 +62,20 @@ func TestMain(m *testing.M) {
 		_ = os.RemoveAll(testRoot)
 		os.Exit(2)
 	}
+	// TestContextPhaseIdentityThroughSDKTransports builds four Rust SDK extensions. Without a target of their own each build compiled the
+	// SDK's dependencies again, 10 s a build; they compile once per machine into a persistent target keyed by the SDK lock (make test-warm).
+	if os.Getenv("CARGO_TARGET_DIR") == "" {
+		sdk := filepath.Join("..", "extensions", "sdk-rs")
+		target, err := testenv.SharedCargoTargetDir("coding", filepath.Join(sdk, "Cargo.lock"), filepath.Join(sdk, "Cargo.toml"))
+		if err == nil {
+			err = os.Setenv("CARGO_TARGET_DIR", target)
+		}
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "set package Cargo target:", err)
+			_ = os.RemoveAll(testRoot)
+			os.Exit(2)
+		}
+	}
 	code := testenv.RunWithoutGoroutineLeaks(m)
 	if err := os.RemoveAll(testRoot); err != nil {
 		fmt.Fprintln(os.Stderr, "remove isolated test config root:", err)

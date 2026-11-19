@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/registry_test.go"
+commit = "ae40b2b82015ae8fa212c7b33ff71dc9f3d01615"
+class = "CITE"
+cite = "packages/ai/scripts/generate-models.ts:462"
+reason = "Pi fdce48eb (#11173) drops openai-codex/gpt-5.3-codex-spark and gpt-5.5, so the registry case resolves openai-codex/gpt-5.6-sol, whose catalog entry has the rates of generate-models.ts:462 (input 4, output 20, cacheRead 0.4, cacheWrite 5), a 272000 context, text and image input and the max thinking level (the expected values are the regenerated catalog entry's)."

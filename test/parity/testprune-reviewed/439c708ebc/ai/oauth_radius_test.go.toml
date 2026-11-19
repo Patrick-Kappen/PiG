@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/oauth_radius_test.go"
+commit = "439c708ebc2fc1d5f19d1b06efa7ed390a76bc7e"
+class = "CITE"
+cite = "packages/ai/src/auth/oauth/radius.ts:57"
+reason = "Pi 89c921d8 makes the Radius login take its authorization endpoint through trustedHttpUrl and throw `Invalid Radius OAuth config from ${gateway}` (radius.ts:55-58) for one that is not an http(s) URL, where the unparseable endpoint raised `Invalid URL`; a device verification_uri that is not trusted throws `Untrusted verification_uri` (radius.ts:217). The expected error text changes and the two radius-oauth.test.ts cases for a file: endpoint and URI are ported."

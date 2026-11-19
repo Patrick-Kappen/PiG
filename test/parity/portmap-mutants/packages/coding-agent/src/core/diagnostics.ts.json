@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/extension/diagnostics.go",
+  "old": "`json:\"resourceType\"`",
+  "new": "`json:\"kind\"`"
+ }
+]

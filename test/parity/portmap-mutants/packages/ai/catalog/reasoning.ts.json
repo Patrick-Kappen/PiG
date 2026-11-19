@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/reasoning.go",
+  "old": "\"minimal\"",
+  "new": "\"minimaZ\""
+ }
+]

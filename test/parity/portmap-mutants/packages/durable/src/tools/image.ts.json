@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/tools/image.go",
+  "old": "\tif len(data) < 26 {\n\t\treturn false\n\t}\n\tdeclaredFileSize",
+  "new": "\tif len(data) < 20 {\n\t\treturn false\n\t}\n\tdeclaredFileSize"
+ }
+]

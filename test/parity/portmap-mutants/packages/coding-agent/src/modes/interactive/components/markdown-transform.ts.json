@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/extension/markdowntransform/markdowntransform.go",
+  "old": "\tout = transformer(markdown, ctx)\n",
+  "new": "\tout = markdown\n"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func OpenaiCodexProvider() *ModelsProvider { return builtinProvider(\"openai-codex\") }",
+  "new": "func OpenaiCodexProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

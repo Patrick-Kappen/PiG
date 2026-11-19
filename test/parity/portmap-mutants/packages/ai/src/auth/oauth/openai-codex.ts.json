@@ -1,0 +1,12 @@
+[
+ {
+  "file": "ai/oauth_openai_codex.go",
+  "old": "float64(jsnumber.FromJSON(tok.ExpiresIn)*1000))",
+  "new": "float64(jsnumber.FromJSON(tok.ExpiresIn)*999))"
+ },
+ {
+  "file": "ai/oauth_openai_codex.go",
+  "old": "!accessOK || !refreshOK || !jsonNumberToken(tok.ExpiresIn)",
+  "new": "!accessOK || refreshOK || !jsonNumberToken(tok.ExpiresIn)"
+ }
+]

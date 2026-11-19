@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/storage/store/documents.go",
+  "old": "at.Seq < *record.RetiredAt",
+  "new": "at.Seq <= *record.RetiredAt"
+ }
+]

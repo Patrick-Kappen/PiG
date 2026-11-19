@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/bug_report.go",
+  "old": "\tif model == nil {",
+  "new": "\tif model != nil {"
+ }
+]

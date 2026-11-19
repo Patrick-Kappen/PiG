@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/codingagent/settings.go",
+  "old": "readMerged(sm, func(s *Settings) string { return s.TuiMode }) == string(tui.TuiModeRegular)",
+  "new": "readMerged(sm, func(s *Settings) string { return s.TuiMode }) != string(tui.TuiModeRegular)"
+ },
+ {
+  "file": "internal/codingagent/settings.go",
+  "old": "if v == DefaultProjectTrustAlways || v == DefaultProjectTrustNever {",
+  "new": "if v == DefaultProjectTrustAlways {"
+ },
+ {
+  "file": "internal/codingagent/file_lock.go",
+  "old": "return lease.Release, nil",
+  "new": "return func() error { _ = lease; return nil }, nil"
+ }
+]

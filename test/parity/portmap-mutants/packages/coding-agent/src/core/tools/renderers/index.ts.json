@@ -1,0 +1,17 @@
+[
+ {
+  "file": "tui/tool_renderers.go",
+  "old": "return \"PS>\", true",
+  "new": "return \"PS$\", true"
+ },
+ {
+  "file": "tui/tool_execution.go",
+  "old": "return FormatLsHeader(args, cwd)",
+  "new": "return FormatFindHeader(args)"
+ },
+ {
+  "file": "internal/codingagent/tool_render.go",
+  "old": "case \"grep\", \"find\", \"ls\":",
+  "new": "case \"grep\", \"find\":"
+ }
+]

@@ -29,7 +29,7 @@ cell=$(mktemp -d)
 trap 'rm -rf "$cell"' EXIT
 go run ./automation/ci/cargocell "$sdk" "$cell"
 # One target per package that builds Rust cells; the names match the SharedCargoTargetDir calls in each package's TestMain.
-for pkg in subprocess runtimecell cli conformance; do
+for pkg in subprocess runtimecell cli conformance coding; do
   target=$(go run ./automation/ci/cargotarget "$pkg" "$sdk")
   echo "[test-warm] Rust SDK cell dependencies -> $target"
   (cd "$cell" && CARGO_TARGET_DIR="$target" cargo build --release --quiet)

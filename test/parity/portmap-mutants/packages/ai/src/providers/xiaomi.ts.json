@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/builtin_providers.go",
+  "old": "func XiaomiProvider() *ModelsProvider { return builtinProvider(\"xiaomi\") }",
+  "new": "func XiaomiProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

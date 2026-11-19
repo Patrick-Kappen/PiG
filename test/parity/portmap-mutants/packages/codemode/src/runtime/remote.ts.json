@@ -1,0 +1,27 @@
+[
+ {
+  "file": "codemode/remote_serve_blocking.go",
+  "old": "\tdefer context.AfterFunc(ctx, s.stopChannel)()",
+  "new": "\t_ = context.AfterFunc(ctx, func() {})"
+ },
+ {
+  "file": "codemode/remote_serve_blocking.go",
+  "old": "\tif ctx.Err() != nil {\n\t\treturn\n\t}\n\ts := startRemoteServer",
+  "new": "\ts := startRemoteServer"
+ },
+ {
+  "file": "codemode/remote.go",
+  "old": "request := RemoteRequest{Data: data, InterruptBudget: interruptBudget}",
+  "new": "request := RemoteRequest{Data: data}"
+ },
+ {
+  "file": "codemode/remote.go",
+  "old": "\"Remote sandbox returned before the script settled\"",
+  "new": "\"Remote sandbox returned\""
+ },
+ {
+  "file": "codemode/remote.go",
+  "old": "fmt.Errorf(\"Failed to reach the remote sandbox: %w\", err)",
+  "new": "fmt.Errorf(\"Failed to reach the remote sandbox\")"
+ }
+]

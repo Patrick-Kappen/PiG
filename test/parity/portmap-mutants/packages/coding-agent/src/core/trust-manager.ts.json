@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/trust_manager.go",
+  "old": "entry = &ProjectTrustStoreEntry{Path: key, Decision: *value}",
+  "new": "entry = &ProjectTrustStoreEntry{Path: key, Decision: !*value}"
+ },
+ {
+  "file": "internal/codingagent/trust_manager.go",
+  "old": "if !isUserSkills && probe.Exists() {",
+  "new": "if probe.Exists() {"
+ }
+]

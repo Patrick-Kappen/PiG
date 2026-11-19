@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/openai_responses.go",
+  "old": "Type: \"additional_tools\", Role: \"developer\"",
+  "new": "Type: \"additional_tools\", Role: \"user\""
+ }
+]

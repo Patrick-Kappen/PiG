@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/text/text.go",
+  "old": "\tif strings.HasPrefix(content, bom) {\n",
+  "new": "\tif strings.HasSuffix(content, bom) {\n"
+ }
+]

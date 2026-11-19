@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/tool_render_list.go",
+  "old": "tools.FormatJSNumber(d.ResultLimitReached)+\" results limit\"",
+  "new": "tools.FormatJSNumber(d.ResultLimitReached)+\" result limit\""
+ },
+ {
+  "file": "tui/tool_execution.go",
+  "old": "toolTitleText(\"find\") + \" \" + listPatternText(args[\"pattern\"], false)",
+  "new": "toolTitleText(\"find\") + \" \" + listPatternText(args[\"pattern\"], true)"
+ }
+]

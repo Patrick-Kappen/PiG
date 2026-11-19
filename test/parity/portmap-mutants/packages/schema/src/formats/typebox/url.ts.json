@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_url.go",
+  "old": "_, err := nodeurl.ParseURL(jsstring.StreamText(value))\n\treturn err == nil",
+  "new": "_, err := nodeurl.ParseURL(jsstring.StreamText(value))\n\treturn err != nil"
+ }
+]

@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/session/watch_doc_admission_test.go"
+commit = "60a2b8b4fe0f3b263466ef0ae134fb61b76a0ce3"
+class = "CITE"
+cite = "packages/durable/src/session/session.ts:1026"
+reason = "Pi 6c2fd73b0 builds a document watch on observeCommits(), the Session's own observers that see a commit held in memory when it is adopted (session.ts:1026), where it was built on subscribeCommits(), which now sees only stored commits. The test that counted the watch's commit subscription counts its observer subscription, and asserts it holds no host subscription."

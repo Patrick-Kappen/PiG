@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/compaction/branch_summarization.go",
+  "old": "\tif oldLeafID == \"\" {",
+  "new": "\tif oldLeafID != \"\" {"
+ }
+]

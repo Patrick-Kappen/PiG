@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"grok-4.3\",\n\t\tProvider:             \"xai\",\n\t\tDisplayName:          \"Grok 4.3\",\n",
+  "new": "\t\tID:                   \"grok-4.3\",\n\t\tProvider:             \"xai\",\n\t\tDisplayName:          \"Grok 4.3!\",\n"
+ }
+]

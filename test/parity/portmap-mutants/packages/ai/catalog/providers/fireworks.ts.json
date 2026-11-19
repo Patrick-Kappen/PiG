@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/fireworks.go",
+  "old": "\"allowEmptySignature\"",
+  "new": "\"allowEmptySignaturZ\""
+ }
+]

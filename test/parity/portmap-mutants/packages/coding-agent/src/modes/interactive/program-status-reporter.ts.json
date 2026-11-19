@@ -1,0 +1,22 @@
+[
+ {
+  "file": "internal/codingagent/program_status_reporter.go",
+  "old": "\t\t\t\tr.runResult = tui.ProgramStatus{State: tui.ProgramStateIdle}",
+  "new": "\t\t\t\tr.runResult = tui.ProgramStatus{State: tui.ProgramStateDone}"
+ },
+ {
+  "file": "internal/codingagent/program_status_reporter.go",
+  "old": "\tr.runActive = false\n\t\tif event.Aborted {",
+  "new": "\tr.runActive = false\n\t\tif !event.Aborted {"
+ },
+ {
+  "file": "internal/codingagent/program_status_reporter.go",
+  "old": "\t\tif event.Message.Assistant.StopReason == ai.StopReasonError {",
+  "new": "\t\tif event.Message.Assistant.StopReason == ai.StopReasonAborted {"
+ },
+ {
+  "file": "internal/codingagent/program_status_reporter.go",
+  "old": "\tcase agent.CompactionStartEvent:\n\t\tr.compacting = true",
+  "new": "\tcase agent.CompactionStartEvent:\n\t\tr.compacting = false"
+ }
+]

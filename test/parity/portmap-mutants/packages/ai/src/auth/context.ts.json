@@ -1,0 +1,12 @@
+[
+ {
+  "file": "ai/auth_resolve.go",
+  "old": "if !ok || trimJSWhitespace(value) == \"\" {",
+  "new": "if !ok {"
+ },
+ {
+  "file": "ai/auth_resolve.go",
+  "old": "path = home + path[1:]",
+  "new": "path = home + path"
+ }
+]

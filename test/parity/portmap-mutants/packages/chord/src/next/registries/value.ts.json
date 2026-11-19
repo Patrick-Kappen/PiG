@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/registries/value.go",
+  "old": "if mapped != nil && state.Identical(mapped.from, from) && mapped.provider == served {",
+  "new": "if mapped != nil && state.Identical(mapped.from, from) && mapped.provider != served {"
+ }
+]

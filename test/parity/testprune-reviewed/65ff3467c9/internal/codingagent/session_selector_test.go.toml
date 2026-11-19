@@ -1,0 +1,6 @@
+[[entry]]
+path = "internal/codingagent/session_selector_test.go"
+commit = "65ff3467c950339b75a8b0e7c7e060c0446bd90b"
+class = "CITE"
+cite = "packages/coding-agent/src/modes/interactive/components/session-selector-search.ts:80"
+reason = "Pi 8c03fef4d (#11220) lets a scattered (fuzzy) token match only the session's name or cwd (session-selector-search.ts:80-82: `for (const field of [session.name ?? \"\", session.cwd])`), never its message text, so the relevance test that expected `lgin` to find the session whose message text holds those scattered letters expects no match, and checks `gma` against the name or directory instead."

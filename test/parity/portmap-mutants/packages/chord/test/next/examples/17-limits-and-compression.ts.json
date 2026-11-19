@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/link/part.go",
+  "old": "if inflated == nil {",
+  "new": "if inflated != nil {"
+ }
+]

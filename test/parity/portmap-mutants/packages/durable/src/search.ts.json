@@ -1,0 +1,17 @@
+[
+ {
+  "file": "durable/internal/search/search.go",
+  "old": "score += fullNameBonus",
+  "new": "score += 0"
+ },
+ {
+  "file": "durable/internal/search/search.go",
+  "old": "nameWeight = 3",
+  "new": "nameWeight = 2"
+ },
+ {
+  "file": "durable/internal/search/search.go",
+  "old": "return matches[a].covered > matches[c].covered",
+  "new": "return matches[a].covered < matches[c].covered"
+ }
+]

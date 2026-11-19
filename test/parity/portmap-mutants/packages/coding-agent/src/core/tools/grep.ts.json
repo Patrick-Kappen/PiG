@@ -1,0 +1,27 @@
+[
+ {
+  "file": "internal/codingagent/tools/grep.go",
+  "old": "\tif p.IgnoreCase {",
+  "new": "\tif !p.IgnoreCase {"
+ },
+ {
+  "file": "internal/codingagent/tools/grep.go",
+  "old": "\"No matches found\"",
+  "new": "\"No match found\""
+ },
+ {
+  "file": "internal/codingagent/tools/grep.go",
+  "old": "effectiveLimit = math.Max(1, effectiveLimit)",
+  "new": "effectiveLimit = math.Max(2, effectiveLimit)"
+ },
+ {
+  "file": "internal/codingagent/tools/grep.go",
+  "old": "\tif p.Literal {",
+  "new": "\tif !p.Literal {"
+ },
+ {
+  "file": "internal/codingagent/tools/grep.go",
+  "old": "if float64(run.matchCount) >= limit {",
+  "new": "if float64(run.matchCount) > limit {"
+ }
+]

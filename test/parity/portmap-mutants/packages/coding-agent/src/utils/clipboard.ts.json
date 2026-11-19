@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/codingagent/clipboard_copy.go",
+  "old": "const maxOSC52EncodedLength = 100_000",
+  "new": "const maxOSC52EncodedLength = 100_004"
+ },
+ {
+  "file": "internal/codingagent/clipboard_text.go",
+  "old": "\tif clipboardEnv(\"TERMUX_VERSION\") != \"\" {\n\t\tcommands = append(commands, []string{\"termux-clipboard-get\"})",
+  "new": "\tif clipboardEnv(\"TERMUX_VERSION\") == \"x\" {\n\t\tcommands = append(commands, []string{\"termux-clipboard-get\"})"
+ },
+ {
+  "file": "internal/codingagent/clipboard_copy.go",
+  "old": " || c.getenv(\"MOSH_CONNECTION\") != \"\"",
+  "new": ""
+ }
+]

@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/codingagent/tools/ls.go",
+  "old": "if float64(len(results)) >= effectiveLimit {",
+  "new": "if float64(len(results)) > effectiveLimit {"
+ },
+ {
+  "file": "internal/codingagent/tools/ls.go",
+  "old": "\t\t\tentry += \"/\"",
+  "new": "\t\t\tentry += \"\\\\\""
+ },
+ {
+  "file": "internal/codingagent/tools/ls.go",
+  "old": "\"(empty directory)\"",
+  "new": "\"(empty)\""
+ }
+]

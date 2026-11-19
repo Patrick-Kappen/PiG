@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/cloudflare_ai_binding.go",
+  "old": "the AI binding does not expose fetch()\"",
+  "new": "the AI binding does not expose fetch\""
+ }
+]

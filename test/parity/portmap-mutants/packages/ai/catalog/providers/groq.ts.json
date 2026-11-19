@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/groq.go",
+  "old": "\"https://api.groq.com/openai/v1\"",
+  "new": "\"https://api.groq.com/openai/vZ\""
+ }
+]

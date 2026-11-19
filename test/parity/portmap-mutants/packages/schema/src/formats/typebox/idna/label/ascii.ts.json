@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/internal/idna/label_ascii.go",
+  "old": "&& ReAsciiLdh(value)",
+  "new": "|| ReAsciiLdh(value)"
+ }
+]

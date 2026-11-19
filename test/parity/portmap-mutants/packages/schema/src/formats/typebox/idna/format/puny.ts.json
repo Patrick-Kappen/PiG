@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/internal/idna/format_puny.go",
+  "old": "(value[0] == 'x' || value[0] == 'X')",
+  "new": "(value[0] == 'x')"
+ }
+]

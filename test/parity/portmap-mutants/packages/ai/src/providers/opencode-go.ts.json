@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/builtin_providers.go",
+  "old": "func OpenCodeGoProvider() *ModelsProvider { return builtinProvider(\"opencode-go\") }",
+  "new": "func OpenCodeGoProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

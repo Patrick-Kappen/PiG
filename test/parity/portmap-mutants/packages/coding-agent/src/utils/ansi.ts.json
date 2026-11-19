@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/text/strip_ansi.go",
+  "old": "(?:\\x07|\\x1b\\\\|\\x{9c}))",
+  "new": "(?:\\x1b\\\\|\\x{9c}))"
+ },
+ {
+  "file": "internal/codingagent/tools/sanitize.go",
+  "old": "const maxPendingAnsiLength = 256",
+  "new": "const maxPendingAnsiLength = 255"
+ }
+]

@@ -1,0 +1,6 @@
+[[entry]]
+path = "coding/extension/builtin/codemode/worker_admission_test.go"
+commit = "2209c440d3f3751098801bda2383e7c855d07b12"
+class = "CITE"
+cite = "packages/coding-agent/src/extensions/codemode/execute.ts:600"
+reason = "Review fixes for Pi 885a564b and 22dc6c26 on the queued-worker tests: a running VM keeps its slot after the script's reservation is handed to the sandbox and gives it back only when the worker exits (execute.ts:598-601: `reserved = false; return releaseCodemodeWorker`, so the script's own release after Execute returns does not free it, :606-610), and a burst of real scripts queues behind the held slots and completes in arrival order (execute.ts:78-106). The expectations become text-item checks of the admitted scripts' results, the burst and PI_CODEMODE_MAX_WORKERS cases run real scripts instead of bare reservations, and the settled-launch case runs through Execute."

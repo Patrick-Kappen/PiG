@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/cloudflare_streams.go",
+  "old": "return stream(ctx, ResolveCloudflareModel(model, options.Env), transcript, options)",
+  "new": "return stream(ctx, model, transcript, options)"
+ }
+]

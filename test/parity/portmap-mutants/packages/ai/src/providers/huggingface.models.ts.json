@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"deepseek-ai/DeepSeek-R1\",\n\t\tProvider:             \"huggingface\",\n\t\tDisplayName:          \"DeepSeek-R1\",\n",
+  "new": "\t\tID:                   \"deepseek-ai/DeepSeek-R1\",\n\t\tProvider:             \"huggingface\",\n\t\tDisplayName:          \"DeepSeek-R1!\",\n"
+ }
+]

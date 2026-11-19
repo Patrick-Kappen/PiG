@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/mistral.go",
+  "old": "\"mistral-medium-3.5\"",
+  "new": "\"mistral-medium-3.Z\""
+ }
+]

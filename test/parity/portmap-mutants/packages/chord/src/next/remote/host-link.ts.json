@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/remote_host_link.go",
+  "old": "\"%s: an origin on a child link\"",
+  "new": "\"%s: an origin on a link\""
+ }
+]

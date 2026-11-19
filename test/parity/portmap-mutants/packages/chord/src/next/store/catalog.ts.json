@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/catalog.go",
+  "old": "record.Version = int(integer)\n",
+  "new": "record.Version = int(integer) + 1\n"
+ }
+]

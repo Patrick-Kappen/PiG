@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/http/authenticate.go",
+  "old": "if principal != nil {",
+  "new": "if principal == nil {"
+ }
+]

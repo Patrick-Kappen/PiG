@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func MoonshotaiCnProvider() *ModelsProvider { return builtinProvider(\"moonshotai-cn\") }",
+  "new": "func MoonshotaiCnProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

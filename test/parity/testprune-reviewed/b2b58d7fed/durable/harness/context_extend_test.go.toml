@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/harness/context_extend_test.go"
+commit = "b2b58d7fed3a746f4f3aff3969fd72aa8a7ad49b"
+class = "CITE"
+cite = "packages/durable/test/harness-context.test.ts:452"
+reason = "Pi e5c6182b group commit lets the Session know each committed entry, so a task's kept context range takes the entries as they were committed: harness-context.test.ts:452 expects the extended read to scan 0 rows (expect(extended.rows).toBe(0)); the earlier Go test expected the 3 new ones. The expected value (0) is Pi's."

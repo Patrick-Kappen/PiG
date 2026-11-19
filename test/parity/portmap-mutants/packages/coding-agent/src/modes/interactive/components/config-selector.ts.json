@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/config_selector.go",
+  "old": "\tif writeScope != \"project\" {",
+  "new": "\tif writeScope == \"project\" {"
+ }
+]

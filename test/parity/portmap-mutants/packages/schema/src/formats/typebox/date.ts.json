@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_date.go",
+  "old": "return day >= 1 && day <= limit",
+  "new": "return !(day >= 1 && day <= limit)"
+ }
+]

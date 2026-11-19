@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/trusted_url_oracle_test.go"
+commit = "439c708ebc2fc1d5f19d1b06efa7ed390a76bc7e"
+class = "CITE"
+cite = "packages/ai/src/auth/oauth/trusted-url.ts:6"
+reason = "Pi 89c921d8 moves the private trustedHttpUrl of kimi-coding.ts and meta.ts into the shared trusted-url.ts (trusted-url.ts:6-9) used by the Copilot, Kimi, Meta and Radius logins, so the Node oracle runs that one function and the test compares one `trusted` result (accepted or not, and the href) instead of separate kimi and meta results; the kimi accepts-only comparison is gone because Pi's function now returns the href too."

@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/harness/harness_task_graph_test.go"
+commit = "b2b58d7fed3a746f4f3aff3969fd72aa8a7ad49b"
+class = "CITE"
+cite = "packages/durable/test/harness-task-graph.test.ts:387"
+reason = "Pi e5c6182b publishes a commit after Storage stored it, not inside the adopt: harness-task-graph.test.ts:387 expects [\"graph adopting=false\", \"view adopting=false\"] (the test is renamed 'at the publication of the one commit that changes both', :368). The earlier Go test expected adopting=true. The expected value (false) is Pi's."

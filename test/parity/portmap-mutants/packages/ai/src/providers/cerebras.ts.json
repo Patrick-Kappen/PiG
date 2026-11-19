@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func CerebrasProvider() *ModelsProvider { return builtinProvider(\"cerebras\") }",
+  "new": "func CerebrasProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

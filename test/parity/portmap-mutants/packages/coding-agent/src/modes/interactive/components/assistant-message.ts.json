@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/assistant_message_block.go",
+  "old": "\tif hiddenThinkingLabel != \"\" {",
+  "new": "\tif hiddenThinkingLabel == \"\" {"
+ }
+]

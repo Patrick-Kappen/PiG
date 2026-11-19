@@ -1,0 +1,6 @@
+[[entry]]
+path = "telemetry/memory_recording_test.go"
+commit = "4ca61cee8c939660e13fe5a86c60c7b98890c1f7"
+class = "CITE"
+cite = "packages/telemetry/src/memory.ts:221"
+reason = "Pi's setAttributes merges the new attributes over the span's (`{ ...recordedSpan.attributes, ...copyAttributes(attributes) }`, memory.ts:221), keeping the first position of an overridden name and appending the new ones in order, so PiG's recorder and its expected SpanAttributes are the ordered lists keep, over (new), added and the copy test reads the recorded value with Value; values are the same as before."

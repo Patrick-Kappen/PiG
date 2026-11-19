@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_backoff.go",
+  "old": "const firstDelay = time.Second",
+  "new": "const firstDelay = 6 * time.Second"
+ }
+]

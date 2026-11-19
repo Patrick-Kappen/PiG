@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/registries/internal.go",
+  "old": "value, err = nil, asError(recovered)",
+  "new": "value, err = nil, nil"
+ }
+]

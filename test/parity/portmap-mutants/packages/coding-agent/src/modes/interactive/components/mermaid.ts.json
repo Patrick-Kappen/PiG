@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/mermaid_transform.go",
+  "old": "\t\tif mode == \"off\" ||\n",
+  "new": "\t\tif mode == \"off!\" ||\n"
+ }
+]

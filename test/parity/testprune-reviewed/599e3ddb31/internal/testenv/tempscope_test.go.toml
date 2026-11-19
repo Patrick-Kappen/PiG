@@ -1,0 +1,6 @@
+[[entry]]
+path = "internal/testenv/tempscope_test.go"
+commit = "599e3ddb3157cf09ae67c58c0fa659612c2edac6"
+class = "NOBEHAVIOR"
+cite = ""
+reason = "A test-helper expectation for the isolated home: Go telemetry is switched off there so no sidecar writes into a removed home. No Pi behavior is involved."

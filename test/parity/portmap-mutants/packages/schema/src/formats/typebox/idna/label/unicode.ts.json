@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/internal/idna/label_unicode.go",
+  "old": "if ReCombiningMark(chars[0]) {",
+  "new": "if !ReCombiningMark(chars[0]) {"
+ }
+]

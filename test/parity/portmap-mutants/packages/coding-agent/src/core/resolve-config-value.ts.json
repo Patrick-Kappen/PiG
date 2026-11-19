@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/configvalue/configured_shell.go",
+  "old": "return strings.TrimSpace(string(out)), true",
+  "new": "return string(out), true"
+ }
+]

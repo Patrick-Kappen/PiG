@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/core/driver/docs_core_watches_test.go"
+commit = "3a73b5b282536ee64f5dd0e3e7712267ba564c74"
+class = "CITE"
+cite = "packages/chord/src/watch.ts:248"
+reason = "Pi d8d99950a (watch.ts:248-253) folds the 101 pending commits of one field into one set of that field instead of replacing the root once more than 100 commits are pending, so the core watch tests expect one set of value to 101 (the in-flight frame is still never folded into the next call)."

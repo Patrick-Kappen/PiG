@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/workers/workers_process.go",
+  "old": "if stream == \"stderr\" {",
+  "new": "if stream == \"stdout\" {"
+ }
+]

@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/codingagent/tool_builtin_renderers.go",
+  "old": "\"[invalid content arg - expected string]\")",
+  "new": "\"[invalid content arg expected string]\")"
+ },
+ {
+  "file": "internal/codingagent/tool_builtin_renderers.go",
+  "old": "\" more lines, \" + strconv.Itoa(total)",
+  "new": "\" more line, \" + strconv.Itoa(total)"
+ },
+ {
+  "file": "tui/tool_execution.go",
+  "old": "toolTitleText(\"write\")",
+  "new": "toolTitleText(\"writes\")"
+ }
+]

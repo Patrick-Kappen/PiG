@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"muse-spark-1.1\",\n\t\tProvider:             \"meta\",\n\t\tDisplayName:          \"Muse Spark 1.1\",\n",
+  "new": "\t\tID:                   \"muse-spark-1.1\",\n\t\tProvider:             \"meta\",\n\t\tDisplayName:          \"Muse Spark 1.1!\",\n"
+ }
+]

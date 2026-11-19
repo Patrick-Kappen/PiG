@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"slices"
@@ -80,8 +81,9 @@ type data struct {
 	Previous     *state             `json:"previous,omitempty"`
 	SourceErrors map[string]string  `json:"source_errors,omitempty"`
 	Acknowledged string             `json:"acknowledged,omitempty"`
-	// ReviewedLedger is the text of test/parity/testprune-reviewed.toml at the PR's head commit.
-	ReviewedLedger string `json:"reviewed_ledger,omitempty"`
+	// ReviewedLedger holds the ledger files that can admit a changed test file (ledgerEntryFiles), by name: the text of
+	// each at the PR's head commit.
+	ReviewedLedger map[string]string `json:"reviewed_ledger,omitempty"`
 	// CommitFiles are the files each commit has changed that a ledger row names for a changed test file, by commit sha.
 	CommitFiles map[string][]string `json:"commit_files,omitempty"`
 }
@@ -326,12 +328,10 @@ func (f *fetcher) waveTwo(ctx context.Context, reads map[string]bool) {
 	}
 	if reads["reviewed-ledger"] {
 		f.source("reviewed-ledger", func() error {
-			text, err := f.fileAtHead(ctx, reviewed.File, head)
-			if err != nil {
+			if err := f.readLedger(ctx, head); err != nil {
 				return err
 			}
-			d.ReviewedLedger = text
-			return f.readLedgerCommits(ctx, text)
+			return f.readLedgerCommits(ctx, d.ReviewedLedger)
 		})
 	}
 	f.source("acknowledged", func() error {
@@ -348,13 +348,18 @@ func (f *fetcher) waveTwo(ctx context.Context, reads map[string]bool) {
 }
 
 // fileAtHead reads one file of the repository at the PR's head commit, never at a branch name: the text is the one the
-// verdict is about, whatever the branch does meanwhile. A file the head does not have is empty text.
+// verdict is about, whatever the branch does meanwhile. A file the head does not have is empty text. The path can be
+// one the pull request wrote (a ledger file is named after a test file), so each of its segments is escaped.
 func (f *fetcher) fileAtHead(ctx context.Context, filePath, head string) (string, error) {
 	var file struct {
 		Content  string `json:"content"`
 		Encoding string `json:"encoding"`
 	}
-	err := f.a.get(ctx, fmt.Sprintf("%s/contents/%s?ref=%s", f.prefix, filePath, head), &file, false)
+	segments := strings.Split(filePath, "/")
+	for i, s := range segments {
+		segments[i] = url.PathEscape(s)
+	}
+	err := f.a.get(ctx, fmt.Sprintf("%s/contents/%s?ref=%s", f.prefix, strings.Join(segments, "/"), head), &file, false)
 	switch {
 	case hasStatus(err, http.StatusNotFound):
 		return "", nil
@@ -449,12 +454,32 @@ func formatBool(b *bool) string {
 // maxCommitFilePages bounds the pages of one commit's file list: the API lists at most 3000 files of a commit.
 const maxCommitFilePages = 30
 
+// readLedger reads the ledger files that can admit a changed test file, one call per file, at the PR's head commit.
+// More than maxLedgerFiles of them are for the rule to report: nothing is fetched then. A file the head does not have
+// is empty text, which the rule cannot read as an entry.
+func (f *fetcher) readLedger(ctx context.Context, head string) error {
+	names := ledgerEntryFiles(f.d)
+	if len(names) == 0 || len(names) > maxLedgerFiles {
+		return nil
+	}
+	files := map[string]string{}
+	for _, name := range names {
+		text, err := f.fileAtHead(ctx, name, head)
+		if err != nil {
+			return err
+		}
+		files[name] = text
+	}
+	f.d.ReviewedLedger = files
+	return nil
+}
+
 // readLedgerCommits lists the files of each commit a ledger row names for a changed test file, one commit at a time,
 // pages included. A ledger the rule cannot read, or rows of more than maxLedgerCommits commits, are for the rule to
 // report: nothing is fetched then. Any other failure, a 404 included (the PR's own commit list named the commit), is the
 // source's failure.
-func (f *fetcher) readLedgerCommits(ctx context.Context, text string) error {
-	rows, err := reviewed.Parse(text)
+func (f *fetcher) readLedgerCommits(ctx context.Context, ledger map[string]string) error {
+	rows, err := reviewed.ParseFiles(ledger)
 	if err != nil {
 		return nil
 	}

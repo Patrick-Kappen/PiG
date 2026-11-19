@@ -1,0 +1,12 @@
+[
+ {
+  "file": "coding/cli/project_trust.go",
+  "old": "return decision == nil || *decision, nil",
+  "new": "return decision == nil || !*decision, nil"
+ },
+ {
+  "file": "coding/cli/project_trust.go",
+  "old": "\tif decision != nil {\n\t\treturn *decision, nil\n\t}\n\tswitch opts.Default {",
+  "new": "\tif decision != nil && opts.Default == \"\" {\n\t\treturn *decision, nil\n\t}\n\tswitch opts.Default {"
+ }
+]

@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/oauth_kimi_test.go"
+commit = "439c708ebc2fc1d5f19d1b06efa7ed390a76bc7e"
+class = "CITE"
+cite = "packages/ai/src/auth/oauth/trusted-url.ts:6"
+reason = "Pi 89c921d8 replaces the Kimi login's private check with the shared trustedHttpUrl (trusted-url.ts:6-9), which takes any value and returns the normalized href of an http(s) URL or null: the table's want changes from a boolean to the returned href (`HTTPS://Example.test` becomes `https://example.test/`, a control character is percent-encoded) and gains the empty string, nil and a number, which are not trusted."

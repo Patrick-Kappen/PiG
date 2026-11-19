@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/huggingface.go",
+  "old": "\"https://router.huggingface.co/v1\"",
+  "new": "\"https://router.huggingface.co/vZ\""
+ }
+]

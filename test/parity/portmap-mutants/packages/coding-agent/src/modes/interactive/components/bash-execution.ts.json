@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/bash_execution.go",
+  "old": "\tif width < 1 {",
+  "new": "\tif width >= 1 {"
+ }
+]

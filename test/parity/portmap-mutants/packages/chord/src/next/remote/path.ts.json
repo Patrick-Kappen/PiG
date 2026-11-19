@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/remote_path.go",
+  "old": "if p.current != link {",
+  "new": "if p.current == link {"
+ }
+]

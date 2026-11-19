@@ -1,0 +1,12 @@
+[
+ {
+  "file": "coding/extension/host/subprocess/node_runtime_on.go",
+  "old": "strings.TrimPrefix(name, \"runtime-node/\")",
+  "new": "strings.TrimPrefix(name, \"runtime-node-x/\")"
+ },
+ {
+  "file": "coding/extension/host/subprocess/node_runtime_cache.go",
+  "old": "\t\tlinks = append(links, link{path, target})\n\t\treturn nil",
+  "new": "\t\tif relative != filepath.Join(\"shims\", \"pi-ai-models.mjs\") {\n\t\t\tlinks = append(links, link{path, target})\n\t\t}\n\t\treturn nil"
+ }
+]

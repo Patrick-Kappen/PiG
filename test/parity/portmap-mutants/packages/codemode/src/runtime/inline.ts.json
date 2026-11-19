@@ -1,0 +1,12 @@
+[
+ {
+  "file": "codemode/inline.go",
+  "old": "\tif budget == 0 {\n\t\tbudget = DefaultInterruptBudget\n\t}",
+  "new": "\tif budget == 0 {\n\t\tbudget = 0\n\t}"
+ },
+ {
+  "file": "codemode/inline.go",
+  "old": "return inlineLauncher(s.engineFor, s.prelude, budget)",
+  "new": "return inlineLauncher(s.engineFor, s.prelude, budget*2)"
+ }
+]

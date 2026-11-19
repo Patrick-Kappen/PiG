@@ -1,0 +1,12 @@
+[
+ {
+  "file": "ai/assistant_retry.go",
+  "old": "\tcase <-ctx.Done():\n\t\treturn errRetrySleepAborted\n",
+  "new": "\tcase <-ctx.Done():\n\t\treturn nil\n"
+ },
+ {
+  "file": "ai/assistant_retry.go",
+  "old": "delayMs > 1<<31-1",
+  "new": "delayMs > 1<<41"
+ }
+]

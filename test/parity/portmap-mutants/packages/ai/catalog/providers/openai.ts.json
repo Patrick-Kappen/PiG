@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/openai.go",
+  "old": "\"https://api.openai.com/v1\"",
+  "new": "\"https://api.openai.com/vZ\""
+ }
+]

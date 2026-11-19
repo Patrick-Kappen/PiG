@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/MichaelKinsy/PiG/automation/ci/preflight/reviewed"
 )
 
 // commitAnswer is what the commit endpoint says for one commit: a failure status, or the files the commit changed.
@@ -22,16 +24,19 @@ type commitAnswer struct {
 }
 
 // ledgerAPI serves a PR whose changed test files, commits and ledger are given, and the commit endpoint from answers.
-// calls collects the commit endpoint's requests as "<sha10> page <n>".
+// calls collects the commit endpoint's requests as "<sha10> page <n>", reads the ledger files the contents endpoint
+// was asked for.
 type ledgerAPI struct {
 	*httptest.Server
 	mu    sync.Mutex
 	calls []string
+	reads []string
 }
 
 func newLedgerAPI(t *testing.T, ledger string, tests, commits []string, answers map[string]commitAnswer) *ledgerAPI {
 	t.Helper()
-	files, err := json.Marshal(ledgerFiles(tests...))
+	entries := ledgerOf(ledger)
+	files, err := json.Marshal(withLedger(ledgerFiles(tests...), entries))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,15 +48,24 @@ func newLedgerAPI(t *testing.T, ledger string, tests, commits []string, answers 
 	api.Server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch p := r.URL.Path; {
 		case p == "/repos/o/r/pulls/7":
-			_, _ = fmt.Fprintf(w, `{"number":7,"body":"","mergeable":true,"commits":%d,"changed_files":%d,"head":{"sha":"headsha"},"base":{"sha":"b","ref":"main"}}`, len(commits), 2*len(tests))
+			_, _ = fmt.Fprintf(w, `{"number":7,"body":"","mergeable":true,"commits":%d,"changed_files":%d,"head":{"sha":"headsha"},"base":{"sha":"b","ref":"main"}}`, len(commits), 2*len(tests)+len(entries))
 		case p == "/repos/o/r/pulls/7/files":
 			_, _ = w.Write(files)
 		case p == "/repos/o/r/pulls/7/commits":
 			_, _ = io.WriteString(w, "["+strings.Join(shas, ",")+"]")
 		case strings.HasPrefix(p, "/repos/o/r/compare/"):
 			_, _ = io.WriteString(w, `{"status":"ahead","ahead_by":1,"behind_by":0}`)
-		case p == "/repos/o/r/contents/test/parity/testprune-reviewed.toml":
-			_, _ = io.WriteString(w, `{"encoding":"base64","content":"`+base64.StdEncoding.EncodeToString([]byte(ledger))+`"}`)
+		case strings.HasPrefix(p, "/repos/o/r/contents/"+reviewed.Dir+"/"):
+			name := strings.TrimPrefix(p, "/repos/o/r/contents/")
+			api.mu.Lock()
+			api.reads = append(api.reads, name)
+			api.mu.Unlock()
+			text, ok := entries[name]
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+			_, _ = io.WriteString(w, `{"encoding":"base64","content":"`+base64.StdEncoding.EncodeToString([]byte(text))+`"}`)
 		case strings.HasPrefix(p, "/repos/o/r/commits/"):
 			sha := strings.TrimPrefix(p, "/repos/o/r/commits/")
 			page, _ := strconv.Atoi(r.URL.Query().Get("page"))
@@ -211,6 +225,38 @@ func TestLedgerRowsOfTooManyCommitsAskToSplit(t *testing.T) {
 	}
 }
 
+// The contents endpoint is asked once for each ledger file that can admit a changed test file, and for no more than
+// maxLedgerFiles of them: a PR with more is a finding that asks to split it, with no call made.
+func TestTooManyLedgerFilesAskToSplit(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		n      int
+		result string
+		reason string
+		reads  int
+		calls  int
+	}{
+		// The one commit changes maxLedgerFiles files: a full page of perPage, and the short page that ends the list.
+		{"at the cap", maxLedgerFiles, resultPass, "admitted", maxLedgerFiles, maxLedgerFiles/perPage + 1},
+		{"one over the cap", maxLedgerFiles + 1, resultFail, fmt.Sprintf("holds %d ledger files", maxLedgerFiles+1), 0, 0},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var tests, rows []string
+			for i := range tc.n {
+				test := fmt.Sprintf("d%03d/t_test.go", i)
+				tests = append(tests, test)
+				rows = append(rows, ledgerRow(ledgerCommitA, test, "NOBEHAVIOR", "", "PiG-only."))
+			}
+			api := newLedgerAPI(t, strings.Join(rows, "\n"), tests, []string{ledgerCommitA}, map[string]commitAnswer{ledgerCommitA: {files: tests}})
+			_, ev := api.evaluate(t)
+			v := ev.Checks["test-expectation"]
+			if v.Result != tc.result || !strings.Contains(v.Reason, tc.reason) || len(api.reads) != tc.reads || len(api.calls) != tc.calls {
+				t.Fatalf("verdict %s %q after %d ledger read(s) and %d commit call(s), want %s %q after %d and %d", v.Result, v.Reason, len(api.reads), len(api.calls), tc.result, tc.reason, tc.reads, tc.calls)
+			}
+		})
+	}
+}
+
 // The finding of a row whose commit does not change the file names the path of the row, which the pull request wrote.
 func TestCommitCheckFindingTextCannotStartAWorkflowCommand(t *testing.T) {
 	for _, h := range hostileTexts {
@@ -219,7 +265,7 @@ func TestCommitCheckFindingTextCannotStartAWorkflowCommand(t *testing.T) {
 			d := &data{
 				Files:          ledgerFiles(name),
 				Commits:        []prCommit{commit(ledgerCommitA, "a: b", true)},
-				ReviewedLedger: ledgerRow(ledgerCommitA, name, "NOBEHAVIOR", "", "A reason."),
+				ReviewedLedger: ledgerOf(ledgerRow(ledgerCommitA, name, "NOBEHAVIOR", "", "A reason.")),
 				CommitFiles:    changedBy([]string{"a/other.go"}, ledgerCommitA),
 			}
 			log, _ := printedBy(t, d)

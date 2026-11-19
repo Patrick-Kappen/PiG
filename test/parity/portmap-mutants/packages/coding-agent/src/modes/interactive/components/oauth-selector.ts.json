@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/oauth_selector.go",
+  "old": "\tif authType == \"api_key\" {",
+  "new": "\tif authType != \"api_key\" {"
+ }
+]

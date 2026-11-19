@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/keybindings_schema.go",
+  "old": "props := []configschema.Prop{configschema.Optional(\"$schema\", configschema.String())}",
+  "new": "props := []configschema.Prop{}"
+ }
+]

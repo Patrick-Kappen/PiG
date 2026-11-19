@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "generatedRows[ref.row].Headers = generatedHeaders[ref.element]",
+  "new": "generatedRows[ref.row].Headers = nil"
+ }
+]

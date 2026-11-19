@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/auth_lazy.go",
+  "old": "l.once.Do(func() { l.loaded, l.err = l.load() })",
+  "new": "l.loaded, l.err = l.load()"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/remote_hold.go",
+  "old": "if member.pending.Size() == 0 {",
+  "new": "if member.pending.Size() != 0 {"
+ }
+]

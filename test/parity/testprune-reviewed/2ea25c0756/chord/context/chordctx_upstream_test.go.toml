@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/context/chordctx_upstream_test.go"
+commit = "2ea25c07563ed54611f11698ce3b80bb983afd6a"
+class = "CITE"
+cite = "packages/chord/src/context/index.ts:13"
+reason = "Pi 2ec55d80 and d9025a5f make Context.telemetry a TelemetrySpan (context/index.ts:13) and WithTelemetry take a span (:91-95), a caller's span, so the test derives telemetry from a caller span started in the recorder instead of the recorder; the recorded trace has the caller span as the parent of the outer span (three spans, not two) and a span link's context is the parent span."

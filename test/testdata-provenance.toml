@@ -29,6 +29,10 @@ expectations_from = "2026-10-10T00:00:00Z"
 prefix = "automation/ci/preflight/"
 reason = "CI tooling owned by PiG; no upstream Pi behaviour to cite"
 
+[[tooling]]
+prefix = "automation/ci/changelogfrag/"
+reason = "CI tooling owned by PiG; no upstream Pi behaviour to cite"
+
 [[golden]]
 paths = ["ai/providers/bedrock/testdata/bedrock-eventstream/golden.json"]
 owner = "pi"

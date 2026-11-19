@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/auth.go",
+  "old": "json.Indent(&out, canonical, \"\", \"  \")",
+  "new": "json.Indent(&out, canonical, \"\", \"   \")"
+ }
+]

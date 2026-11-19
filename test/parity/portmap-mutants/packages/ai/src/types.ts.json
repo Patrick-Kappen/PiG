@@ -1,0 +1,17 @@
+[
+ {
+  "file": "ai/model_utils.go",
+  "old": "\tThinkingMedium,\n\tThinkingHigh,\n",
+  "new": "\tThinkingHigh,\n\tThinkingMedium,\n"
+ },
+ {
+  "file": "ai/model_utils.go",
+  "old": "\treturn []ModelThinkingLevel{ThinkingOff}\n",
+  "new": "\treturn []ModelThinkingLevel{ThinkingLow}\n"
+ },
+ {
+  "file": "ai/model_utils.go",
+  "old": "CacheRead:  c.CacheReadCostPer1M,",
+  "new": "CacheRead:  c.CacheWriteCostPer1M,"
+ }
+]
