@@ -41,7 +41,7 @@ func ledgerOf(text string) map[string]string {
 		return nil
 	}
 	files := map[string]string{}
-	for _, part := range strings.Split(text, "\n\n") {
+	for part := range strings.SplitSeq(text, "\n\n") {
 		var doc struct {
 			Entry []reviewed.Entry `toml:"entry"`
 		}
