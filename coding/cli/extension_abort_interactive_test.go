@@ -329,15 +329,22 @@ func writeAbortProbe(t *testing.T, layout string) string {
 	return ""
 }
 
-// buildRustSDKFixture builds testdata/<name>, a Rust SDK extension that is a program of its own, and returns the executable.
+// buildRustSDKFixture builds testdata/<name>, a Rust SDK extension that is a program of its own, and returns the executable. It builds into
+// the package's shared Cargo target (testmain_test.go), where make test-warm has compiled the SDK's dependencies: a target of the build's
+// own compiled them again for every fixture, 12 to 13 s a build. Each fixture is a Cargo package with a name of its own, so its executable
+// has a path of its own in that target. Cargo locks the target, so the build can wait behind the package's other Rust builds; its bound is
+// the go test deadline, as for the shared pig binary.
 func buildRustSDKFixture(t *testing.T, name string) string {
 	t.Helper()
-	target := t.TempDir()
-	cargo := exec.CommandContext(testbudget.Context(t), "cargo", "build", "--release", "--quiet")
+	target := os.Getenv("CARGO_TARGET_DIR")
+	if target == "" {
+		t.Fatal("CARGO_TARGET_DIR is not set; TestMain sets the package's shared Cargo target")
+	}
+	ctx := testbudget.DeadlineContext(t)
+	cargo := exec.CommandContext(ctx, "cargo", "build", "--release", "--quiet")
 	cargo.Dir = filepath.Join("testdata", name)
-	cargo.Env = append(os.Environ(), "CARGO_TARGET_DIR="+target)
 	if out, err := cargo.CombinedOutput(); err != nil {
-		t.Fatalf("build %s: %v\n%s", name, err, out)
+		t.Fatalf("build %s: %v %s\n%s", name, err, testbudget.Expired(ctx), out)
 	}
 	return filepath.Join(target, "release", testExecutable(name))
 }
