@@ -11,6 +11,8 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
+// CodeQL analyzes the two interpreted SDKs in one matrix job, which every run has, and Go in its own job, which builds every
+// package and runs in the full run only (TestLightSecurityRunLeavesOnlySourceAssuranceAndGoCodeQLToTheFullRun).
 func TestCodeQLCoversGoAndInterpretedSDKs(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(repoRoot(t), ".github/workflows/security.yml"))
 	if err != nil {
@@ -18,12 +20,12 @@ func TestCodeQLCoversGoAndInterpretedSDKs(t *testing.T) {
 	}
 	var workflow struct {
 		Jobs map[string]struct {
+			Name     string
 			Strategy struct {
 				Matrix struct {
 					Include []struct {
-						Language  string
-						BuildMode string `yaml:"build-mode"`
-						Config    string
+						Language string
+						Config   string
 					}
 				}
 			}
@@ -34,7 +36,6 @@ func TestCodeQLCoversGoAndInterpretedSDKs(t *testing.T) {
 		t.Fatal(err)
 	}
 	wantPaths := map[string][]string{
-		"go":                    nil,
 		"javascript-typescript": {"extensions/sdk-ts", "coding/extension/host/subprocess/runtime-node"},
 		"python":                {"extensions/sdk-py"},
 	}
@@ -46,13 +47,6 @@ func TestCodeQLCoversGoAndInterpretedSDKs(t *testing.T) {
 			t.Fatalf("unexpected or duplicate CodeQL language %q", target.Language)
 		}
 		seen[target.Language] = true
-		mode := "none"
-		if target.Language == "go" {
-			mode = "manual"
-		}
-		if target.BuildMode != mode {
-			t.Errorf("%s build-mode = %q, want %q", target.Language, target.BuildMode, mode)
-		}
 		var config struct{ Paths []string }
 		if err := yaml.Unmarshal([]byte(target.Config), &config); err != nil {
 			t.Fatal(err)
@@ -71,33 +65,61 @@ func TestCodeQLCoversGoAndInterpretedSDKs(t *testing.T) {
 			t.Errorf("CodeQL matrix omits %s", language)
 		}
 	}
-	var initialized, built, analyzed bool
+	var initialized, analyzed bool
 	for _, step := range job.Steps {
 		switch {
 		case strings.HasPrefix(step.Uses, "github/codeql-action/init@"):
 			initialized = true
 			for key, want := range map[string]string{
 				"languages":  "${{ matrix.language }}",
-				"build-mode": "${{ matrix.build-mode }}",
+				"build-mode": "none",
 				"config":     "${{ matrix.config }}",
 			} {
 				if step.With[key] != want {
 					t.Errorf("CodeQL init %s = %q, want %q", key, step.With[key], want)
 				}
 			}
+		case strings.HasPrefix(step.Uses, "actions/setup-go@"), step.Run == "go build ./...":
+			t.Error("interpreted-language analysis must not require Go setup or a Go build")
+		case strings.HasPrefix(step.Uses, "github/codeql-action/analyze@"):
+			analyzed = true
+			if !initialized || step.With["category"] != "/language:${{ matrix.language }}" {
+				t.Error("analysis must follow init and use a distinct language category")
+			}
+		}
+	}
+	if !initialized || !analyzed {
+		t.Fatal("CodeQL must initialize and analyze the interpreted SDKs")
+	}
+
+	goJob, ok := workflow.Jobs["codeql-go"]
+	if !ok {
+		t.Fatal("security.yml has no codeql-go job")
+	}
+	// The check keeps the name it had as a row of the matrix.
+	if goJob.Name != "CodeQL (go)" {
+		t.Errorf("codeql-go is named %q, want CodeQL (go)", goJob.Name)
+	}
+	var setup, built bool
+	initialized, analyzed = false, false
+	for _, step := range goJob.Steps {
+		switch {
 		case strings.HasPrefix(step.Uses, "actions/setup-go@"):
-			if step.If != "matrix.language == 'go'" {
-				t.Error("interpreted-language analysis must not require Go setup")
+			setup = true
+		case strings.HasPrefix(step.Uses, "github/codeql-action/init@"):
+			initialized = true
+			if !setup || step.With["languages"] != "go" || step.With["build-mode"] != "manual" || step.With["config"] != "" {
+				t.Errorf("CodeQL init for Go has with: %v, want languages go, build-mode manual and no path filter, after Go setup", step.With)
 			}
 		case step.Run == "go build ./...":
 			built = true
-			if !initialized || step.If != "matrix.build-mode == 'manual'" {
-				t.Error("manual build must run after init and only for the compiled language")
+			if !initialized || step.If != "" {
+				t.Error("the Go build must run after init, unconditionally")
 			}
 		case strings.HasPrefix(step.Uses, "github/codeql-action/analyze@"):
 			analyzed = true
-			if !built || step.With["category"] != "/language:${{ matrix.language }}" {
-				t.Error("analysis must follow the build and use a distinct language category")
+			if !built || step.With["category"] != "/language:go" {
+				t.Error("analysis must follow the build and use the Go category")
 			}
 		}
 	}
