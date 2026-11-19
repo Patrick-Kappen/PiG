@@ -45,11 +45,9 @@ export default defineFacet((facet) => {
 					}, 0);
 					return null;
 				},
-				// The worker's Go code counts the messages it sends to the server between the two lines.
+				// The worker's Go code counts the messages it sends to the server while this call runs.
 				localCalls: async (n, ctx) => {
-					console.log("local calls begin");
 					for (let i = 0; i < n; i++) await echo.echo(i, ctx);
-					console.log("local calls end");
 					return n;
 				},
 			},
