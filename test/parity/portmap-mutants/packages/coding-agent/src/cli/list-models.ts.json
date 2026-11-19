@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/cli/model.go",
+  "old": "if slices.Contains(e.Input, \"image\") {",
+  "new": "if slices.Contains(e.Input, \"text\") {"
+ }
+]

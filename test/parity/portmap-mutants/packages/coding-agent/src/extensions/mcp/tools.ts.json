@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/mcpext/tools.go",
+  "old": "maxToolNameLength-len(hash)-1",
+  "new": "maxToolNameLength-len(hash)"
+ }
+]

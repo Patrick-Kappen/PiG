@@ -1,0 +1,12 @@
+[
+ {
+  "file": "tui/highlight.go",
+  "old": "case \"lt\":\n\t\treturn \"<\", true",
+  "new": "case \"lt\":\n\t\treturn \">\", true"
+ },
+ {
+  "file": "tui/highlight.go",
+  "old": "len(jsstring.ToUTF16(html[index:semicolon])) > 16",
+  "new": "len(jsstring.ToUTF16(html[index:semicolon])) > 17"
+ }
+]

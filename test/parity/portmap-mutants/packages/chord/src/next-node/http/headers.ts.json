@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/http/headers.go",
+  "old": "\"X-Content-Type-Options\", \"nosniff\"",
+  "new": "\"X-Content-Type-Options\", \"sniff\""
+ }
+]

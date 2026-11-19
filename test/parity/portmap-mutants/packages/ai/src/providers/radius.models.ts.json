@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"balanced\",\n\t\tProvider:             \"radius\",\n\t\tDisplayName:          \"Balanced\",\n",
+  "new": "\t\tID:                   \"balanced\",\n\t\tProvider:             \"radius\",\n\t\tDisplayName:          \"Balanced!\",\n"
+ }
+]

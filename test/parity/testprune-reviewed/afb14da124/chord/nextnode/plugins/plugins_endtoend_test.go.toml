@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/nextnode/plugins/plugins_endtoend_test.go"
+commit = "afb14da124492fad80b73f5f5e8abc07915b47dc"
+class = "CITE"
+cite = "packages/chord/src/next-node/workers/main.ts:114"
+reason = "The Node host is the child of the Go side, as Pi's forked worker connects to its parent (main.ts:114) and the server routes the worker's kind to it (workers.ts:98; plugins.test.ts's end to end `server.route(Worker, ...)`). The end-to-end case is Pi's: one observing server host holds Notes over the route, and the broken edit's reference state is compared with Pi's `toEqual({ kind: \"live\" })` (a whole RefState, not its kind), with failures recorded as `{ failed }` like `valuesOf`; the expected values follow."

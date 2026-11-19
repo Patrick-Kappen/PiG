@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/cli/main.go",
+  "old": "return strings.Join(parts, \"\"), images, slices.Clone(messages)",
+  "new": "return strings.Join(parts, \"\\n\"), images, slices.Clone(messages)"
+ }
+]

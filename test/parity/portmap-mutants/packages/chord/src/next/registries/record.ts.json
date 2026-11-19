@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/registries/record.go",
+  "old": "return strings.Compare(left.Plugin, right.Plugin)",
+  "new": "return strings.Compare(right.Plugin, left.Plugin)"
+ }
+]

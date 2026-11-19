@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/startup_ui.go",
+  "old": "if ui.ConsumeTerminalColorResponse(chunk) {",
+  "new": "if false && ui.ConsumeTerminalColorResponse(chunk) {"
+ }
+]

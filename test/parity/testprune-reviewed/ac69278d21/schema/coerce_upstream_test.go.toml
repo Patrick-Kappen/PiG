@@ -1,0 +1,6 @@
+[[entry]]
+path = "schema/coerce_upstream_test.go"
+commit = "ac69278d213589e83736077a8396df4fddc9f757"
+class = "CITE"
+cite = "packages/schema/src/explain.ts:105"
+reason = "Pi 6536f801 (explain.ts walkRef, :105-130) keeps the errors of a $ref target per errors() call and reports a reference that names nothing as `unresolved reference <ref>` (keyword $ref), so Pi's coerce tests explain the depth-40 recursive union and assert that exact message; the Go test asserts both once explain.go ports walkRef."

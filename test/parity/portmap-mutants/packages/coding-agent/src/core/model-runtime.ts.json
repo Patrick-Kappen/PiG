@@ -1,0 +1,12 @@
+[
+ {
+  "file": "coding/model_runtime_members.go",
+  "old": "return runtime.services.Registry().RemoveRuntimeAPIKeyOperation(ctx, providerID)",
+  "new": "return runtime.services.Registry().RemoveRuntimeAPIKeyOperation(ctx, \"\")"
+ },
+ {
+  "file": "internal/codingagent/model_registry.go",
+  "old": "\tr.runtimeCredentialsLocked().SetRuntimeAPIKey(providerID, apiKey)",
+  "new": "\tr.runtimeCredentialsLocked().SetRuntimeAPIKey(providerID, apiKey+\"!\")"
+ }
+]

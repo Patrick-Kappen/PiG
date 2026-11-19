@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/cli/config_command.go",
+  "old": "if item.Inherited && item.Source != \"builtin\" && !slices.Contains(entries, pattern) {",
+  "new": "if item.Inherited && !slices.Contains(entries, pattern) {"
+ }
+]

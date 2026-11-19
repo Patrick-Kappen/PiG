@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/codingagent/tool_builtin_renderers.go",
+  "old": "\tcase previewFailed:\n\t\ttoken = \"toolErrorBg\"\n",
+  "new": "\tcase previewFailed:\n\t\ttoken = \"toolSuccessBg\"\n"
+ },
+ {
+  "file": "internal/codingagent/tool_builtin_renderers.go",
+  "old": "|| value.Text() == previewError",
+  "new": "|| value.Text() == previewError+\"x\""
+ },
+ {
+  "file": "tui/tool_execution.go",
+  "old": "toolTitleText(\"edit\")",
+  "new": "toolTitleText(\"edits\")"
+ }
+]

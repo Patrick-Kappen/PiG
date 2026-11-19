@@ -1,0 +1,22 @@
+[
+ {
+  "file": "chord/host/cluster.go",
+  "old": "connection.peer.kind == KindHost && connection.open() && connection.synced {",
+  "new": "connection.peer.kind == KindHost && connection.open() {"
+ },
+ {
+  "file": "chord/host/cluster.go",
+  "old": "\treload.waitForRetirement()\n\tvar participants",
+  "new": "\tvar participants"
+ },
+ {
+  "file": "chord/host/cluster.go",
+  "old": "\t\tname := connection.name()\n\t\t\tif name == \"\" {\n\t\t\t\tname = \"child\"\n\t\t\t}",
+  "new": "\t\tname := \"child\""
+ },
+ {
+  "file": "chord/host/cluster.go",
+  "old": "CodeVersion: report.CodeVersion, Previous: report.Previous, Changed: report.Changed, Removed: report.Removed, Prepared: report.Prepared, Gated: report.Gated}\n}\n\nfunc reportToWire",
+  "new": "CodeVersion: report.CodeVersion, Previous: report.Previous, Removed: report.Removed, Prepared: report.Prepared, Gated: report.Gated}\n}\n\nfunc reportToWire"
+ }
+]

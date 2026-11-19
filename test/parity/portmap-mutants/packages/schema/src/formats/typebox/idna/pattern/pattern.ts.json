@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/internal/idna/pattern.go",
+  "old": "c != '-'",
+  "new": "c != '+'"
+ }
+]

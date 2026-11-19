@@ -1,0 +1,17 @@
+[
+ {
+  "file": "coding/runtime_replacement.go",
+  "old": "extension.SessionShutdownEvent{Type: \"session_shutdown\", Reason: reason, TargetSessionFile: target}",
+  "new": "extension.SessionShutdownEvent{Type: \"session_shutdown\", Reason: \"quit\", TargetSessionFile: target}"
+ },
+ {
+  "file": "coding/runtime_replacement.go",
+  "old": "if position != \"at\" {",
+  "new": "if position == \"at\" {"
+ },
+ {
+  "file": "coding/runtime.go",
+  "old": "return current.Diagnostics",
+  "new": "return nil"
+ }
+]

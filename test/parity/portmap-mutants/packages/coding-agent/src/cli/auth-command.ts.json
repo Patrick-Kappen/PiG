@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/cli/auth_command.go",
+  "old": "if !strings.EqualFold(name, \"authorization\") {",
+  "new": "if !strings.EqualFold(name, \"authorization\") || name == \"AUTHORIZATION\" {"
+ }
+]

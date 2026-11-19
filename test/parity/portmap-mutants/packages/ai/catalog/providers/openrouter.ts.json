@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/openrouter.go",
+  "old": "\"https://openrouter.ai/api/v1\"",
+  "new": "\"https://openrouter.ai/api/vZ\""
+ }
+]

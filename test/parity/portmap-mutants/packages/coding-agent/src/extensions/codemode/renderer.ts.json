@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/tool_codemode_renderer.go",
+  "old": "\tcodemodeOutputPreview    = 5\n",
+  "new": "\tcodemodeOutputPreview    = 4\n"
+ },
+ {
+  "file": "internal/codingagent/tool_codemode_renderer.go",
+  "old": "\tif cost >= 0.01 {",
+  "new": "\tif cost >= 0.02 {"
+ }
+]

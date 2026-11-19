@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/themed_text.go",
+  "old": "\t\tt.stale = false\n",
+  "new": ""
+ }
+]

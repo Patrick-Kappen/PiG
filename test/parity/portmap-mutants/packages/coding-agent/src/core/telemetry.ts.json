@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/settings.go",
+  "old": "case \"1\", \"true\", \"yes\":",
+  "new": "case \"1\", \"true\":"
+ },
+ {
+  "file": "internal/codingagent/install_telemetry.go",
+  "old": "return sm != nil && sm.IsInstallTelemetryEnabled()",
+  "new": "return sm != nil"
+ }
+]

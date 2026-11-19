@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/xiaomi_token_plan_cn.go",
+  "old": "\"xiaomi-token-plan-cn\"",
+  "new": "\"xiaomi-token-plan-cZ\""
+ }
+]

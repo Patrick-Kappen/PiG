@@ -1,0 +1,12 @@
+[
+ {
+  "file": "chord/next/host/jobs_job.go",
+  "old": "if refused = current.state != invocationRunning; refused {",
+  "new": "if refused = current.state == invocationRunning; refused {"
+ },
+ {
+  "file": "chord/next/host/jobs_run_states.go",
+  "old": "if stored != nil {",
+  "new": "if stored == nil {"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/workers/workers_lock.go",
+  "old": "is a stale lock file (no process",
+  "new": "is a fresh lock file (no process"
+ }
+]

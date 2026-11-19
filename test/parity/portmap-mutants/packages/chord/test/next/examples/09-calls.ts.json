@@ -1,0 +1,12 @@
+[
+ {
+  "file": "chord/next/link/errors.go",
+  "old": "if kind != \"plugin\" {",
+  "new": "if kind == \"plugin\" {"
+ },
+ {
+  "file": "chord/next/link/values.go",
+  "old": "if node.Len() != 1 || !isNumber || index < 0 || index != math.Trunc(index) || index >= float64(len(segments)) {",
+  "new": "if node.Len() == 1 || !isNumber || index < 0 || index != math.Trunc(index) || index >= float64(len(segments)) {"
+ }
+]

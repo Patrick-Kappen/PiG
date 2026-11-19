@@ -1,0 +1,12 @@
+[
+ {
+  "file": "coding/source/gitparse.go",
+  "old": "useHTTPSPrefix := !strings.HasPrefix(lowerRepo, \"http://\") &&",
+  "new": "useHTTPSPrefix := strings.HasPrefix(lowerRepo, \"http://\") &&"
+ },
+ {
+  "file": "coding/source/gitparse.go",
+  "old": "return buildGitSource(\"https://\"+repo, info.domain",
+  "new": "return buildGitSource(repo, info.domain"
+ }
+]

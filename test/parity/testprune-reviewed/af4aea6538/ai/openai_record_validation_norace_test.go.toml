@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/openai_record_validation_norace_test.go"
+commit = "af4aea65387d7eb84dcacb6b28f2ad309aa8c71e"
+class = "NOBEHAVIOR"
+cite = ""
+reason = "The test's assertion is a measurement method, not a behavior: it asserted that a completions stream costs at most a CPU-time ratio of a json.Valid floor (3.6 times for a third scan against about 1.5 times for a single one), which fails on a loaded machine, and now counts the record scans (recordScanHook passes of json.Valid and of the event observer's validity scan beyond the decode that reads each record) and asserts none for the stream whose records the chunk decode reads, with a control stream whose records fall back to both scans to show the count sees them. The rule pinned is the same, a record is scanned once, with a deterministic count instead of a timing; Pi, which parses each record once with JSON.parse, has no such test."

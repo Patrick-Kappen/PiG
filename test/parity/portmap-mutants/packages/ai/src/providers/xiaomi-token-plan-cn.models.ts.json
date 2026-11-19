@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"mimo-v2.6-flash\",\n\t\tProvider:             \"xiaomi-token-plan-cn\",\n\t\tDisplayName:          \"MiMo-V2.6-Flash\",\n",
+  "new": "\t\tID:                   \"mimo-v2.6-flash\",\n\t\tProvider:             \"xiaomi-token-plan-cn\",\n\t\tDisplayName:          \"MiMo-V2.6-Flash!\",\n"
+ }
+]

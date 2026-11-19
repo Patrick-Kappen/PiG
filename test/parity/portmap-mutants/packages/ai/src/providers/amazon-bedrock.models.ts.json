@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"amazon.nova-2-lite-v1:0\",\n\t\tProvider:             \"amazon-bedrock\",\n\t\tDisplayName:          \"Nova 2 Lite\",\n",
+  "new": "\t\tID:                   \"amazon.nova-2-lite-v1:0\",\n\t\tProvider:             \"amazon-bedrock\",\n\t\tDisplayName:          \"Nova 2 Lite!\",\n"
+ }
+]

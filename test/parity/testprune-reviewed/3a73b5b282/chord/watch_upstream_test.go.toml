@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/watch_upstream_test.go"
+commit = "3a73b5b282536ee64f5dd0e3e7712267ba564c74"
+class = "CITE"
+cite = "packages/chord/src/watch.ts:248"
+reason = "Pi d8d99950a makes a serialized watch keep its undelivered frames in a PendingOps queue (watch.ts:248-253): the frames that arrive while a listener runs, or before start, are delivered in the next call as the newest value with the folded ops of every frame since the previous call, and past 10,000 pending ops as one root replacement; NewWatch loses its replace argument. The expectations that listed one call per frame list one call of folded ops."

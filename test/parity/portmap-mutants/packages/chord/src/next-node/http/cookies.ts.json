@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/http/cookies.go",
+  "old": "!hmac.Equal(given, expected)",
+  "new": "hmac.Equal(given, expected)"
+ }
+]

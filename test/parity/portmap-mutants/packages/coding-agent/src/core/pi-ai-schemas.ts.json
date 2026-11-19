@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/configschema/pi_ai_schemas.go",
+  "old": "if o.K != \"required\" {",
+  "new": "if o.K == \"required\" {"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/plugins/plugins_install.go",
+  "old": "install failed (exit",
+  "new": "install did not succeed (exit"
+ }
+]

@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/calculate_cost_any_model_test.go"
+commit = "7a49fc497efa3e8674b98dc3fc3bcf1a1c8bf68d"
+class = "CITE"
+cite = "packages/ai/src/models.ts:1255"
+reason = "Pi 7c22a93d0 (#11178) makes calculateCost mark the cost it computes from catalog rates `totalFromProvider = false` (models.ts:1255), so the zero estimate of a model without rates is a zero cost carrying a false flag instead of the bare zero value."

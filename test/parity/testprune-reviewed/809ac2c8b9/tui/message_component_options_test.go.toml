@@ -1,0 +1,6 @@
+[[entry]]
+path = "tui/message_component_options_test.go"
+commit = "809ac2c8b958380038c709607e8bcff25ce50e6a"
+class = "CITE"
+cite = "packages/coding-agent/src/modes/interactive/components/user-message.ts:26"
+reason = "Pi 64627838b (#11270) gives the user and assistant message components the trailing optional `messageId` and `timestamp` constructor parameters (user-message.ts:26-27, the assistant component likewise), undefined for a live message; the Go constructors take the two strings, empty for undefined, so the existing constructions pass \"\", \"\" and expect the same rendering."

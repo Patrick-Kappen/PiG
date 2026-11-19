@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/opencode_headers.go",
+  "old": "if options.SessionID == \"\" || hasProviderHeader(",
+  "new": "if hasProviderHeader("
+ }
+]

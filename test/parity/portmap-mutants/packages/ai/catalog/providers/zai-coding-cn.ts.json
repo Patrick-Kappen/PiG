@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/zai_coding_cn.go",
+  "old": "\"zai-coding-cn\"",
+  "new": "\"zai-coding-cZ\""
+ }
+]

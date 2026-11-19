@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/imageprocessing/images.go",
+  "old": "if !autoResize {\n\t\treturn normalized, mime, conversionHint, nil",
+  "new": "if autoResize {\n\t\treturn normalized, mime, conversionHint, nil"
+ },
+ {
+  "file": "internal/imageprocessing/images.go",
+  "old": "from == \"\" || from == to || isUpstreamSupportedImageMIME(from)",
+  "new": "from == \"\" || from == to"
+ }
+]

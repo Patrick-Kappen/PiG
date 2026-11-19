@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/env/line_scan.go",
+  "old": "scanner.newlines++",
+  "new": "scanner.newlines += 2"
+ }
+]

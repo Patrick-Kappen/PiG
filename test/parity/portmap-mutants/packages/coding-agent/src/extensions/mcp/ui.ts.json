@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/mcpext/manager.go",
+  "old": "\tcase StateConnected:\n\t\treturn 4",
+  "new": "\tcase StateConnected:\n\t\treturn -1"
+ }
+]

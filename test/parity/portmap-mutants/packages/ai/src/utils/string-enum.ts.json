@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/string_enum.go",
+  "old": "\"type\": \"string\", \"enum\"",
+  "new": "\"type\": \"mutant\", \"enum\""
+ }
+]

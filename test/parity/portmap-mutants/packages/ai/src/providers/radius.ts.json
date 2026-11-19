@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/radius.go",
+  "old": "if gateway == NormalizeRadiusGatewayURL(DefaultRadiusGateway) {",
+  "new": "if gateway != NormalizeRadiusGatewayURL(DefaultRadiusGateway) {"
+ }
+]

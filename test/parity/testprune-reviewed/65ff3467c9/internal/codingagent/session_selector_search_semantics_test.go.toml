@@ -1,0 +1,6 @@
+[[entry]]
+path = "internal/codingagent/session_selector_search_semantics_test.go"
+commit = "65ff3467c950339b75a8b0e7c7e060c0446bd90b"
+class = "CITE"
+cite = "packages/coding-agent/src/modes/interactive/components/session-selector-search.ts:63"
+reason = "Pi 8c03fef4d (#11220) scores a session token by the best field it matches, in tiers of a million (session-selector-search.ts:33, tierScore at :62-64): name text in tier 0 with the fuzzy score, id, message and cwd text in tier 1 (:69-72), and only scattered name or cwd characters in tier 2 (:76-85, never messages or ids). The expected scores therefore become the tiered values (1000000, 2000000, 1999988.8 ...), a scattered match over message text no longer matches, and the table passes whole SessionInfo values instead of one message text."

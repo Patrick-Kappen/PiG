@@ -1,0 +1,27 @@
+[
+ {
+  "file": "internal/codingagent/tools/powershell.go",
+  "old": "\"-ExecutionPolicy\", \"Bypass\", \"-Command\"",
+  "new": "\"-ExecutionPolicy\", \"RemoteSigned\", \"-Command\""
+ },
+ {
+  "file": "internal/codingagent/tools/powershell.go",
+  "old": "[System.Text.Encoding]::UTF8 }",
+  "new": "[System.Text.Encoding]::ASCII }"
+ },
+ {
+  "file": "internal/codingagent/tools/powershell.go",
+  "old": "shellToolSchema(\"powershell\", \"PowerShell\", !t.HideSessionEnvironment)",
+  "new": "shellToolSchema(\"powershell\", \"PowerShell\", t.HideSessionEnvironment)"
+ },
+ {
+  "file": "internal/codingagent/tools/powershell.go",
+  "old": "tempFilePrefix:           \"pi-powershell\",",
+  "new": "tempFilePrefix:           \"pi-bash\","
+ },
+ {
+  "file": "internal/codingagent/tools/powershell.go",
+  "old": "lookPath(\"pwsh.exe\")",
+  "new": "lookPath(\"pwsh7.exe\")"
+ }
+]

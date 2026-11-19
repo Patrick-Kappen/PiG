@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/harness/prompt.go",
+  "old": "if head != nil && !hasLaterSystemEntry(view.Entries, head.Id) {",
+  "new": "if head != nil && hasLaterSystemEntry(view.Entries, head.Id) {"
+ }
+]

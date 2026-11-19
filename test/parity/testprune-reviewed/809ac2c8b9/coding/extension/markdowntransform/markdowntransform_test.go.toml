@@ -1,0 +1,6 @@
+[[entry]]
+path = "coding/extension/markdowntransform/markdowntransform_test.go"
+commit = "809ac2c8b958380038c709607e8bcff25ce50e6a"
+class = "CITE"
+cite = "packages/coding-agent/src/modes/interactive/components/user-message.ts:62"
+reason = "Pi 64627838b (#11270) passes the entry's messageId and timestamp as the two trailing arguments of createMarkdownTransform (user-message.ts:62-68; the context fields are types.ts:1546-1548), undefined for a live message; the Go function takes the two trailing strings, empty for undefined, so the test's existing calls pass \"\", \"\" and expect the same output."

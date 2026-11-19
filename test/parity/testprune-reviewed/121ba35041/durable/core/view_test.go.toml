@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/core/view_test.go"
+commit = "121ba35041cbdd862404532e67e864b4fee5fe3f"
+class = "CITE"
+cite = "packages/durable/src/harness/view.ts:114"
+reason = "Pi f3255de7's resolveWindow throws a RangeError for a window bound that is not an integer or a max below min (view.ts:114-121): the core rejects such a window as a Rejection named RangeError, which the host rebuilds as the RangeError, where it returned a plain error. The test asserts the rejection's name and message."

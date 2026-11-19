@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"alibaba/qwen-3-14b\",\n\t\tProvider:             \"vercel-ai-gateway\",\n\t\tDisplayName:          \"Qwen3-14B\",\n",
+  "new": "\t\tID:                   \"alibaba/qwen-3-14b\",\n\t\tProvider:             \"vercel-ai-gateway\",\n\t\tDisplayName:          \"Qwen3-14B!\",\n"
+ }
+]

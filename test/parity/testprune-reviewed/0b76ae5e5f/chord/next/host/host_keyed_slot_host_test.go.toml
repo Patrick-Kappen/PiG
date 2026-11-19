@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/next/host/host_keyed_slot_host_test.go"
+commit = "0b76ae5e5feed52171c3a8bda3cc0edf9f38e33f"
+class = "CITE"
+cite = "packages/chord/test/next/documents/keyed-slot.test.ts:162"
+reason = "The host halves of keyed-slot.test.ts assert what it does: a migration that throws `cannot migrate` rejects the get with a message containing it (:160), reports object_failed twice (:162) and leaves the reference failed broken (:163); at(key) outside the factory throws `valid only in the factory` (:351); a plugin's `plugin says no` is the rejection and one object_failed (:703-705). The red commit's Go expectations compared the same texts and kinds by exact match or by a count of reports; the changed lines compare the same values on the report kinds, the panic text and the rejection (a substring where Pi's message is expect.stringContaining), so none of them differs from Pi's."

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func XiaomiTokenPlanAmsProvider() *ModelsProvider { return builtinProvider(\"xiaomi-token-plan-ams\") }",
+  "new": "func XiaomiTokenPlanAmsProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

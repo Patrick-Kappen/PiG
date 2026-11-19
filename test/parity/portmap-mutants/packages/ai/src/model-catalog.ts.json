@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/model_catalog.go",
+  "old": "if _, ok := c.models[id]; !ok {",
+  "new": "if _, ok := c.models[id]; ok {"
+ }
+]

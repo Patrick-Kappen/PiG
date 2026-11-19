@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/system_theme.go",
+  "old": "const systemTextMinimumWcagContrast = 4.5",
+  "new": "const systemTextMinimumWcagContrast = 3.0"
+ }
+]

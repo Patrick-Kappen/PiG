@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/documents/documents.go",
+  "old": "if token.Sealed() || d.state != documentsOpen {",
+  "new": "if token.Sealed() && d.state != documentsOpen {"
+ }
+]

@@ -1,0 +1,6 @@
+[[entry]]
+path = "internal/minimatch/minimatch_oracle_test.go"
+commit = "fffc16ae0a59ad1a839a70e260c6a8ecd6905dba"
+class = "CITE"
+cite = "packages/coding-agent/src/core/package-manager.ts:728"
+reason = "Pi b4c2e92a moves the coding agent's minimatch dependency from 10.2.6 to 11.0.3 (packages/coding-agent/package.json:59; package-manager.ts:728 matches with it). The oracle test compares internal/minimatch with the installed minimatch, so its expected values are the 11.0.3 results: an empty path portion matches only an empty pattern portion, case folds by Unicode simple case folding, and only a pattern over 65,536 units throws."

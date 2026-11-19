@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/cloudflare_ai_gateway.go",
+  "old": "\"https://gateway.ai.cloudflare.com/v1/{CLOUDFLARE_ACCOUNT_ID}/{CLOUDFLARE_GATEWAY_ID}/compat\"",
+  "new": "\"https://gateway.ai.cloudflare.com/v1/{CLOUDFLARE_ACCOUNT_ID}/{CLOUDFLARE_GATEWAY_ID}/compaZ\""
+ }
+]

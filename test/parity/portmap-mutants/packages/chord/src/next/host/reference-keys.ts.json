@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_reference_keys.go",
+  "old": "if entry.holders > 0 {",
+  "new": "if entry.holders > 1 {"
+ }
+]

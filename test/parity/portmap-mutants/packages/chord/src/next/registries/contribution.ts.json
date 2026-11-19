@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/registries/contribution.go",
+  "old": "if c.Version > version || (c.Version < version && adapter == nil) {",
+  "new": "if c.Version >= version || (c.Version < version && adapter == nil) {"
+ }
+]

@@ -1,0 +1,6 @@
+[[entry]]
+path = "internal/shellconfig/shellconfig_test.go"
+commit = "4fd80d1cb2cd846ac6b4c6842f357121ff8aba0f"
+class = "CITE"
+cite = "packages/coding-agent/src/utils/shell.ts:13"
+reason = "Pi 28bea006 and 61060ddf match the legacy WSL launcher under the actual SystemRoot (shell.ts:13-23; an empty SystemRoot is falsy, so it falls back to the conventional paths, :16 and :22), look for PowerShell 7 under ProgramFiles (:151-155), and take the first line of `where` output as the match, accepted when it passes the access check (:45-56, Store aliases): isLegacyWSLBashPath takes the SystemRoot, the existing path table passes \"\" for it, and the ported windows-shell-config.test.ts and shell-path-exists.test.ts cases add the expected detections and matches."

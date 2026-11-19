@@ -1,0 +1,12 @@
+[
+ {
+  "file": "ai/oauth_registry.go",
+  "old": "\t\"xai\":            newXaiOAuthProvider(),\n",
+  "new": "\t\"xai-\":           newXaiOAuthProvider(),\n"
+ },
+ {
+  "file": "ai/oauth_registry.go",
+  "old": "\t\"meta\":           newMetaOAuthProvider(),\n",
+  "new": "\t\"meta-\":          newMetaOAuthProvider(),\n"
+ }
+]

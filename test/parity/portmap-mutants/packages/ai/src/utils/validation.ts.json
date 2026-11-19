@@ -1,0 +1,22 @@
+[
+ {
+  "file": "ai/validate.go",
+  "old": "strings.ReplaceAll(segment, \"~1\", \"/\")",
+  "new": "strings.ReplaceAll(segment, \"~1\", \".\")"
+ },
+ {
+  "file": "ai/validate.go",
+  "old": "\t\tmessage.WriteString(\"  - \")\n",
+  "new": "\t\tmessage.WriteString(\"  * \")\n"
+ },
+ {
+  "file": "ai/validate.go",
+  "old": "\t\treturn \"root\"\n",
+  "new": "\t\treturn \"$\"\n"
+ },
+ {
+  "file": "ai/validate_arguments.go",
+  "old": "fmt.Errorf(\"Tool \\\"%s\\\" not found\", call.Name)",
+  "new": "fmt.Errorf(\"Tool %s not found\", call.Name)"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/copilot_verification_uri.go",
+  "old": "\"Untrusted verification_uri in device code response\"",
+  "new": "\"Untrusted verification_uri in device code respons\""
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_adapted.go",
+  "old": "strconv.Itoa(version) + \" is not served here\"",
+  "new": "strconv.Itoa(version) + \" is not served\""
+ }
+]

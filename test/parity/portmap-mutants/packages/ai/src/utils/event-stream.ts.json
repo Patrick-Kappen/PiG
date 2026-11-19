@@ -1,0 +1,12 @@
+[
+ {
+  "file": "ai/event_stream_generic.go",
+  "old": "\tif s.done {\n\t\treturn\n\t}\n\tif s.isComplete(event) {",
+  "new": "\tif s.done && false {\n\t\treturn\n\t}\n\tif s.isComplete(event) {"
+ },
+ {
+  "file": "ai/event_stream.go",
+  "old": "value.Reason != StopReasonError && value.Reason != StopReasonAborted {",
+  "new": "value.Reason != StopReasonError {"
+ }
+]

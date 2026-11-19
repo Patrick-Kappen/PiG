@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/harness/scheduler_line_position_test.go"
+commit = "832ba8ca17c8489b66d0f33e16df9f6b6eb3ff92"
+class = "CITE"
+cite = "packages/durable/src/harness/scheduler.ts:384"
+reason = "Pi 8b0caefc publishes a commit inside Storage's adopt (session.ts:886-896): the dispatch to the subscribeCommits() listeners is queued first, and the scheduler, an observer of the Session's own observeCommits() (scheduler.ts:384), queues its #kick after them. A commit a host listener starts therefore lines up ahead of the reservation pass, which finds both tasks and starts them in one reservation commit, so the expected commit order is \"x pending\", \"m pending\", \"x running, m running\"."

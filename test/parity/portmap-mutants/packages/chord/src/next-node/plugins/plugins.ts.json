@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/plugins/plugins_plugins.go",
+  "old": "if !slices.ContainsFunc(plugins, func(plugin Plugin) bool { return plugin.Name == name }) {",
+  "new": "if slices.ContainsFunc(plugins, func(plugin Plugin) bool { return plugin.Name == name }) {"
+ }
+]

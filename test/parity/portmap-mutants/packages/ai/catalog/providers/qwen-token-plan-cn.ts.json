@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/qwen_token_plan_cn.go",
+  "old": "\"qwen-token-plan-cn\"",
+  "new": "\"qwen-token-plan-cZ\""
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/refusal.go",
+  "old": "return coded.Code() == sqliteConstraintCheck",
+  "new": "return coded.Code() != sqliteConstraintCheck"
+ }
+]

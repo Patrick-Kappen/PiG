@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/auth_storage.go",
+  "old": "if json.Unmarshal(entry, &credential) != nil {",
+  "new": "if json.Unmarshal(entry, &credential) == nil {"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/session_resources.go",
+  "old": "if len(errs) > 0 {",
+  "new": "if len(errs) > 1 {"
+ }
+]

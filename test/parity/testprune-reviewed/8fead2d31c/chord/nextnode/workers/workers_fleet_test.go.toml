@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/nextnode/workers/workers_fleet_test.go"
+commit = "8fead2d31cb1638ad113f7df3f8f1a5d8a0b773a"
+class = "NOBEHAVIOR"
+cite = ""
+reason = "Go only, no Pi line changed: the fleet's plugins component builds Pi's fixture plugin (testdata/plugins/notes: worker.ts, label.ts, package.json, byte for byte) with the real esbuild build instead of a stand-in Builder and Evaluator, which the plugins component no longer has; the expected labels and reports are Pi's."

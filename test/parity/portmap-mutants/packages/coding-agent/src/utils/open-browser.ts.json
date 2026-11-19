@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/interactive_auth.go",
+  "old": "cmd = \"xdg-open\"",
+  "new": "cmd = \"xdg-open2\""
+ }
+]

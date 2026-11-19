@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/resource_source_info.go",
+  "old": "\t\treturn \"builtin\"\n",
+  "new": "\t\treturn \"builtins\"\n"
+ },
+ {
+  "file": "internal/codingagent/resource_source_info.go",
+  "old": "return \"temporary\"",
+  "new": "return \"inline\""
+ }
+]

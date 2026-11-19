@@ -1,0 +1,22 @@
+[
+ {
+  "file": "coding/resource_loader.go",
+  "old": "\t\tif source != \"\" {\n\t\t\tappended = append(appended, icodingagent.ResolvePromptInput(source, \"append system prompt\"))",
+  "new": "\t\tif source == \"\" {\n\t\t\tappended = append(appended, icodingagent.ResolvePromptInput(source, \"append system prompt\"))"
+ },
+ {
+  "file": "internal/codingagent/context_files.go",
+  "old": "ancestors = append([]ContextFile{*cf}, ancestors...)",
+  "new": "ancestors = append(ancestors, *cf)"
+ },
+ {
+  "file": "internal/codingagent/prompt_templates.go",
+  "old": "WinnerPath: winner.FilePath, LoserPath: template.FilePath}",
+  "new": "WinnerPath: template.FilePath, LoserPath: winner.FilePath}"
+ },
+ {
+  "file": "coding/resource_loader_extend.go",
+  "old": "\t\tmerged, err := l.mergePaths(l.lastPromptPaths, extensionPathList(promptPaths))",
+  "new": "\t\tmerged, err := l.mergePaths(l.lastPromptPaths, nil)"
+ }
+]

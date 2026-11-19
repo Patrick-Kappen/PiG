@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/migrations.go",
+  "old": "\tformatted.WriteByte('\\n')\n",
+  "new": "\n"
+ },
+ {
+  "file": "internal/codingagent/migrations.go",
+  "old": "[]string{\"fd\", \"rg\", \"fd.exe\", \"rg.exe\"}",
+  "new": "[]string{\"fd\", \"rg\", \"fd.exe\"}"
+ }
+]

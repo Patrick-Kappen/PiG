@@ -1,0 +1,7 @@
+[
+ {
+  "file": "env/daemon/errors.go",
+  "old": "code+\": \"+description+\", \"+syscallName+\" \"+target",
+  "new": "code+\": \"+description+\" \"+syscallName+\" \"+target"
+ }
+]

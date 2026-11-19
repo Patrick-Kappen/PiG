@@ -1,0 +1,22 @@
+[
+ {
+  "file": "internal/codingagent/clipboard.go",
+  "old": "\tif preferred == \"\" {\n\t\treturn nil, \"\", clipboardImageNone\n\t}\n\tdata, err := runClipboardImageCommandContext(parent, clipboardCommandTimeout, \"wl-paste\"",
+  "new": "\tif preferred == \"\" {\n\t\treturn nil, \"\", clipboardImageFailed\n\t}\n\tdata, err := runClipboardImageCommandContext(parent, clipboardCommandTimeout, \"wl-paste\""
+ },
+ {
+  "file": "internal/codingagent/clipboard.go",
+  "old": "\t\tif strings.HasPrefix(e.base, \"image/\") {",
+  "new": "\t\tif strings.HasPrefix(e.base, \"imagex/\") {"
+ },
+ {
+  "file": "internal/codingagent/clipboard.go",
+  "old": "\treturn clipboardEnv(\"XDG_SESSION_TYPE\") == \"wayland\"",
+  "new": "\treturn false"
+ },
+ {
+  "file": "internal/codingagent/clipboard.go",
+  "old": "\tfor _, want := range SupportedImageMIMEs {\n\t\tfor _, e := range es {\n\t\t\tif e.base == want {",
+  "new": "\tfor _, e := range es {\n\t\tfor _, want := range SupportedImageMIMEs {\n\t\t\tif e.base == want {"
+ }
+]

@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/nextnode/workers/workers_fixture_worker_test.go"
+commit = "8fead2d31cb1638ad113f7df3f8f1a5d8a0b773a"
+class = "NOBEHAVIOR"
+cite = ""
+reason = "Go only, no Pi line changed: the expected results are Pi's (workers.test.ts, support.ts, worker.ts). The fixture worker's host topology follows the plugins component, whose evaluation runs in a Node subprocess (docs/plan/chord-plugins-node-evaluator.md): the core facet is the module testdata/core.mjs (Pi's worker.ts core as JavaScript), the worker's Go host is a relay routed to the NodeHost, the app's busy counts are read through a remote view and the worker's own hold on it is declared, and Control.localCalls (called by the worker itself) reports the messages sent to the server between its two lines, expected 0 as before."

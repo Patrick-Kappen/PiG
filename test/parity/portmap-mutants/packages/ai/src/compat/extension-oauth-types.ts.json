@@ -1,0 +1,17 @@
+[
+ {
+  "file": "ai/oauth_types.go",
+  "old": "chatgptCredentialMembers      = append(slices.Clone(accessFirstCredentialMembers), \"clientId\", \"scopes\")",
+  "new": "chatgptCredentialMembers      = append(slices.Clone(accessFirstCredentialMembers), \"scopes\", \"clientId\")"
+ },
+ {
+  "file": "ai/oauth_types.go",
+  "old": "accessFirstCredentialMembers  = []string{\"type\", \"access\", \"refresh\", \"expires\"}",
+  "new": "accessFirstCredentialMembers  = []string{\"type\", \"refresh\", \"access\", \"expires\"}"
+ },
+ {
+  "file": "ai/oauth_types.go",
+  "old": "Access  string                     `json:\"access\"`",
+  "new": "Access  string                     `json:\"accessToken\"`"
+ }
+]

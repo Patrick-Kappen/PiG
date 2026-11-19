@@ -1,0 +1,22 @@
+[
+ {
+  "file": "tui/layout.go",
+  "old": "\t\tif node.Align == \"stretch\" {\n\t\t\tchildHeight = allocatedHeight\n",
+  "new": "\t\tif node.Align == \"stretch\" {\n\t\t\tchildHeight = 0\n"
+ },
+ {
+  "file": "tui/layout.go",
+  "old": "layoutComponent(context, entry.Component, childX, childY, childWidth, &childHeight, box.Clip)",
+  "new": "layoutComponent(context, entry.Component, childX+1, childY, childWidth, &childHeight, box.Clip)"
+ },
+ {
+  "file": "tui/layout.go",
+  "old": "translateBox(childBox, previousScrollTop-node.State.ScrollTop())",
+  "new": "translateBox(childBox, previousScrollTop+node.State.ScrollTop())"
+ },
+ {
+  "file": "tui/layout.go",
+  "old": "\tif stack.Type == \"vstack\" {\n",
+  "new": "\tif stack.Type == \"hstack\" {\n"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_reference.go",
+  "old": "b.parked.flush(b.send, func() bool { return b.refState().Kind == RefStateLive })",
+  "new": "b.parked.flush(b.send, func() bool { return b.refState().Kind != RefStateLive })"
+ }
+]

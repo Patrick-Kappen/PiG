@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/status_indicator.go",
+  "old": "line := strings.Repeat(\" \", max(0, width))",
+  "new": "line := strings.Repeat(\" \", max(0, width-1))"
+ }
+]

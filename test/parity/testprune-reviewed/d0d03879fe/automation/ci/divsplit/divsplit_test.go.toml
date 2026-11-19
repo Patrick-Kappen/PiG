@@ -1,0 +1,6 @@
+[[entry]]
+path = "automation/ci/divsplit/divsplit_test.go"
+commit = "d0d03879fef7f39c73e9b440fa79aa202669a3e5"
+class = "NOBEHAVIOR"
+cite = ""
+reason = "Release hygiene, no behavior change: the retired-divergence record format is now `- D<N>: text`, so the test fixtures use that format together with the parser change; no Pi behavior is involved."

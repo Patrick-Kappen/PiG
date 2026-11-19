@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/watch_upstream_test.go"
+commit = "832ba8ca17c8489b66d0f33e16df9f6b6eb3ff92"
+class = "CITE"
+cite = "packages/chord/src/watch.ts:28"
+reason = "Pi 8b0caefc gives a serialized watch's source frames and its listener calls one value, WatchChange<T> = { value, ops, retired } (watch.ts:28, the pending-op queue that folds frames into it at watch.ts:282-316): Advance takes a change instead of a value and ops, and a listener receives the change, so the tests' calls and collected frames are built from WatchChange values; what each call reports is unchanged except for the retired flag it now carries."

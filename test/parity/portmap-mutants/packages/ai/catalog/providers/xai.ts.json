@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/xai.go",
+  "old": "\"grok-3\"",
+  "new": "\"grok-Z\""
+ }
+]

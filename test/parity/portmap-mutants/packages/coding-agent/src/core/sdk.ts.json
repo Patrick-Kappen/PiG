@@ -1,0 +1,17 @@
+[
+ {
+  "file": "coding/create_agent_session.go",
+  "old": "fallback = \"Could not restore model \"",
+  "new": "fallback = \"Could not restore models \""
+ },
+ {
+  "file": "coding/create_agent_session.go",
+  "old": "session.runtimeStream = true",
+  "new": "session.runtimeStream = false"
+ },
+ {
+  "file": "coding/runtime.go",
+  "old": "return current.ModelFallbackMessage",
+  "new": "return \"\""
+ }
+]

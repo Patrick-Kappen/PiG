@@ -1,0 +1,6 @@
+[[entry]]
+path = "internal/codingagent/tools/tools_manager_test.go"
+commit = "fdbd6ca4f0e1f86affb014d2d6e1f2c87126f177"
+class = "CITE"
+cite = "packages/coding-agent/src/utils/tools-manager.ts:33"
+reason = "Pi c8ec752cf (#11209) names the fd and rg release asset from getReleaseTarget (tools-manager.ts:33), which maps only x64 and arm64 and returns undefined for ARM32, ia32, riscv64 and other platforms (the download refuses them, tools-manager.ts:362-363), so the Go table of archStr, whose fallback was the x86_64 archive for any other architecture, becomes the table of releaseTarget with an empty target for the architectures that no longer fall back to x86-64."

@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/imageprocessing/images.go",
+  "old": "if value >= 1 && value <= 8 {",
+  "new": "if value >= 1 && value <= 7 {"
+ },
+ {
+  "file": "internal/imageprocessing/images.go",
+  "old": "data[tiffStart] == 0x49 && data[tiffStart+1] == 0x49",
+  "new": "data[tiffStart] == 0x4d && data[tiffStart+1] == 0x4d"
+ }
+]

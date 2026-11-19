@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/storage/store/commit.go",
+  "old": "\t\t\tif existing != \"\" {\n",
+  "new": "\t\t\tif existing != \"\" && false {\n"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/rpcclient/jsonl.go",
+  "old": "\t\tif len(line) > 0 {",
+  "new": "\t\tif len(line) <= 0 {"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/pig_egg3d.go",
+  "old": "math.Sin(math.Pi*clamp01(u)) * 0.8)",
+  "new": "math.Sin(math.Pi*clamp01(u)) * 0.7)"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/workers/workers_main.go",
+  "old": "w.send(FromWorker{Kind: FromWorkerStarted})",
+  "new": "w.send(FromWorker{Kind: FromWorkerReady})"
+ }
+]

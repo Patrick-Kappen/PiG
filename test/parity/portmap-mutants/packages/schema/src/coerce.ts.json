@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/coerce.go",
+  "old": "\t\t\tcase \"true\":\n\t\t\t\treturn true",
+  "new": "\t\t\tcase \"true\":\n\t\t\t\treturn false"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/harness/submissions.go",
+  "old": "strings.HasPrefix(entry.Kind, \"pi.\")",
+  "new": "strings.HasPrefix(entry.Kind, \"pj.\")"
+ }
+]

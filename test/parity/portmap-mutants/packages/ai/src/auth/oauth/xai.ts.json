@@ -1,0 +1,12 @@
+[
+ {
+  "file": "ai/oauth_xai.go",
+  "old": "\"b1a00492-073a-47ea-816f-4c329264a828\"",
+  "new": "\"b1a00492-073a-47ea-816f-4c329264a829\""
+ },
+ {
+  "file": "ai/oauth_xai.go",
+  "old": "\"openid profile email offline_access grok-cli:access api:access\"",
+  "new": "\"openid profile email offline_access\""
+ }
+]

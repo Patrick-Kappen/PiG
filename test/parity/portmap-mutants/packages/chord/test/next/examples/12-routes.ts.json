@@ -1,0 +1,12 @@
+[
+ {
+  "file": "chord/next/host/host_ctx.go",
+  "old": "if c.settling == nil {",
+  "new": "if c.settling != nil {"
+ },
+ {
+  "file": "chord/next/host/host_ctx.go",
+  "old": "if acquireErr != nil {",
+  "new": "if acquireErr == nil {"
+ }
+]

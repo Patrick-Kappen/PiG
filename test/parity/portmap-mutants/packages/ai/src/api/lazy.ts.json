@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_streams.go",
+  "old": "\tobservation.onEvent(event)\n\tobservation.onResult(message)\n",
+  "new": "\tobservation.onEvent(event)\n"
+ }
+]

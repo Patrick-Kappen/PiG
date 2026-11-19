@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/auth_resolve.go",
+  "old": "defaultOAuthMinimumValidityMs = float64(5 * 60 * 1000)",
+  "new": "defaultOAuthMinimumValidityMs = float64(1)"
+ }
+]

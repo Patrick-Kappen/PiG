@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/annotations.go",
+  "old": "a.allProps = a.allProps || b.allProps",
+  "new": "a.allProps = a.allProps && b.allProps"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"claude-fable-5\",\n\t\tProvider:             \"cloudflare-ai-gateway\",\n\t\tDisplayName:          \"Claude Fable 5\",\n",
+  "new": "\t\tID:                   \"claude-fable-5\",\n\t\tProvider:             \"cloudflare-ai-gateway\",\n\t\tDisplayName:          \"Claude Fable 5!\",\n"
+ }
+]

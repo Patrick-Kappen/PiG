@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/remote_catalog_provider.go",
+  "old": "\tif raw == nil {",
+  "new": "\tif raw != nil {"
+ }
+]

@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/next/host/host_revocation_test.go"
+commit = "0b76ae5e5feed52171c3a8bda3cc0edf9f38e33f"
+class = "CITE"
+cite = "packages/chord/test/next/host/revocation.test.ts:262"
+reason = "revocation.test.ts:262 expects the parent to have received no message (kinds() empty) for a hold sent before its revoke while the host waits for load: gone, never bound; the Go test now sends both messages in one turn on the host's microtask queue (as Pi's peer does) and only the failure message differs. The live states of the relayed tab (revocation.test.ts:431 and :450) are now awaited, because a Go link delivers on tasks of its own; the values expected are Pi's."

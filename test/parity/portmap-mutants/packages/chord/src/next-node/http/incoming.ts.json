@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/http/incoming.go",
+  "old": "strings.HasPrefix(name, \"x-forwarded-\")",
+  "new": "strings.HasPrefix(name, \"x-forwarder-\")"
+ }
+]

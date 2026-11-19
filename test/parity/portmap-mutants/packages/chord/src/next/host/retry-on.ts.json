@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_retry_on.go",
+  "old": "if call.Kind == chord.WatchCallValue {",
+  "new": "if call.Kind != chord.WatchCallValue {"
+ }
+]

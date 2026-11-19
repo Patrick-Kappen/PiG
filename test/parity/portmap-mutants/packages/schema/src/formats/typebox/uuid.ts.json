@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_uuid.go",
+  "old": "bool { return uuidRE.MatchString(value) }",
+  "new": "bool { return !uuidRE.MatchString(value) }"
+ }
+]

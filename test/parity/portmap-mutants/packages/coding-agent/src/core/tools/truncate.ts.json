@@ -1,0 +1,22 @@
+[
+ {
+  "file": "internal/codingagent/tools/truncate.go",
+  "old": "scaled := int64(f*10 + 0.5)",
+  "new": "scaled := int64(f * 10)"
+ },
+ {
+  "file": "internal/codingagent/tools/truncate.go",
+  "old": "if units+n > maxChars {",
+  "new": "if units+n >= maxChars {"
+ },
+ {
+  "file": "internal/codingagent/tools/truncate.go",
+  "old": "\t\tMaxLines:              maxLines,",
+  "new": "\t\tMaxLines:              maxBytes,"
+ },
+ {
+  "file": "internal/truncate/tail.go",
+  "old": "return w.maxBytes + 2",
+  "new": "return w.maxBytes + 1"
+ }
+]

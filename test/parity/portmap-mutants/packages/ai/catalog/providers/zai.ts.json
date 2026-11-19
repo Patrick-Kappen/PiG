@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/zai.go",
+  "old": "\"glm-4.5\"",
+  "new": "\"glm-4.Z\""
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/http/response.go",
+  "old": "startValue >= float64(size)",
+  "new": "startValue > float64(size)"
+ }
+]

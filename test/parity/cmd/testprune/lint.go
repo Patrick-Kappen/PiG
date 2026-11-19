@@ -302,7 +302,7 @@ func checkCoEdits(root string, rangeSpec string, from time.Time, piNames map[str
 	}
 	for i, r := range ledger {
 		if !used[i] && (!r.Pinned() || entryInRange(r, inRange)) {
-			problems = append(problems, fmt.Sprintf("%s: stale ledger entry %s %s matches no finding", reviewed.File, shortSHA(r.Commit), r.Path))
+			problems = append(problems, fmt.Sprintf("%s: stale ledger entry %s %s matches no finding", r.File(), shortSHA(r.Commit), r.Path))
 		}
 	}
 	return problems, nil
@@ -322,9 +322,9 @@ func entryInRange(r reviewed.Entry, inRange []string) bool {
 	return slices.ContainsFunc(inRange, r.NamesCommit)
 }
 
-// prunableEntries lists the ledger entries whose commit is not in rangeSpec. A squash merge replaces the reviewed
-// commit with a new one, so on main and on every later branch such an entry can never match a finding again; it
-// does not fail the lint, a maintainer deletes it.
+// prunableEntries lists the files of the ledger entries whose commit is not in rangeSpec. A squash merge replaces the
+// reviewed commit with a new one, so on main and on every later branch such an entry can never match a finding again;
+// it does not fail the lint, a maintainer deletes the file.
 func prunableEntries(root, rangeSpec string, ledger []reviewed.Entry) ([]string, error) {
 	inRange, err := commitsInRange(root, rangeSpec)
 	if err != nil {
@@ -333,7 +333,7 @@ func prunableEntries(root, rangeSpec string, ledger []reviewed.Entry) ([]string,
 	var out []string
 	for _, r := range ledger {
 		if r.Pinned() && !entryInRange(r, inRange) {
-			out = append(out, fmt.Sprintf("%s %s", shortSHA(r.Commit), r.Path))
+			out = append(out, r.File())
 		}
 	}
 	return out, nil
@@ -397,11 +397,7 @@ func runLint(root string, args []string) error {
 		if err != nil {
 			return err
 		}
-		raw, err := os.ReadFile(filepath.Join(root, reviewed.File))
-		if err != nil {
-			return err
-		}
-		ledger, err := reviewed.Parse(string(raw))
+		ledger, err := reviewed.ReadDir(root)
 		if err != nil {
 			return err
 		}
@@ -415,7 +411,7 @@ func runLint(root string, args []string) error {
 			return err
 		}
 		for _, e := range prunable {
-			fmt.Fprintf(os.Stderr, "note: %s: prunable ledger entry %s: its commit is not in %s (squash-merged or rewritten); delete it\n", reviewed.File, e, rangeSpec)
+			fmt.Fprintf(os.Stderr, "note: %s: prunable ledger entry: its commit is not in %s (squash-merged or rewritten); delete the file\n", e, rangeSpec)
 		}
 		problems = append(problems, p...)
 	}

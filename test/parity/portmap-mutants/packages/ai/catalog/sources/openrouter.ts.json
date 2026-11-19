@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/source_openrouter.go",
+  "old": "\"effort\"",
+  "new": "\"efforZ\""
+ }
+]

@@ -1,0 +1,12 @@
+[
+ {
+  "file": "tui/undo_stack.go",
+  "old": "\tu.stack = u.stack[:len(u.stack)-1]\n",
+  "new": "\tu.stack = u.stack[:0]\n"
+ },
+ {
+  "file": "tui/undo_stack.go",
+  "old": "\tu.stack = nil\n",
+  "new": "\tu.stack = u.stack[:len(u.stack)]\n"
+ }
+]

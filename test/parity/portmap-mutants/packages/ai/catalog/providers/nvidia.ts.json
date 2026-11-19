@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/nvidia.go",
+  "old": "\"google/gemma-4-31b-it\"",
+  "new": "\"google/gemma-4-31b-iZ\""
+ }
+]

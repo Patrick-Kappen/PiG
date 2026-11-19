@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/crash_log.go",
+  "old": "records = records[len(records)-maxCrashRecords:]",
+  "new": "records = records[:maxCrashRecords]"
+ }
+]

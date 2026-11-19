@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/table_history.go",
+  "old": "if version > definition.Version {",
+  "new": "if version >= definition.Version {"
+ }
+]

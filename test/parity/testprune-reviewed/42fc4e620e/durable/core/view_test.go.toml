@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/core/view_test.go"
+commit = "42fc4e620ef0b4ccf6a3c4a7b1a1818a98955298"
+class = "CITE"
+cite = "packages/durable/src/harness/view.ts:358"
+reason = "Pi f3255de7 makes ConversationView.entries a window over the transcript (view.ts advance, :358-396): an entry is appended wherever it was written, a head marker included, and past the window's max the oldest leave in one splice with a set of `before`, so the core's view frames carry those ops where a head marker used to replace the entries before its head."

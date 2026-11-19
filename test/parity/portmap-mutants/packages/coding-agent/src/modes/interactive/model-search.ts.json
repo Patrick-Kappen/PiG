@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/model_search.go",
+  "old": "return provider + \" \" + provider + \"/\" + id",
+  "new": "return id + \" \" + provider + \"/\" + id"
+ }
+]

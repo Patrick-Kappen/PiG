@@ -529,6 +529,36 @@ func divergenceRecorded(d *data, env *ruleEnv) func(string) bool {
 // a row names for a changed test file. A PR with rows of more commits is a finding that asks to split it.
 const maxLedgerCommits = 50
 
+// maxLedgerFiles bounds the ledger files the pre-flight reads at the PR's head: one call per file. A PR with more is a
+// finding that asks to split it.
+const maxLedgerFiles = 100
+
+// ledgerEntryFiles are the ledger files that can admit a changed test file, in the order of their names: for each test
+// file the check flags and each commit of the PR, the file of that commit and path (reviewed.Entry.File), when the PR adds
+// or changes it. An entry reviews a commit of the PR, so a later commit of the PR adds its file; the files of the ledger
+// that the PR leaves alone are of other commits, admit nothing here and are not read.
+func ledgerEntryFiles(d *data) []string {
+	inPR := map[string]bool{}
+	for _, f := range d.Files {
+		if reviewed.InDir(f.Filename) && f.Status != "removed" {
+			inPR[f.Filename] = true
+		}
+	}
+	var out []string
+	if len(inPR) == 0 {
+		return out
+	}
+	for _, e := range editedTests(d) {
+		for _, c := range d.Commits {
+			if name := (reviewed.Entry{Path: e.name, Commit: c.SHA}).File(); inPR[name] && !slices.Contains(out, name) {
+				out = append(out, name)
+			}
+		}
+	}
+	slices.Sort(out)
+	return out
+}
+
 // commitOfRow is the commit of the PR that the row's commit prefix names, and how many commits of the PR it names.
 func commitOfRow(d *data, r reviewed.Entry) (sha string, named int) {
 	for _, c := range d.Commits {
@@ -593,7 +623,7 @@ func admitByLedger(d *data, ledger []reviewed.Entry, known map[string]bool, reco
 
 // ledgerText is a text of a ledger row as a notice holds it: on one line and whole. A notice is stored in the record
 // of the verdict and a later run reuses it, so it is never cut here; the report cuts it when it prints (shownNotice).
-// The text is bounded by the ledger file, which the contents endpoint serves up to 1 MiB.
+// The text is bounded by the row's ledger file, which the contents endpoint serves up to 1 MiB.
 func ledgerText(s string) string {
 	return strings.Join(strings.Fields(s), " ")
 }
@@ -650,7 +680,12 @@ func ruleTestExpectation(d *data, p params, env *ruleEnv) outcome {
 			known[path.Base(m)] = true
 		}
 	}
-	ledger, err := reviewed.Parse(d.ReviewedLedger)
+	if n := len(ledgerEntryFiles(d)); n > maxLedgerFiles {
+		o := fail("the PR holds %d ledger files under %s for its changed test files; the pre-flight reads at most %d: split the PR (%s change expected values together with production code)", n, reviewed.Dir, maxLedgerFiles, joinEdited(edited))
+		o.notices = tooling
+		return o
+	}
+	ledger, err := reviewed.ParseFiles(d.ReviewedLedger)
 	if err != nil {
 		o := fail("%s change expected values together with production code, and the reviewed ledger at the PR head cannot be read, so no row admits them: %v", joinEdited(edited), err)
 		o.notices = tooling
@@ -720,7 +755,7 @@ func citedExpectation(d *data, edited []editedTest, known map[string]bool) outco
 		missing = append(missing, "a commit trailer")
 	}
 	if len(missing) > 0 {
-		return fail("%s change expected values together with production code; cite the Pi behavior that changed as `Pi-Behavior-Change: <pi file.ts:line>` in %s, or add a row for the commit and the file to %s in a later commit of the PR", joinEdited(edited), strings.Join(missing, " and "), reviewed.File)
+		return fail("%s change expected values together with production code; cite the Pi behavior that changed as `Pi-Behavior-Change: <pi file.ts:line>` in %s, or add an entry for the commit and the file, as the file %s/<first %d characters of the commit>/<test file>.toml, in a later commit of the PR", joinEdited(edited), strings.Join(missing, " and "), reviewed.Dir, reviewed.MinCommitLen)
 	}
 	var unknown []string
 	for name := range cited {

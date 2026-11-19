@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/azure.go",
+  "old": "resolved.cfg.requestModel = ResolveAzureDeploymentName(p.cfg.Model, options)",
+  "new": "resolved.cfg.requestModel = p.cfg.Model"
+ }
+]

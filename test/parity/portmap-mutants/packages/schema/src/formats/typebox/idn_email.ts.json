@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_idn_email.go",
+  "old": "return idnEmailRE.MatchString(norm.NFC.String(jsstring.Canonical(value)))",
+  "new": "return !idnEmailRE.MatchString(norm.NFC.String(jsstring.Canonical(value)))"
+ }
+]

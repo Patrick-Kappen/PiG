@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/harness/json.go",
+  "old": "if _, has := record[name]; !has {",
+  "new": "if _, has := record[name]; has {"
+ }
+]

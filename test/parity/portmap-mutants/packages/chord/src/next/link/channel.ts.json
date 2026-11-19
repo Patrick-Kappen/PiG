@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/link/channel.go",
+  "old": "silent >= ping && !c.pinged",
+  "new": "silent >= ping && c.pinged"
+ }
+]

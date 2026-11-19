@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/truncate.go",
+  "old": "DEFAULT_MAX_BYTES = 50 * 1024 ",
+  "new": "DEFAULT_MAX_BYTES = 50*1024 + 1 "
+ }
+]

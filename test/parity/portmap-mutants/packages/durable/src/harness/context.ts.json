@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/harness/context.go",
+  "old": "if edited && edit.Action == durable.EditOmit {\n\t\treturn []ai.Message{}",
+  "new": "if edited && edit.Action != durable.EditOmit {\n\t\treturn []ai.Message{}"
+ }
+]

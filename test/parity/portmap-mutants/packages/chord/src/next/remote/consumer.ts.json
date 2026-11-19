@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/remote_consumer.go",
+  "old": "Message: \"the link closed\"}, nil)",
+  "new": "Message: \"the link is closed\"}, nil)"
+ }
+]

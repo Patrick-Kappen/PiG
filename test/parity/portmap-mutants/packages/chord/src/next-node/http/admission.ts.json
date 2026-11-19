@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/http/admission.go",
+  "old": "address == \"::1\" || strings.HasPrefix(address, \"127.\") ||",
+  "new": "address == \"::1\" || strings.HasPrefix(address, \"128.\") ||"
+ }
+]

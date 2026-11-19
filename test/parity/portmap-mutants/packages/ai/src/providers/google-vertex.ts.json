@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/auth_providers.go",
+  "old": "source := \"gcloud application default credentials\"",
+  "new": "source := \"gcloud credentials\""
+ }
+]

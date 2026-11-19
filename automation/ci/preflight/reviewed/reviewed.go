@@ -1,22 +1,28 @@
 // SPDX-License-Identifier: MIT
 
-// Package reviewed holds the reviewed ledger of expected-value changes, test/parity/testprune-reviewed.toml, and the one
-// definition of when one of its entries is valid. The line lint (test/parity/cmd/testprune) and the pre-flight's
+// Package reviewed holds the reviewed ledger of expected-value changes, the directory test/parity/testprune-reviewed, and
+// the one definition of when one of its entries is valid. The line lint (test/parity/cmd/testprune) and the pre-flight's
 // test-expectation rule both admit a test's expected-value change by an entry of this ledger, so both call this package.
 package reviewed
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
+	"os"
 	"path"
+	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/BurntSushi/toml"
 )
 
 const (
-	// File is the ledger's path in the repository.
-	File = "test/parity/testprune-reviewed.toml"
+	// Dir is the ledger's path in the repository. It holds one file per entry (Entry.File), so two branches that each
+	// add an entry add two files and never change the same one.
+	Dir = "test/parity/testprune-reviewed"
 	// DivergenceDir is where the records of the divergences a DIVERGENCE entry cites live.
 	DivergenceDir = "docs/parity/divergences"
 	// MinCommitLen is the shortest commit prefix an entry may name; a shorter one matches nothing.
@@ -34,15 +40,71 @@ type Entry struct {
 	Reason string `toml:"reason"`
 }
 
-// Parse reads the ledger text. An empty text holds no entries.
-func Parse(text string) ([]Entry, error) {
+// File is the path of the entry's file in the repository: Dir, the first MinCommitLen characters of the commit, and
+// the path of the test file. The name is the entry's key, so the ledger cannot hold two entries of one commit and path.
+func (e Entry) File() string {
+	return Dir + "/" + e.Commit[:min(len(e.Commit), MinCommitLen)] + "/" + e.Path + ".toml"
+}
+
+// InDir reports whether name is the path of a file under Dir.
+func InDir(name string) bool { return strings.HasPrefix(name, Dir+"/") }
+
+// ParseEntry reads the text of the ledger file name: one [[entry]], whose commit and path give that name.
+func ParseEntry(name, text string) (Entry, error) {
 	var doc struct {
 		Entry []Entry `toml:"entry"`
 	}
 	if _, err := toml.Decode(text, &doc); err != nil {
-		return nil, fmt.Errorf("%s: %w", File, err)
+		return Entry{}, fmt.Errorf("%s: %w", name, err)
 	}
-	return doc.Entry, nil
+	if len(doc.Entry) != 1 {
+		return Entry{}, fmt.Errorf("%s: holds %d entries, want one [[entry]]", name, len(doc.Entry))
+	}
+	e := doc.Entry[0]
+	if e.File() != name {
+		return Entry{}, fmt.Errorf("%s: the entry of commit %q and path %q belongs in %s", name, e.Commit, e.Path, e.File())
+	}
+	return e, nil
+}
+
+// ParseFiles reads ledger files, given as name and text, in the order of their names.
+func ParseFiles(files map[string]string) ([]Entry, error) {
+	names := make([]string, 0, len(files))
+	for name := range files {
+		names = append(names, name)
+	}
+	slices.Sort(names)
+	entries := make([]Entry, 0, len(names))
+	for _, name := range names {
+		e, err := ParseEntry(name, files[name])
+		if err != nil {
+			return nil, err
+		}
+		entries = append(entries, e)
+	}
+	return entries, nil
+}
+
+// ReadDir reads the ledger of the tree at root, in the order of the file names. A tree without Dir holds no entries:
+// git keeps no empty directory, so a ledger whose last entry was deleted is one.
+func ReadDir(root string) ([]Entry, error) {
+	files := map[string]string{}
+	err := filepath.WalkDir(filepath.Join(root, filepath.FromSlash(Dir)), func(p string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		rel, err := filepath.Rel(root, p)
+		if err != nil {
+			return err
+		}
+		raw, err := os.ReadFile(p)
+		files[filepath.ToSlash(rel)] = string(raw)
+		return err
+	})
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, err
+	}
+	return ParseFiles(files)
 }
 
 // DivergenceFile is the path of the record of divergence id.

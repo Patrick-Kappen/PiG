@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/openrouter_user_models.go",
+  "old": "request.Header.Set(\"authorization\", \"Bearer \"+key)",
+  "new": "request.Header.Set(\"authorization\", \"Basic \"+key)"
+ }
+]

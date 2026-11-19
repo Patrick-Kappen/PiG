@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/model_pattern.go",
+  "old": "return !modelDateSuffix.MatchString(id)",
+  "new": "return modelDateSuffix.MatchString(id)"
+ }
+]

@@ -1,0 +1,6 @@
+[[entry]]
+path = "internal/codingagent/ext_ui_dialog_displace_test.go"
+commit = "90f69085ce4e7da8d8617b769dfc9960d0f98775"
+class = "CITE"
+cite = "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2693"
+reason = "Pi 38847563 and bdd9f039 (#11166, #9909) stack extension dialogs (interactive-mode.ts:2693-2712 pushExtensionDialog, removeExtensionDialog, showTopExtensionDialog) instead of letting a new dialog displace the open one: a dialog opened over another hides it without settling it, the new one takes the keys, and when it closes the earlier dialog shows again and stays answerable, the editor returning only when the last closes. The displacement tests (the displaced dialog stays pending until its own abort, a submitted input restores the editor) expect the stack's behavior."

@@ -1,0 +1,6 @@
+[[entry]]
+path = "cmd/gen-models/emit_shares_test.go"
+commit = "875a364a714c18b5bcb69e5509f0f61b2e829531"
+class = "NOBEHAVIOR"
+cite = ""
+reason = "The expected text is the layout of the Go catalog file cmd/gen-models emits (PiG-original): the header, thinking-level, sampling and prompt-cache maps are built from pair lists the linker lays out instead of one map literal per model. The generated rows of every model, and the catalog Pi's build produces, are unchanged: regenerating from the pinned Pi build reproduces the committed file."

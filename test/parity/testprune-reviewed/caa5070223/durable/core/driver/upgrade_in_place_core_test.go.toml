@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/core/driver/upgrade_in_place_core_test.go"
+commit = "caa5070223561fe78b68864daca314e726814a94"
+class = "CITE"
+cite = "packages/durable/src/storage/sqlite/migrations.ts:91"
+reason = "Pi 1.4.0 writes schema version 2 (migrations.ts:91, 'Version 2 adds the sleeping task status', the tasks table rebuilt in place), so an older store upgrades in place with no backup file. The test expects the upgraded store at SupportedSchemaVersion and no .schema-1.bak, where D188 made PiG refuse and back up."

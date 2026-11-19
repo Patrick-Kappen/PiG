@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/github_copilot_filter.go",
+  "old": "credential.Type != CredentialOAuth",
+  "new": "credential.Type == CredentialOAuth"
+ }
+]

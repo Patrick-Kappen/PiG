@@ -1,0 +1,6 @@
+[[entry]]
+path = "coding/extension/pigsdk/strip_test.go"
+commit = "2eec1d23fb5778618c8cdd80dcce6905738c645c"
+class = "NOBEHAVIOR"
+cite = ""
+reason = "The multi-language extension SDK bridges are PiG-only (docs/additive-features.md D19), so no Pi line governs them. The commit adds the Lisp SDK as a fourth strippable SDK language: the strip test gains its Lisp row, and the count of SDKs left unstripped after stripping one language is three where it was two. The expectation follows the number of SDK languages the build carries."

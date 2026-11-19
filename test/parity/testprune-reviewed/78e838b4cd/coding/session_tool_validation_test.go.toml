@@ -1,0 +1,6 @@
+[[entry]]
+path = "coding/session_tool_validation_test.go"
+commit = "78e838b4cd342b3de4dafcfb94ef25ccd757af4c"
+class = "CITE"
+cite = "packages/ai/src/utils/validation.ts:59"
+reason = "Pi 6536f801 validates tool arguments as plain JSON Schema (validation.ts:59 parse of tool.parameters): TypeBox refinements are not run, so the argument schema of a tool is its parameters and a tool binding carries no separate validation parameters."

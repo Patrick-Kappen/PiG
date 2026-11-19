@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/childwait/wait.go",
+  "old": "const Grace = 100 * time.Millisecond",
+  "new": "const Grace = 150 * time.Millisecond"
+ },
+ {
+  "file": "internal/crossspawn/crossspawn.go",
+  "old": "\tcmd.Dir = dir\n",
+  "new": "\tcmd.Dir = \"\"\n"
+ },
+ {
+  "file": "internal/crossspawn/windows_plan.go",
+  "old": "if executableFile.MatchString(file) {",
+  "new": "if !executableFile.MatchString(file) {"
+ }
+]

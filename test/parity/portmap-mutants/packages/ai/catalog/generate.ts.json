@@ -1,0 +1,7 @@
+[
+ {
+  "file": "cmd/gen-models/generate.go",
+  "old": "\"providers.json\"",
+  "new": "\"providerZ.json\""
+ }
+]

@@ -1,0 +1,17 @@
+[
+ {
+  "file": "ai/provider_response.go",
+  "old": "out[key] = strings.Join(values, \", \")",
+  "new": "out[key] = strings.Join(values, \",\")"
+ },
+ {
+  "file": "ai/provider_response.go",
+  "old": "out[key] = values[len(values)-1]",
+  "new": "out[key] = values[0]"
+ },
+ {
+  "file": "ai/classifier_http.go",
+  "old": "\t\t\tdelete(merged, normalized)\n",
+  "new": "\t\t\t_ = normalized\n"
+ }
+]

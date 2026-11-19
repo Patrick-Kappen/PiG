@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/bug_report.go",
+  "old": "return \"x64\"",
+  "new": "return \"amd64\""
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/contracts/schema.go",
+  "old": "delta.JsonObjectOf(\"^.*$\", value.Node)",
+  "new": "delta.JsonObjectOf(\"^.+$\", value.Node)"
+ }
+]

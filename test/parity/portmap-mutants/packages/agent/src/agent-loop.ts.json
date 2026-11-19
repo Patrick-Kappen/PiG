@@ -1,0 +1,22 @@
+[
+ {
+  "file": "agent/tool_execution.go",
+  "old": "\tif len(finalized) == 0 {\n\t\treturn false\n\t}\n\tfor _, f := range finalized {\n\t\tif !f.result.Terminate {",
+  "new": "\tif len(finalized) == 0 {\n\t\treturn true\n\t}\n\tfor _, f := range finalized {\n\t\tif !f.result.Terminate {"
+ },
+ {
+  "file": "agent/tool_execution.go",
+  "old": "if r.h.cfg.ToolExecution == ToolModeSequential || r.hasSequentialToolCall(calls) {",
+  "new": "if r.h.cfg.ToolExecution == ToolModeSequential && r.hasSequentialToolCall(calls) {"
+ },
+ {
+  "file": "agent/tool_execution.go",
+  "old": "result.Terminate = hookResult.Terminate\n",
+  "new": "result.Terminate = !hookResult.Terminate\n"
+ },
+ {
+  "file": "agent/agent_loop.go",
+  "old": "assistant.StopReason == ai.StopReasonLength",
+  "new": "assistant.StopReason == ai.StopReasonStop"
+ }
+]

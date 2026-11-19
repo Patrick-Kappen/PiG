@@ -1,0 +1,7 @@
+[
+ {
+  "file": "env/daemon/frame.go",
+  "old": "header[4] = frame.Kind",
+  "new": "header[4] = 0"
+ }
+]

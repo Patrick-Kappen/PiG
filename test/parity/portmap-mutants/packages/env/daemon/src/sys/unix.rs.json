@@ -1,0 +1,7 @@
+[
+ {
+  "file": "env/daemon/sys_unix.go",
+  "old": "path = \"/tmp\"\n",
+  "new": "path = \"/tmpx\"\n"
+ }
+]

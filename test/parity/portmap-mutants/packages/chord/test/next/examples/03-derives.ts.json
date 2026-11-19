@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/state/derive.go",
+  "old": "if pointer == nil {",
+  "new": "if pointer != nil {"
+ }
+]

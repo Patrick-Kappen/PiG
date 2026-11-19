@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/external_editor.go",
+  "old": "func OpenExternalEditor(ctx context.Context, initial string, configuredEditor string) (string, error) {",
+  "new": "func OpenExternalEditor(ctx context.Context, initial string, configuredEditor string) (string, error) {\n\tconfiguredEditor = \"\""
+ }
+]

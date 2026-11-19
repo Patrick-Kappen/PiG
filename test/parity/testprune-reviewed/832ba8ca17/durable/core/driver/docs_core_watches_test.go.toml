@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/core/driver/docs_core_watches_test.go"
+commit = "832ba8ca17c8489b66d0f33e16df9f6b6eb3ff92"
+class = "CITE"
+cite = "packages/durable/src/session/session.ts:1231"
+reason = "Pi 8b0caefc reports a retirement as a change with `retired: true`, the last value the watch was given and no ops (session.ts:1231), and the watch goes on, following its address: a recreation at the address arrives as a root replacement of the new incarnation (session.ts:1242). The core watch tests that expected a null root replacement and a closed watch expect the last value with a retirement flag and then the new incarnation, and the listener receives a WatchChange."

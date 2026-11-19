@@ -1,0 +1,12 @@
+[
+ {
+  "file": "ai/abort_utils.go",
+  "old": "\tcase <-ctx.Done():\n\t\treturn context.Cause(ctx)\n\t}\n}\n\n// AbortReason",
+  "new": "\tcase <-ctx.Done():\n\t\treturn ctx.Err()\n\t}\n}\n\n// AbortReason"
+ },
+ {
+  "file": "ai/abort_utils.go",
+  "old": "math.IsNaN(ms) || ms < 1 || ms > nodeTimerMaxMs",
+  "new": "math.IsNaN(ms) || ms < 1 || ms > nodeTimerMaxMs*2"
+ }
+]

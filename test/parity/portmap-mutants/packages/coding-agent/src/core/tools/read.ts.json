@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/tools/read.go",
+  "old": "startLine = math.Max(0, *p.Offset-1)",
+  "new": "startLine = math.Max(0, *p.Offset)"
+ },
+ {
+  "file": "internal/codingagent/tools/read.go",
+  "old": "if tr.TruncatedBy == \"lines\" {",
+  "new": "if tr.TruncatedBy == \"bytes\" {"
+ }
+]

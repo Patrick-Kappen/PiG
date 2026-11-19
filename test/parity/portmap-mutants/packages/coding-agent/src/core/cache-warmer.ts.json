@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/session_cache_warming.go",
+  "old": "\t\tif s := session(); s != nil {",
+  "new": "\t\tif s := session(); s == nil {"
+ }
+]

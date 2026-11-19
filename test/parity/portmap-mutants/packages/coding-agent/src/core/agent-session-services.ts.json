@@ -1,0 +1,27 @@
+[
+ {
+  "file": "internal/codingagent/settings_diagnostics.go",
+  "old": "Invalid %s settings: %v",
+  "new": "Invalid %s setting: %v"
+ },
+ {
+  "file": "internal/codingagent/settings_diagnostics.go",
+  "old": "if seen[diagnostic] {",
+  "new": "if !seen[diagnostic] {"
+ },
+ {
+  "file": "coding/create_agent_session.go",
+  "old": "\"Invalid tools option: \"",
+  "new": "\"Invalid tool option: \""
+ },
+ {
+  "file": "coding/services.go",
+  "old": "return slices.Clone(s.diagnostics)",
+  "new": "return nil"
+ },
+ {
+  "file": "coding/services.go",
+  "old": "func (s *AgentSessionServices) CWD() string { return s.cwd }",
+  "new": "func (s *AgentSessionServices) CWD() string { return s.agentDir }"
+ }
+]

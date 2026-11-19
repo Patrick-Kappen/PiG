@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/tools/file_mutation_queue.go",
+  "old": "\tif previous != nil {\n\t\t<-previous\n\t}",
+  "new": "\tif previous != nil && false {\n\t\t<-previous\n\t}"
+ }
+]

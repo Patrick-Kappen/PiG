@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/index.go",
+  "old": "\t\tmeta(),\n",
+  "new": ""
+ }
+]

@@ -1,0 +1,22 @@
+[
+ {
+  "file": "internal/packagemanager/package_manager.go",
+  "old": "\t\tif current[index].Source == normalized {\n\t\t\treturn false, nil\n\t\t}",
+  "new": "\t\tif current[index].Source == normalized {\n\t\t\treturn true, nil\n\t\t}"
+ },
+ {
+  "file": "internal/packagemanager/package_manager.go",
+  "old": "\tif len(next) == len(current) {\n\t\treturn false, nil\n\t}",
+  "new": "\tif len(next) == len(current) {\n\t\treturn true, nil\n\t}"
+ },
+ {
+  "file": "internal/packagemanager/resolve.go",
+  "old": "fromPackages.Themes = append(fromPackages.Themes, resource)",
+  "new": "fromPackages.Themes = append(fromPackages.Prompts, resource)"
+ },
+ {
+  "file": "internal/packagemanager/npm_metadata.go",
+  "old": "return versionRange == \"\" || nodesemver.Satisfies(installed, versionRange)",
+  "new": "return versionRange == \"\" || !nodesemver.Satisfies(installed, versionRange)"
+ }
+]

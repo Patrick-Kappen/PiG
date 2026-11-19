@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_destination.go",
+  "old": "from.role == linkRoleParent ||",
+  "new": "from.role != linkRoleParent ||"
+ }
+]

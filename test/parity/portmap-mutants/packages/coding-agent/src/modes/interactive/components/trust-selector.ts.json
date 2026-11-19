@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/trust_selector.go",
+  "old": "\"Current session: \"+current",
+  "new": "\"Current sessio: \"+current"
+ }
+]

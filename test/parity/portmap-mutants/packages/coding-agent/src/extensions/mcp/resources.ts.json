@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/mcpext/resources.go",
+  "old": "localecompare.Compare(a.Name(), b.Name()) })",
+  "new": "localecompare.Compare(b.Name(), a.Name()) })"
+ }
+]

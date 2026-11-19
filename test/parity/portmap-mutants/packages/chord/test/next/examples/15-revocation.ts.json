@@ -1,0 +1,12 @@
+[
+ {
+  "file": "chord/next/host/host_host.go",
+  "old": "if each.role == linkRoleRoute {",
+  "new": "if each.role != linkRoleRoute {"
+ },
+ {
+  "file": "chord/next/host/remote_host_link.go",
+  "old": "if l.role == linkRoleParent {",
+  "new": "if l.role != linkRoleParent {"
+ }
+]

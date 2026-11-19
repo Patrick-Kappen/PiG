@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/compiler.go",
+  "old": "\tif exactlyOne {\n\t\treturn oneCheck(checks)\n\t}\n\treturn anyCheck(checks)",
+  "new": "\tif !exactlyOne {\n\t\treturn oneCheck(checks)\n\t}\n\treturn anyCheck(checks)"
+ }
+]

@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/prompts/coding.go",
+  "old": "add(\"Be concise in your responses\")",
+  "new": "add(\"Be concise in your response\")"
+ },
+ {
+  "file": "internal/codingagent/prompts/custom_sections.go",
+  "old": "section.Name == \"preamble\"",
+  "new": "section.Name == \"preambles\""
+ }
+]

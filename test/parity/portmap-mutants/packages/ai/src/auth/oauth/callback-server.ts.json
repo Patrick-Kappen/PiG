@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/oauth_callback_server.go",
+  "old": "http.StatusNotFound, OAuthErrorHTML(\"Callback route not found.\"",
+  "new": "http.StatusBadRequest, OAuthErrorHTML(\"Callback route not found.\""
+ }
+]

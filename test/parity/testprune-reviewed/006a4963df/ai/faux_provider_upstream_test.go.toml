@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/faux_provider_upstream_test.go"
+commit = "006a4963df9ea412989bd83fd463fa9344f040d0"
+class = "CITE"
+cite = "packages/ai/src/providers/faux.ts:267"
+reason = "Pi f3fa8bd92 makes the faux provider send every prompt token to cache read or cache write while it simulates caching (faux.ts:266-269: cacheRead = ceil(cachedChars / 4), cacheWrite = max(0, promptTokens - cacheRead), input stays 0): the expectations that kept the uncached rest as input (3 and 4) expect input 0, the first call writes its 4 prompt tokens, and a 13-character shared prefix of a 4-token prompt reads 4 and writes none instead of 1."

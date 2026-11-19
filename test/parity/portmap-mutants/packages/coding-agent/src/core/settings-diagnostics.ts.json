@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/settings_diagnostics.go",
+  "old": "if settingsError.Path != \"\" {",
+  "new": "if settingsError.Path == \"\" {"
+ },
+ {
+  "file": "coding/cli/cli_runtime_build.go",
+  "old": "build.StartupDiagnostics = codingagent.DeduplicateDiagnostics(append(slices.Clone(b.settingsDiagnostics), codingagent.CollectSettingsDiagnostics(services.SettingsManager())...))",
+  "new": "build.StartupDiagnostics = append(slices.Clone(b.settingsDiagnostics), codingagent.CollectSettingsDiagnostics(services.SettingsManager())...)"
+ }
+]

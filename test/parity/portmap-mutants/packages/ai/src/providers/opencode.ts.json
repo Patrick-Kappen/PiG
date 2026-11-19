@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func OpencodeProvider() *ModelsProvider { return builtinProvider(\"opencode\") }",
+  "new": "func OpencodeProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

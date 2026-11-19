@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/usage_cost_test.go"
+commit = "ae40b2b82015ae8fa212c7b33ff71dc9f3d01615"
+class = "CITE"
+cite = "packages/ai/scripts/generate-models.ts:462"
+reason = "Pi fdce48eb (#11173) removes openai-codex/gpt-5.5, so the priority-tier case prices openai-codex/gpt-5.6-sol at the rates of generate-models.ts:462 (input 4, output 20): 100000 input and output tokens at priority cost 0.8 and 4, total 4.8, where gpt-5.5 cost 1.25 and 7.5."

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/auth_guidance.go",
+  "old": "\tif providerDisplay == \"\" || providerDisplay == unknownProvider {",
+  "new": "\tif providerDisplay != \"\" || providerDisplay == unknownProvider {"
+ }
+]

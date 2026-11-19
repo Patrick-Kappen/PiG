@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/remote_replica.go",
+  "old": "\tr.state = replicaState{kind: replicaValue, value: value}\n\tr.ops = ops",
+  "new": "\tr.state = replicaState{kind: replicaValue, value: r.state.value}\n\tr.ops = ops"
+ }
+]

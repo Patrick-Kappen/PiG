@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_json_pointer_uri_fragment.go",
+  "old": "bool { return jsonPointerUriFragmentRE.MatchString(value) }",
+  "new": "bool { return !jsonPointerUriFragmentRE.MatchString(value) }"
+ }
+]

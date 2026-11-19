@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/documents/line.go",
+  "old": "\t<-place.previous\n",
+  "new": "\t_ = place.previous\n"
+ }
+]

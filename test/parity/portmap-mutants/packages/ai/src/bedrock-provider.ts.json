@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/providers/bedrock/bedrock.go",
+  "old": "if isReservedBedrockHeader(name) {",
+  "new": "if !isReservedBedrockHeader(name) {"
+ }
+]

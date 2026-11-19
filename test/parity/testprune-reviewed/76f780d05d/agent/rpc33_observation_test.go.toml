@@ -1,0 +1,6 @@
+[[entry]]
+path = "agent/rpc33_observation_test.go"
+commit = "76f780d05da3ad93c499858912fe47c5b61ab356"
+class = "CITE"
+cite = "packages/ai/src/utils/streaming-json.ts:452"
+reason = "Pi f715a15c1 moves the tool-call stream state off the content block into the ToolCallArgumentsStream (streaming-json.ts:452): the message a tool sees before the await carries the parsed arguments and none of the provider's scratch members, so the observation asserts the arguments and the absence of the scratch instead of the scratch text."

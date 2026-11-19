@@ -1,0 +1,12 @@
+[
+ {
+  "file": "tui/highlight.go",
+  "old": "\t\tif !scope.defined {\n",
+  "new": "\t\tif scope.defined {\n"
+ },
+ {
+  "file": "tui/highlight.go",
+  "old": "\t\t\t\tif line != \"\" {\n",
+  "new": "\t\t\t\tif line == \"\" {\n"
+ }
+]

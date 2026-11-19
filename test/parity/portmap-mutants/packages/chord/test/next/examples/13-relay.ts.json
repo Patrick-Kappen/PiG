@@ -1,0 +1,12 @@
+[
+ {
+  "file": "chord/next/link/websocket.go",
+  "old": "if socket.ReadyState() == socketConnecting {",
+  "new": "if socket.ReadyState() != socketConnecting {"
+ },
+ {
+  "file": "chord/next/link/ipc.go",
+  "old": "if err != nil {",
+  "new": "if err == nil {"
+ }
+]

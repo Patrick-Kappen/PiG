@@ -1,0 +1,6 @@
+[[entry]]
+path = "ai/transcript_tool_changes_test.go"
+commit = "c371a134cc1a18c5b21f4a245961e550d7a24a63"
+class = "CITE"
+cite = "packages/ai/src/api/openai-responses-shared.ts:238"
+reason = "Pi caa6967b, 530015d9 (#11142) make a transport that takes additional_tools declare every tool in additional_tools items from the head of the input and precede each later item with the incremental-tools notice (openai-responses-shared.ts:236-245, renderIncrementalToolsNotice at :182), and announce removals as a text notice (:187-189, renderToolRemovalNotice) instead of anchoring additions at their developer message or falling back to the complete current tool state: the expected shapes, top-level tools (none) and instructions change to that sequence."

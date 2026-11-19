@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/documents/fence.go",
+  "old": "token.sealed.Store(true)",
+  "new": "token.sealed.Store(false)"
+ }
+]

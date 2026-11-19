@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/slash_session_handlers.go",
+  "old": "\thttpIdleTimeoutMs, err := sm.GetHttpIdleTimeoutMs()\n\tif err != nil {",
+  "new": "\thttpIdleTimeoutMs, err := sm.GetHttpIdleTimeoutMs()\n\tif err == nil {"
+ }
+]

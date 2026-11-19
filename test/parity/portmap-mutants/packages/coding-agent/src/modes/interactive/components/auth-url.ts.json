@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/auth_url.go",
+  "old": "\tif runtime.GOOS == \"darwin\" {",
+  "new": "\tif runtime.GOOS != \"darwin\" {"
+ }
+]

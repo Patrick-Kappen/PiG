@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/import.go",
+  "old": "if content.Kind == \"base\" {",
+  "new": "if content.Kind != \"base\" {"
+ }
+]

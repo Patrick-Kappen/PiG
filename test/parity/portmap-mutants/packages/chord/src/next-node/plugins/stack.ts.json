@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/plugins/plugins_node.go",
+  "old": "Message: w.Message, Stack: w.Stack}",
+  "new": "Message: w.Message}"
+ }
+]

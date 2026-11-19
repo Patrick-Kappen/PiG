@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/changelog_links.go",
+  "old": "https://github\\.com/(?:badlogic|earendil-works)/pi-mono",
+  "new": "https://github\\.com/(?:badlogic)/pi-mono"
+ }
+]

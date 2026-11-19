@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/custom_message.go",
+  "old": "\tif c.customRenderer != nil {",
+  "new": "\tif c.customRenderer == nil {"
+ }
+]

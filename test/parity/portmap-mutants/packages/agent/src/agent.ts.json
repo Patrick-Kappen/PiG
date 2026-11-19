@@ -1,0 +1,7 @@
+[
+ {
+  "file": "agent/queue.go",
+  "old": "\tif q.mode == QueueModeAll {\n",
+  "new": "\tif q.mode != QueueModeAll {\n"
+ }
+]

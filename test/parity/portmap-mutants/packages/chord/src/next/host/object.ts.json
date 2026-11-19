@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_object.go",
+  "old": "if kind != objectLive || o.served.linger == 0 {",
+  "new": "if kind != objectLive || o.served.linger != 0 {"
+ }
+]

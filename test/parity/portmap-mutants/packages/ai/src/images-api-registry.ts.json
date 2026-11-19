@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/images.go",
+  "old": "imagesAPIProviderRegistry[provider.API] = entry",
+  "new": "imagesAPIProviderRegistry[provider.API+\"-x\"] = entry"
+ }
+]

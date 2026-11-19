@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/dynamic_border.go",
+  "old": "\tif len(color) > 0 && color[0] != nil {",
+  "new": "\tif len(color) > 0 && color[0] == nil {"
+ }
+]

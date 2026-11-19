@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/kimi_coding.go",
+  "old": "\"k3-256k\"",
+  "new": "\"k3-256Z\""
+ }
+]

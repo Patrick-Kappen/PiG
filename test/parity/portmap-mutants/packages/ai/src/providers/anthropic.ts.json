@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/auth_providers.go",
+  "old": "Headers: ProviderHeaders{\"Authorization\": new(\"Bearer \" + token)}}, Source: AnthropicAuthTokenEnv",
+  "new": "Headers: ProviderHeaders{\"Authorization\": new(\"Token \" + token)}}, Source: AnthropicAuthTokenEnv"
+ }
+]

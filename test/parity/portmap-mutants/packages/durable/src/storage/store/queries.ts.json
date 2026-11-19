@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/storage/store/queries.go",
+  "old": "Direction: \"desc\"}",
+  "new": "Direction: \"asc\"}"
+ }
+]

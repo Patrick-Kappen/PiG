@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/first_time_setup.go",
+  "old": "\t\tconfirm = \"finish\"\n",
+  "new": "\t\tconfirm = \"finish!\"\n"
+ }
+]

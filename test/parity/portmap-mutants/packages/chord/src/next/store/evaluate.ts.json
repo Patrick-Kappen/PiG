@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/evaluate.go",
+  "old": "\t\tcase truthTrue:\n\t\t\treturn truthFalse\n\t\t}\n\t\treturn truthTrue",
+  "new": "\t\tcase truthTrue:\n\t\t\treturn truthTrue\n\t\t}\n\t\treturn truthTrue"
+ }
+]

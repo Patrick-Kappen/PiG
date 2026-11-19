@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_ipv6.go",
+  "old": "bool { return ipv6RE.MatchString(value) }",
+  "new": "bool { return !ipv6RE.MatchString(value) }"
+ }
+]

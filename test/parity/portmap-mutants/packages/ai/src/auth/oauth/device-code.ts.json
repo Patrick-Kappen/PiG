@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/oauth_device_code.go",
+  "old": "\t\t\tslowDownResponses++\n",
+  "new": "\t\t\tslowDownResponses += 0\n"
+ }
+]

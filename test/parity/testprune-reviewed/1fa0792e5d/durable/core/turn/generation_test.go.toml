@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/core/turn/generation_test.go"
+commit = "1fa0792e5db2dae1fd5dc5b523188e35d98c96b9"
+class = "CITE"
+cite = "packages/durable/src/harness/live.ts:143"
+reason = "Pi 6c2fd73b0 commits a streamed partial with PROGRESS_COMMIT, a deferred commit (live.ts:138-143, generation.ts:484): memory has each partial at once and Storage the folded ops of them all within persistWithinMs. The partial test expects no stored commit when the second partial arrives, memory holding it, and one stored commit at the deadline whose last op appends the new text."

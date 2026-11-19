@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/documents/keyed_slot.go",
+  "old": "slices.SortFunc(it.buffer, store.CompareText)",
+  "new": "slices.SortFunc(it.buffer, func(a, b string) int { return 0 })"
+ }
+]

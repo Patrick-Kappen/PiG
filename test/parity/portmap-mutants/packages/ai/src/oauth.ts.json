@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/oauth_types.go",
+  "old": "return ok && subscription.IsSubscription()",
+  "new": "return !ok || subscription.IsSubscription()"
+ }
+]

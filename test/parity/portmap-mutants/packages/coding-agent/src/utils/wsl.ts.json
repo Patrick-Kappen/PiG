@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/wsl.go",
+  "old": "getenv(\"WSLENV\") != \"\"",
+  "new": "getenv(\"WSLENV\") == \"\""
+ }
+]

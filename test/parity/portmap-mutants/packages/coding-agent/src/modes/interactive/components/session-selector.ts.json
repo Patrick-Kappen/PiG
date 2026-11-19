@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/session_selector.go",
+  "old": "\tif s.confirmDelete != \"\" {",
+  "new": "\tif s.confirmDelete == \"\" {"
+ }
+]

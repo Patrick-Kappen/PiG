@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/interactive_easter_eggs.go",
+  "old": "\tif m.playPig3d() {\n",
+  "new": "\tif false && m.playPig3d() {\n"
+ }
+]

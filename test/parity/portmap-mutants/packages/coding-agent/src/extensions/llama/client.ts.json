@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/llama/client.go",
+  "old": "strings.TrimSuffix(strings.TrimRight(parsed.Pathname, \"/\"), \"/v1\")",
+  "new": "strings.TrimRight(parsed.Pathname, \"/\")"
+ },
+ {
+  "file": "internal/codingagent/llama/client.go",
+  "old": "\tif value >= 10 {\n",
+  "new": "\tif value >= 100 {\n"
+ }
+]

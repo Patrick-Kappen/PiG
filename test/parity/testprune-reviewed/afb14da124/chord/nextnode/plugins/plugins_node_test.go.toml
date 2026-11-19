@@ -1,0 +1,6 @@
+[[entry]]
+path = "chord/nextnode/plugins/plugins_node_test.go"
+commit = "afb14da124492fad80b73f5f5e8abc07915b47dc"
+class = "NOBEHAVIOR"
+cite = ""
+reason = "The Node subprocess is PiG-original (no Pi file: Pi's workers fork the same shape). The expectation that changed is the load's refusal text: RuntimeLoad has no Parent any more (the host is the child of the Go side), so only the Peer is required (`a Peer is required`). The other edits add cases (link attach, heartbeat, fatal ordering, extraction repair) and check the manifest against the pin."

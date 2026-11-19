@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/builtin_providers.go",
+  "old": "for _, image := range GetImageModels(BuiltinImageProvider(provider)) {",
+  "new": "for _, image := range GetImageModels(BuiltinImageProvider(provider))[:0] {"
+ }
+]

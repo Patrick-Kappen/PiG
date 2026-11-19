@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/amazon_bedrock.go",
+  "old": "\"anthropic.claude-opus-5\"",
+  "new": "\"anthropic.claude-opus-Z\""
+ }
+]

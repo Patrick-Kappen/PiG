@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/engine.go",
+  "old": "if changed != 1 {",
+  "new": "if changed == 1 {"
+ }
+]

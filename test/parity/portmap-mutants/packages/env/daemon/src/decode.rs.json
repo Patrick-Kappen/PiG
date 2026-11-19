@@ -1,0 +1,7 @@
+[
+ {
+  "file": "durable/env/decode.go",
+  "old": "return strings.TrimPrefix(text, \"\\ufeff\")",
+  "new": "return strings.TrimPrefix(text, \"\\ufffe\")"
+ }
+]

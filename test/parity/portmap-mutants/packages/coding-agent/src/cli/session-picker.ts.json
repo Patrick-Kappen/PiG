@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/session_selector.go",
+  "old": "if s.deleteSession != nil {",
+  "new": "if s.deleteSession == nil {"
+ },
+ {
+  "file": "internal/codingagent/session_selector.go",
+  "old": "msg := \"Session deleted\"",
+  "new": "msg := \"Session removed\""
+ }
+]

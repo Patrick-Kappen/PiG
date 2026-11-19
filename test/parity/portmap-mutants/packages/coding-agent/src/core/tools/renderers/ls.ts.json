@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/tool_render_list.go",
+  "old": "tools.FormatJSNumber(d.EntryLimitReached)+\" entries limit\"",
+  "new": "tools.FormatJSNumber(d.EntryLimitReached)+\" entry limit\""
+ },
+ {
+  "file": "tui/tool_execution.go",
+  "old": "header += renderToolPath(\".\", cwd)",
+  "new": "header += renderToolPath(\"..\", cwd)"
+ }
+]

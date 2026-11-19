@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"MiniMax-M2.7\",\n\t\tProvider:             \"minimax\",\n\t\tDisplayName:          \"MiniMax-M2.7\",\n",
+  "new": "\t\tID:                   \"MiniMax-M2.7!\",\n\t\tProvider:             \"minimax\",\n\t\tDisplayName:          \"MiniMax-M2.7!\",\n"
+ }
+]

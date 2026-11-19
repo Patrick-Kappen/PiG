@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/select_submenu.go",
+  "old": "if value := s.CurrentValue(); value != \"\" {",
+  "new": "if value := s.CurrentValue(); value == \"\" {"
+ }
+]

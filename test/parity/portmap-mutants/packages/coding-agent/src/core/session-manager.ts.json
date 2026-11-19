@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/session_context.go",
+  "old": "leaf := entries[len(entries)-1]",
+  "new": "leaf := entries[0]"
+ },
+ {
+  "file": "internal/codingagent/session_manager.go",
+  "old": "s = strings.NewReplacer(\"/\", \"-\", `\\`, \"-\", \":\", \"-\").Replace(s)",
+  "new": "s = strings.NewReplacer(\"/\", \"-\", `\\`, \"-\").Replace(s)"
+ }
+]

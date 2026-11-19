@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/openai_codex.go",
+  "old": "\"GPT-6.1 Sol\"",
+  "new": "\"GPT-6.1 SoZ\""
+ }
+]

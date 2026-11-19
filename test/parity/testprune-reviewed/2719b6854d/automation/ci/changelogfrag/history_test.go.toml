@@ -1,0 +1,6 @@
+[[entry]]
+path = "automation/ci/changelogfrag/history_test.go"
+commit = "2719b6854d8fb4a81f69a6ef4bd3be561daa6f86"
+class = "NOBEHAVIOR"
+cite = ""
+reason = "The changelog fragment tool is PiG-original CI automation (PiG's own changelog.d fragments, fix markers and bug ledger), which Pi does not have, so no Pi line governs it. The commit changes PiG's own rule, which the reason spells out: a legacy fragment is exempt from the name rule and from the reachability of its markers, no longer from the marker itself, because the fold copies its \"### Fixed\" bullets into CHANGELOG.md, where the bug ledger refuses a bullet without one (42 of them broke make bug-ledger-check on main). The test pins that rule with a marked and an unmarked legacy bullet, and that it needs no git checkout."

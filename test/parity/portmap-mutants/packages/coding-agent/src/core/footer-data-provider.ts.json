@@ -1,0 +1,32 @@
+[
+ {
+  "file": "internal/codingagent/git_watcher.go",
+  "old": "gitWatchDebounce = 500 * time.Millisecond",
+  "new": "gitWatchDebounce = 400 * time.Millisecond"
+ },
+ {
+  "file": "internal/codingagent/git_watcher.go",
+  "old": "gitWatchRetry = 5000 * time.Millisecond",
+  "new": "gitWatchRetry = 4000 * time.Millisecond"
+ },
+ {
+  "file": "internal/codingagent/git_watcher.go",
+  "old": "\t\tif !ok {\n\t\t\treturn gitPaths{}, false, false\n",
+  "new": "\t\tif !ok {\n\t\t\treturn gitPaths{}, false, true\n"
+ },
+ {
+  "file": "internal/codingagent/status_line.go",
+  "old": "\tif branch == \".invalid\" {",
+  "new": "\tif branch == \".invalidx\" {"
+ },
+ {
+  "file": "internal/codingagent/status_line.go",
+  "old": "\"git\", \"--no-optional-locks\", \"symbolic-ref\", \"--quiet\", \"--short\", \"HEAD\")",
+  "new": "\"git\", \"symbolic-ref\", \"--quiet\", \"--short\", \"HEAD\")"
+ },
+ {
+  "file": "internal/codingagent/footer_data_provider.go",
+  "old": "\td.providerCount = n\n\td.mu.Unlock()",
+  "new": "\td.providerCount = n + 1\n\td.mu.Unlock()"
+ }
+]

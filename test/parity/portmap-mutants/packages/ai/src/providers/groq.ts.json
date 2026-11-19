@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func GroqProvider() *ModelsProvider { return builtinProvider(\"groq\") }",
+  "new": "func GroqProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

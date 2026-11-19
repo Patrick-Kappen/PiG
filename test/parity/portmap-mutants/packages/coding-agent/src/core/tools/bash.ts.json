@@ -1,0 +1,27 @@
+[
+ {
+  "file": "internal/codingagent/tools/bash.go",
+  "old": "commandPrefix:            t.CommandPrefix,",
+  "new": "commandPrefix:            \"\","
+ },
+ {
+  "file": "internal/codingagent/tools/shell_tool.go",
+  "old": "\"Command timed out after \"",
+  "new": "\"Command timed-out after \""
+ },
+ {
+  "file": "internal/codingagent/tools/shell_tool.go",
+  "old": "\"Command exited with code %d\"",
+  "new": "\"Command exit code %d\""
+ },
+ {
+  "file": "internal/codingagent/tools/shell_tool.go",
+  "old": "\"Command aborted\"",
+  "new": "\"Command cancelled\""
+ },
+ {
+  "file": "internal/codingagent/tools/bash_operations.go",
+  "old": "*timeout <= 0 {",
+  "new": "*timeout < 0 {"
+ }
+]

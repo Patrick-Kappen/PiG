@@ -1,0 +1,12 @@
+[
+ {
+  "file": "ai/estimate.go",
+  "old": "charsPerToken       = 3.5",
+  "new": "charsPerToken       = 3.0"
+ },
+ {
+  "file": "ai/estimate.go",
+  "old": "estimatedImageChars = 4800",
+  "new": "estimatedImageChars = 4801"
+ }
+]

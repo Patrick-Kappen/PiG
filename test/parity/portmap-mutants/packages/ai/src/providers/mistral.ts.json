@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func MistralProvider() *ModelsProvider { return builtinProvider(\"mistral\") }",
+  "new": "func MistralProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

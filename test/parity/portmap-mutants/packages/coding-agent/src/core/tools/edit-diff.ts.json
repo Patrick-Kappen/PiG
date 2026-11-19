@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/tools/edit_diff.go",
+  "old": "\tif lfIdx == -1 {",
+  "new": "\tif lfIdx != -1 {"
+ }
+]

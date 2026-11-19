@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/explain.go",
+  "old": "return path + \"/\" + strings.ReplaceAll(strings.ReplaceAll(key, \"~\", \"~0\"), \"/\", \"~1\")",
+  "new": "return path + \"/\" + key"
+ }
+]

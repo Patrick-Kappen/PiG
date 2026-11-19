@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/storage/jsonl/reclamation_planning_test.go"
+commit = "b2b58d7fed3a746f4f3aff3969fd72aa8a7ad49b"
+class = "CITE"
+cite = "packages/durable/src/storage/jsonl/storage.ts:324-325,346"
+reason = "Pi e5c6182b makes JsonlStorage.commit store several batches (storage.ts:285-325): memory runs ahead of the file once a batch applied, so any failure after that (a sidecar path join failing included) poisons the storage with that failure as the cause instead of leaving it usable; a reopened storage has no record of the batch. The path-join test expects the poisoned error and the absent document."

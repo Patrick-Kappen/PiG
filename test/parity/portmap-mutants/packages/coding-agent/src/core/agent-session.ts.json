@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/codingagent/auto_recovery.go",
+  "old": "return !ai.IsContextOverflow(message, contextWindow) && ai.IsRetryableAssistantError(message)",
+  "new": "return ai.IsContextOverflow(message, contextWindow) && ai.IsRetryableAssistantError(message)"
+ },
+ {
+  "file": "coding/session_model_cycle.go",
+  "old": "next := levels[(slices.Index(levels, s.ThinkingLevel())+1)%len(levels)]",
+  "new": "next := levels[(slices.Index(levels, s.ThinkingLevel())+2)%len(levels)]"
+ },
+ {
+  "file": "coding/session_recovery.go",
+  "old": "if attempt > cfg.MaxRetries {",
+  "new": "if attempt >= cfg.MaxRetries {"
+ }
+]

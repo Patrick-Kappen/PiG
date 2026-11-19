@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/codingagent/tools/path_utils.go",
+  "old": "\t\treturn s[1:]\n",
+  "new": "\t\treturn s\n"
+ },
+ {
+  "file": "internal/codingagent/tools/path_utils.go",
+  "old": "amPmVariant != resolved && fileExists(amPmVariant)",
+  "new": "amPmVariant == resolved && fileExists(amPmVariant)"
+ },
+ {
+  "file": "internal/codingagent/tools/path_utils.go",
+  "old": "strings.ReplaceAll(filePath, \"'\", \"\\u2019\")",
+  "new": "strings.ReplaceAll(filePath, \"'\", \"\\u2018\")"
+ }
+]

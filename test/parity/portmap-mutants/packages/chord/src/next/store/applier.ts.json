@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/applier.go",
+  "old": "if !IndexName.MatchString(write.Name) || exists {",
+  "new": "if !IndexName.MatchString(write.Name) || !exists {"
+ }
+]

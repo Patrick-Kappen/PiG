@@ -1,0 +1,6 @@
+[[entry]]
+path = "tui/scoped_models_list_test.go"
+commit = "c55a48a7a610eb44ca29605205b7811d65016ccd"
+class = "CITE"
+cite = "packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts:255"
+reason = "Pi 606af8662 shows a name after the id in the /scoped-models rows when getDistinctModelName (model-search.ts:25) finds words the id lacks (scoped-models-selector.ts:255): the refreshed row expects `model (New) [new]` where it was `model [new]`, and the ported scoped-models-selector.test.ts case checks `model-b (Renamed B) [openai]` next to `model-a [openai]`, whose name only restates the id."

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func DeepseekProvider() *ModelsProvider { return builtinProvider(\"deepseek\") }",
+  "new": "func DeepseekProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

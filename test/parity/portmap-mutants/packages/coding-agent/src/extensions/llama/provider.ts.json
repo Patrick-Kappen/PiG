@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/llama/provider.go",
+  "old": "\t\tMaxTokens:     contextWindow,\n",
+  "new": "\t\tMaxTokens:     contextWindow / 2,\n"
+ },
+ {
+  "file": "internal/codingagent/llama/native_provider.go",
+  "old": "SupportsToolUse: true",
+  "new": "SupportsToolUse: false"
+ }
+]

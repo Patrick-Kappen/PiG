@@ -1,0 +1,22 @@
+[
+ {
+  "file": "tui/compact_read_header.go",
+  "old": "end := start + count - 1",
+  "new": "end := start + count"
+ },
+ {
+  "file": "internal/codingagent/tool_builtin_renderers.go",
+  "old": "\" line limit)]\"",
+  "new": "\" lines limit)]\""
+ },
+ {
+  "file": "internal/codingagent/tool_builtin_renderers.go",
+  "old": "display = lines[:builtInPreviewLines]",
+  "new": "display = lines[:builtInPreviewLines-1]"
+ },
+ {
+  "file": "internal/codingagent/tool_render.go",
+  "old": "return strings.ReplaceAll(s, \"\\t\", \"   \")",
+  "new": "return strings.ReplaceAll(s, \"\\t\", \"  \")"
+ }
+]

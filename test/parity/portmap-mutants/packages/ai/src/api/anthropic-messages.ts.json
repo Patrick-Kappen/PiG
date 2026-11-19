@@ -1,0 +1,12 @@
+[
+ {
+  "file": "ai/anthropic_client.go",
+  "old": "strings.Contains(apiKey, \"sk-ant-oat\")",
+  "new": "strings.Contains(apiKey, \"sk-ant-oaz\")"
+ },
+ {
+  "file": "ai/anthropic.go",
+  "old": "r == '_' || r == '-'",
+  "new": "r == '_'"
+ }
+]

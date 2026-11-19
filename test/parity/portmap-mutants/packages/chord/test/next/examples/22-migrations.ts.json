@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/table_evolve.go",
+  "old": "if err := e.assertBefore(\"rename\"); err != nil {",
+  "new": "if err := e.assertBefore(\"rename\"); err == nil {"
+ }
+]

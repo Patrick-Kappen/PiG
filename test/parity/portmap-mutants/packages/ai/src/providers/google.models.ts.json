@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"deep-research-max-preview-04-2026\",\n\t\tProvider:             \"google\",\n\t\tDisplayName:          \"Deep Research Max Preview (Apr-21-2026)\",\n",
+  "new": "\t\tID:                   \"deep-research-max-preview-04-2026\",\n\t\tProvider:             \"google\",\n\t\tDisplayName:          \"Deep Research Max Preview (Apr-21-2026)!\",\n"
+ }
+]

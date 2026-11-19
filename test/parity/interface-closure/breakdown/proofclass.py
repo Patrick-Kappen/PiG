@@ -15,7 +15,7 @@ Required class by row kind (first match; the kind comes from the row id and the 
   U  union           : a type alias that is a union (prompts, events, entries): an asserting test named Exhaustive/Variants/EveryKind/AllKinds
                        that names the union or its Go type.
   F  behaviour       : a function, class, constructor, or callable member: an asserting Go test that names the Go symbol AND is mutation-checked
-                       (the test appears in a unit-evidence file with a mutation, or portmap-mutants.json has a mutant in the symbol's Go file) or
+                       (the test appears in a unit-evidence file with a mutation, or portmap-mutants/ has a mutant in the symbol's Go file) or
                        is a Pi-oracle test (it runs the pinned Node oracle).
   N  none            : data shapes (interfaces, non-union aliases, variables, data properties): no behaviour to prove.
 Rows that are not closed are reported by the gap detector, not here.
@@ -56,8 +56,8 @@ for f in glob.glob('test/parity/unit-evidence/*.json'):
             mutation_tests.update(e.get('tests') or [])
 mutant_files = set()
 try:
-    for entries in json.load(open('test/parity/portmap-mutants.json')).values():
-        mutant_files.update(m['file'] for m in entries)
+    for f in glob.glob('test/parity/portmap-mutants/**/*.json', recursive=True):
+        mutant_files.update(m['file'] for m in json.load(open(f)))
 except (OSError, ValueError):
     pass
 

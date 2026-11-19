@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func FireworksProvider() *ModelsProvider { return builtinProvider(\"fireworks\") }",
+  "new": "func FireworksProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

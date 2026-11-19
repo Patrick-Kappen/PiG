@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/allocator.go",
+  "old": "ids.next = min(id+1, MaxSafeInteger)",
+  "new": "ids.next = min(id+2, MaxSafeInteger)"
+ }
+]

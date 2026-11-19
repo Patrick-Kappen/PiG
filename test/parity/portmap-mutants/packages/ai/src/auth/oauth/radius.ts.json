@@ -1,0 +1,12 @@
+[
+ {
+  "file": "ai/oauth_radius.go",
+  "old": "\"gateway offline_access\"",
+  "new": "\"gateway\""
+ },
+ {
+  "file": "ai/oauth_radius.go",
+  "old": "= \"pi-gateway\"",
+  "new": "= \"pi-gatewayx\""
+ }
+]

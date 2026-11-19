@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/github_copilot.go",
+  "old": "\"https://api.individual.githubcopilot.com\"",
+  "new": "\"https://api.individual.githubcopilot.coZ\""
+ }
+]

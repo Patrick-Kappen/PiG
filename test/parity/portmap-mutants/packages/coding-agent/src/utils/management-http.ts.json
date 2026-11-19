@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/managementhttp/managementhttp.go",
+  "old": "retryableStatusCodes[response.StatusCode] && attempt < maxRetries",
+  "new": "retryableStatusCodes[response.StatusCode] && attempt < 0"
+ },
+ {
+  "file": "internal/managementhttp/managementhttp.go",
+  "old": "var retryableStatusCodes = map[int]bool{408: true, 425: true, 429: true, 500: true, 502: true, 503: true, 504: true}",
+  "new": "var retryableStatusCodes = map[int]bool{408: true, 425: true, 429: true, 500: true, 502: true, 504: true}"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/documents/persistence.go",
+  "old": "if version > code {",
+  "new": "if version < code {"
+ }
+]

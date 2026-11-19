@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/mcpext/cli.go",
+  "old": "editDistance(candidate, name) <= 2",
+  "new": "editDistance(candidate, name) <= 0"
+ }
+]

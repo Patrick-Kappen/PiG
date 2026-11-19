@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/session/session_document_retention_test.go"
+commit = "832ba8ca17c8489b66d0f33e16df9f6b6eb3ff92"
+class = "CITE"
+cite = "packages/durable/src/session/session.ts:1188"
+reason = "Pi 8b0caefc makes a document watch follow its address (session.ts:1188): while the address is absent the Session keeps no retired value and pins nothing, and a recreation is pinned again as the new incarnation (session.ts:1242), where the retired watch used to end. The test that expected the retired watch to close with a nil value expects it to pin only what is at the address (nothing while retired, then the new incarnation) and to deliver the new count; the listener receives a WatchChange."

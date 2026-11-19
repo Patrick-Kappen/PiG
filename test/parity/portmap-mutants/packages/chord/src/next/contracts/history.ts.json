@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/contracts/history.go",
+  "old": "\t\t\t\tseen[name] = true\n",
+  "new": "\t\t\t\tseen[name] = false\n"
+ }
+]

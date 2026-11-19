@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_dependencies.go",
+  "old": "return (err.Code == data.CodeInvalid && err.Reason == data.ReasonCycle) || err.Code == data.CodeForbidden",
+  "new": "return err.Code == data.CodeForbidden"
+ }
+]

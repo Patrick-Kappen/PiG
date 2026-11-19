@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/configschema/settings.go",
+  "old": "retryMaxRetries: 3,",
+  "new": "retryMaxRetries: 4,"
+ }
+]

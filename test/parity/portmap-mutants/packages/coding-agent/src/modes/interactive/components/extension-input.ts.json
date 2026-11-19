@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/extension_input.go",
+  "old": "\tinput.Focused = true",
+  "new": "\tinput.Focused = false"
+ }
+]

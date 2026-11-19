@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/earendil_announcement.go",
+  "old": "\"pi has joined Earendil\"",
+  "new": "\"pi has joined Earendil!\""
+ }
+]

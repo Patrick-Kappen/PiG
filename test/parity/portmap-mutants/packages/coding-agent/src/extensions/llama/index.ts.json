@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/llama/index.go",
+  "old": "\ts.notify(\"Restoring previously loaded models\")",
+  "new": "\ts.notify(\"Restoring loaded models\")"
+ },
+ {
+  "file": "internal/codingagent/llama/index.go",
+  "old": "\ts.notify(\"Unloaded \" + model.ID)",
+  "new": "\ts.notify(\"Unloaded: \" + model.ID)"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/oauth_anthropic.go",
+  "old": "\t\t\"refresh_token\": refreshToken,\n",
+  "new": "\t\t\"refresh_token\": refreshToken,\n\t\t\"scope\":         anthropicScopes,\n"
+ }
+]

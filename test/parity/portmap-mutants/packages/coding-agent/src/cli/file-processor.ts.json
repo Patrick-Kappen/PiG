@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/codingagent/file_processor.go",
+  "old": "\t\tif info.Size() == 0 {",
+  "new": "\t\tif info.Size() < 0 {"
+ },
+ {
+  "file": "internal/codingagent/file_processor.go",
+  "old": "\t\tout.WriteString(text.StripBom(jsstring.FromUTF8(content)))",
+  "new": "\t\tout.Write(text.StripBomBytes(content)); _ = jsstring.FromUTF8"
+ },
+ {
+  "file": "internal/codingagent/file_processor.go",
+  "old": "`\">` + err.Error() + \"</file>\\n\")",
+  "new": "`\">` + \"</file>\\n\")"
+ }
+]

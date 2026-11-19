@@ -1,0 +1,12 @@
+[
+ {
+  "file": "ai/oauth_openai_chatgpt.go",
+  "old": "\"chatgpt.tokens.use.direct\"",
+  "new": "\"chatgpt.tokens.use.indirect\""
+ },
+ {
+  "file": "ai/oauth_openai_chatgpt.go",
+  "old": "\"code_challenge_method\", \"S256\", \"nonce\"",
+  "new": "\"code_challenge_method\", \"plain\", \"nonce\""
+ }
+]

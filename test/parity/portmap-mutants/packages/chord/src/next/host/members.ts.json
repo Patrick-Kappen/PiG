@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_members.go",
+  "old": "fmt.Sprintf(\"derive #%d\", position+1)",
+  "new": "fmt.Sprintf(\"derive #%d\", position)"
+ }
+]

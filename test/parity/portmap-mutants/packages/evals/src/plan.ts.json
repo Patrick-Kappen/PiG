@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/evals/plan.go",
+  "old": "if runNumber%2 == 0 {",
+  "new": "if runNumber%2 == 1 {"
+ },
+ {
+  "file": "internal/evals/plan.go",
+  "old": "if identities[key] {",
+  "new": "if !identities[key] {"
+ },
+ {
+  "file": "internal/evals/plan.go",
+  "old": "if runsPerVariant < 1 {",
+  "new": "if runsPerVariant < 0 {"
+ }
+]

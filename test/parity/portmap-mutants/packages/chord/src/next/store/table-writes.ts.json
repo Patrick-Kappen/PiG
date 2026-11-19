@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/table_writes.go",
+  "old": "write := &PutWrite{Table: table, Row: row.Row, Version: version, Columns: row.Columns}",
+  "new": "write := &PutWrite{Table: table, Row: row.Row, Version: version + 1, Columns: row.Columns}"
+ }
+]

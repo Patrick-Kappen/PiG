@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/tools/read_structured_output_test.go"
+commit = "30940806a9688959174fb1b02b8b50d6cf8de24e"
+class = "CITE"
+cite = "packages/durable/src/tools/read.ts:51"
+reason = "Pi 6536f801 builds the read tool's structured output schema with pi-schema (read.ts:51: obj({ type: lit(\"image\"), ... }, { open: true })), whose literal is a bare {\"const\":\"image\"}; the Go declaration emits the same JSON."

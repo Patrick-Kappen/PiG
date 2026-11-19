@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/documents/address_source.go",
+  "old": "source.retired = true",
+  "new": "source.retired = false"
+ }
+]

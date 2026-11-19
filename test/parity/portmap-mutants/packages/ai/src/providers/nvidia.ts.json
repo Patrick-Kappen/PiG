@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/provider_constructors.go",
+  "old": "func NvidiaProvider() *ModelsProvider { return builtinProvider(\"nvidia\") }",
+  "new": "func NvidiaProvider() *ModelsProvider { return builtinProvider(\"xai\") }"
+ }
+]

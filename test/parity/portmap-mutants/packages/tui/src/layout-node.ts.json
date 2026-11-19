@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/layout_node.go",
+  "old": "\t\treturn lc.LayoutNode()\n",
+  "new": "\t\tif _, scroll := lc.LayoutNode().(ScrollLayoutNode); scroll {\n\t\t\treturn nil\n\t\t}\n\t\treturn lc.LayoutNode()\n"
+ }
+]

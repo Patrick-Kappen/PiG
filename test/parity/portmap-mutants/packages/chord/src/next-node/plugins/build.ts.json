@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/plugins/plugins_build.go",
+  "old": "entry.originalLine+1",
+  "new": "entry.originalLine"
+ }
+]

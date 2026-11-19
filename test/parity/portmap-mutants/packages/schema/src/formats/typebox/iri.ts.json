@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/typebox_iri.go",
+  "old": "_, err := nodeurl.ParseURL(jsstring.StreamText(narrowIpvFuture(value)))\n\treturn err == nil",
+  "new": "_, err := nodeurl.ParseURL(jsstring.StreamText(narrowIpvFuture(value)))\n\treturn err != nil"
+ }
+]

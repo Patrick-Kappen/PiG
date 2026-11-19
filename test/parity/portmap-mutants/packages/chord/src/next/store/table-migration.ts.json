@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/table_migration.go",
+  "old": "const MigrationChunk = 100\n",
+  "new": "const MigrationChunk = 101\n"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"codestral-2508\",\n\t\tProvider:             \"mistral\",\n\t\tDisplayName:          \"Codestral 25.08\",\n",
+  "new": "\t\tID:                   \"codestral-2508\",\n\t\tProvider:             \"mistral\",\n\t\tDisplayName:          \"Codestral 25.08!\",\n"
+ }
+]

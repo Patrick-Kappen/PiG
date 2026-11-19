@@ -1,0 +1,12 @@
+[
+ {
+  "file": "coding/packagecontent/pi_manifest.go",
+  "old": "bytes.TrimPrefix(data, utf8BOM)",
+  "new": "bytes.TrimPrefix(data, nil)"
+ },
+ {
+  "file": "coding/packagecontent/pi_manifest.go",
+  "old": "\t\tif !ok {\n\t\t\treturn nil, false\n\t\t}\n\t\tentries = append(entries, entry)",
+  "new": "\t\tif !ok {\n\t\t\tcontinue\n\t\t}\n\t\tentries = append(entries, entry)"
+ }
+]

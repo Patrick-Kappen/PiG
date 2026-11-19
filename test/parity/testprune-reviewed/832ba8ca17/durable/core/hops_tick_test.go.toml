@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/core/hops_tick_test.go"
+commit = "832ba8ca17c8489b66d0f33e16df9f6b6eb3ff92"
+class = "CITE"
+cite = "packages/durable/src/session/session.ts:886"
+reason = "Pi 8b0caefc publishes a stored commit inside Storage's `adopt` (session.ts:886-896, `this.#publish(committed, ...)`) instead of when #runCommit resumes from Storage.commit, so a commit job publishes two hops after its COMMIT and adoption-tail hops before #runCommit resumes; the test that expected publication two hops before the job's end expects the position of the adoption."

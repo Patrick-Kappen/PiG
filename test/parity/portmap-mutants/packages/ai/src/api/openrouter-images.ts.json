@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/openrouter_images.go",
+  "old": "modalities = []string{\"image\", \"text\"}",
+  "new": "modalities = []string{\"image\"}"
+ }
+]

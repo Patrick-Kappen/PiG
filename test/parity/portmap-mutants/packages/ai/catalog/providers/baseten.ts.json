@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/baseten.go",
+  "old": "\"supportsStore\"",
+  "new": "\"supportsStorZ\""
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/deepseek.go",
+  "old": "\"deepseek-flash\"",
+  "new": "\"deepseek-flasZ\""
+ }
+]

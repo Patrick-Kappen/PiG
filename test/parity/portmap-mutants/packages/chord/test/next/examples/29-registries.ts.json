@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/registries/registry.go",
+  "old": "if provider.Compose != nil {",
+  "new": "if provider.Compose == nil {"
+ }
+]

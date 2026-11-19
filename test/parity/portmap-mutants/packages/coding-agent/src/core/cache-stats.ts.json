@@ -1,0 +1,22 @@
+[
+ {
+  "file": "internal/codingagent/cache_stats.go",
+  "old": "if missedTokens <= cacheNoiseFloorTokens {",
+  "new": "if missedTokens < cacheNoiseFloorTokens {"
+ },
+ {
+  "file": "internal/codingagent/cache_stats.go",
+  "old": "missedTokens := min(prev.promptTokens, promptTokens) - usage.CacheRead",
+  "new": "missedTokens := max(prev.promptTokens, promptTokens) - usage.CacheRead"
+ },
+ {
+  "file": "internal/codingagent/session_stats.go",
+  "old": "a.stats.CacheWaste.MissCount++",
+  "new": "a.stats.CacheWaste.MissCount += 2"
+ },
+ {
+  "file": "internal/codingagent/model_cache_price.go",
+  "old": "rate = definition.Cost.CacheRead",
+  "new": "rate = definition.Cost.CacheRead * 2"
+ }
+]

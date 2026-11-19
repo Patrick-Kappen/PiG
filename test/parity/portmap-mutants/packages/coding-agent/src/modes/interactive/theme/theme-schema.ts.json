@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/theme_json.go",
+  "old": "if integer && number >= 0 && number <= 255 {",
+  "new": "if integer && number >= 0 && number < 255 {"
+ }
+]

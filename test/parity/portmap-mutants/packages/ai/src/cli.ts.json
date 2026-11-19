@@ -1,0 +1,7 @@
+[
+ {
+  "file": "coding/cli/auth_commands.go",
+  "old": "fmt.Printf(\"\\nCredentials saved to %s\\n\", credentialPath)",
+  "new": "fmt.Printf(\"\\nCredentials saved to %s.\\n\", credentialPath)"
+ }
+]

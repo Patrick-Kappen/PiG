@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/models_generated.go",
+  "old": "\t\tID:                   \"chat-latest\",\n\t\tProvider:             \"azure\",\n\t\tDisplayName:          \"Chat Latest\",\n",
+  "new": "\t\tID:                   \"chat-latest\",\n\t\tProvider:             \"azure\",\n\t\tDisplayName:          \"Chat Latest!\",\n"
+ }
+]

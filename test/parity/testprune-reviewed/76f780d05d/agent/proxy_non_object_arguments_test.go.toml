@@ -1,0 +1,6 @@
+[[entry]]
+path = "agent/proxy_non_object_arguments_test.go"
+commit = "76f780d05da3ad93c499858912fe47c5b61ab356"
+class = "CITE"
+cite = "packages/agent/src/proxy.ts:338"
+reason = "Pi f715a15c1 gives each streamed tool call of the proxy a ToolCallArgumentsStream (proxy.ts:338), whose append returns the arguments object of the text so far: a streamed value that is not an object (null, 0, false, \"\", [], 5, \"s\") shows as the empty object where it was kept as parsed. The test's table and its converter field (toolArguments by content index) follow."

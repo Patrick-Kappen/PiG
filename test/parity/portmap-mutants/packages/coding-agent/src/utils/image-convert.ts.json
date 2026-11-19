@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/image_convert.go",
+  "old": "if mimeType == \"image/png\" {",
+  "new": "if mimeType != \"image/png\" {"
+ }
+]

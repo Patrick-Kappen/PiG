@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/export.go",
+  "old": "&EndPart{Writes: parts.writes}",
+  "new": "&EndPart{Writes: parts.writes + 1}"
+ }
+]

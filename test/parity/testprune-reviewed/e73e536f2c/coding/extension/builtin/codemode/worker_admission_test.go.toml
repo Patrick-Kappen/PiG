@@ -1,0 +1,6 @@
+[[entry]]
+path = "coding/extension/builtin/codemode/worker_admission_test.go"
+commit = "e73e536f2c495000842febe6a778f750b738a205"
+class = "CITE"
+cite = "packages/coding-agent/src/extensions/codemode/execute.ts:78"
+reason = "Pi 885a564b (#11184) makes a script wait for a free worker, in arrival order, up to CODEMODE_WORKER_WAIT_MS (60 s, execute.ts:69) instead of failing at once at the limit (execute.ts:69-106: reserveCodemodeWorker resolves reserved, aborted or timeout, and admitCodemodeWorkers hands freed slots to the waiters in order). The test that expected `Codemode worker limit reached` with no VM started expects the script to stay pending while every slot is held, to fail without running when aborted or past its deadline while it waits, and to be admitted exactly once a slot is freed; the slots are held with the reserve call the new code exposes."

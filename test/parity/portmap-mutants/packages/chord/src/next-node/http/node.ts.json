@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/http/node.go",
+  "old": "WireRefusal{Status: 501}",
+  "new": "WireRefusal{Status: 500}"
+ }
+]

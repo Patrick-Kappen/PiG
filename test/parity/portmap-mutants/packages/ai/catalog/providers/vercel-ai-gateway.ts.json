@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/modelgen/providers/vercel_ai_gateway.go",
+  "old": "\"vercel-ai-gateway\"",
+  "new": "\"vercel-ai-gatewaZ\""
+ }
+]

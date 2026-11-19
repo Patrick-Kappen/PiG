@@ -1,0 +1,6 @@
+[[entry]]
+path = "test/parity/cmd/upstreamdelta/main_test.go"
+commit = "0c8f09f42d"
+class = "NOBEHAVIOR"
+cite = ""
+reason = "PiG's own audit tool, not a port of a Pi test: the carry test went with the carry of reviewed rows (a manifest now audits against the exact earlier pin, so no row survives a pin move unchanged), and a new test requires the from mirror to exist. No Pi behavior is involved."

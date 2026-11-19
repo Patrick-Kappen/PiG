@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/ext_ui_context.go",
+  "old": "\tif opts.Timeout == nil || !(*opts.Timeout > 0) {",
+  "new": "\tif opts.Timeout != nil || !(*opts.Timeout > 0) {"
+ }
+]

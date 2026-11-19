@@ -1,0 +1,6 @@
+[[entry]]
+path = "coding/extension/tool_filter_test.go"
+commit = "f322041adf29d06ebac9dc58733d32c8b3a881d4"
+class = "CITE"
+cite = "packages/coding-agent/src/core/agent-session.ts:1557"
+reason = "The test is this range's own test of the Piglet scope in the registry filter (ToolFilter.WithScope, AllowsTool), written against Pi's _isAllowedTool intersection (agent-session.ts:1557-1561, 3571-3574); the commit replaces the predicate form of the scope with the data form the filter holds, and the expectations are the same intersection."

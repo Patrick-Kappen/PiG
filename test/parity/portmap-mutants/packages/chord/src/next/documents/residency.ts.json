@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/documents/residency.go",
+  "old": "const granuleMs int64 = 1_000",
+  "new": "const granuleMs int64 = 2_000"
+ }
+]

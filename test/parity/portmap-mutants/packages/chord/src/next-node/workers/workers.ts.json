@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/nextnode/workers/workers_workers.go",
+  "old": "if !child.idle || time.Duration(now-child.idleSince)",
+  "new": "if child.idle || time.Duration(now-child.idleSince)"
+ }
+]

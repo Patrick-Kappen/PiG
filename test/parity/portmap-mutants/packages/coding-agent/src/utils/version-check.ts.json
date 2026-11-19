@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/selfupdate.go",
+  "old": "\t\tmaxRetries = 2\n",
+  "new": "\t\tmaxRetries = 1\n"
+ },
+ {
+  "file": "internal/codingagent/selfupdate.go",
+  "old": "return l.Compare(r), true",
+  "new": "return r.Compare(l), true"
+ }
+]

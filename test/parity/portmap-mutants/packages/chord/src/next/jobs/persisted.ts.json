@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/jobs_persisted.go",
+  "old": "store.RetireDocument(state.ID, state.Revision)",
+  "new": "store.RetireDocument(state.ID, state.Revision+1)"
+ }
+]

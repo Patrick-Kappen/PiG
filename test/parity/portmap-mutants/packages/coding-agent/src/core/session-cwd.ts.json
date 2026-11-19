@@ -1,0 +1,12 @@
+[
+ {
+  "file": "internal/codingagent/session_cwd.go",
+  "old": "if _, err := os.Stat(session.CWD()); err == nil {",
+  "new": "if _, err := os.Stat(session.CWD()); err != nil {"
+ },
+ {
+  "file": "coding/runtime_replacement.go",
+  "old": "AssertSessionCwdExists(options.SessionManager, options.CWD); err != nil {",
+  "new": "AssertSessionCwdExists(options.SessionManager, options.CWD); err == nil {"
+ }
+]

@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/usagetotals/usagetotals.go",
+  "old": "derefBool(first.Cost.TotalFromProvider) && derefBool(second.Cost.TotalFromProvider)",
+  "new": "derefBool(first.Cost.TotalFromProvider) || derefBool(second.Cost.TotalFromProvider)"
+ },
+ {
+  "file": "internal/usagetotals/usagetotals.go",
+  "old": "if first.CacheWrite1h != nil || second.CacheWrite1h != nil {",
+  "new": "if first.CacheWrite1h != nil && second.CacheWrite1h != nil {"
+ },
+ {
+  "file": "internal/codingagent/session_stats.go",
+  "old": "breakdown.Cost += usage.Cost.Total",
+  "new": "breakdown.Cost += usage.Cost.Input"
+ }
+]

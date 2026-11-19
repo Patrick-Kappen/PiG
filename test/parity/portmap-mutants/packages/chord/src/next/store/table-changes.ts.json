@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/table_changes.go",
+  "old": "if changes.bulk {",
+  "new": "if !changes.bulk {"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "env/cmd/pi-env/main.go",
+  "old": "\"pi-env %s\\n\"",
+  "new": "\"pi %s\\n\""
+ }
+]

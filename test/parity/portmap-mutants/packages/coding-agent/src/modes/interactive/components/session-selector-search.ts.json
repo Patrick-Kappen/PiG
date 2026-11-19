@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/session_selector.go",
+  "old": "sessionTierText  = 1 ",
+  "new": "sessionTierText  = 3 "
+ }
+]

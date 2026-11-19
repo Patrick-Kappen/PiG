@@ -1,0 +1,7 @@
+[
+ {
+  "file": "ai/tool_flow.go",
+  "old": "ToolResultMessage{ToolCallID: call.ID, ToolName: call.Name,",
+  "new": "ToolResultMessage{ToolCallID: call.Name, ToolName: call.Name,"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/clipboard_copy.go",
+  "old": "\treturn output, err == nil",
+  "new": "\treturn output, err != nil"
+ }
+]

@@ -1,0 +1,17 @@
+[
+ {
+  "file": "coding/extension/builtin/codemode/execute.go",
+  "old": "value == math.Trunc(value)",
+  "new": "value >= math.Trunc(value)"
+ },
+ {
+  "file": "coding/extension/builtin/codemode/execute.go",
+  "old": " && !math.IsInf(value, 0)",
+  "new": ""
+ },
+ {
+  "file": "coding/extension/builtin/codemode/execute.go",
+  "old": "entry.label = \"[Image saved to \" + path",
+  "new": "entry.label = \"[Image stored at \" + path"
+ }
+]

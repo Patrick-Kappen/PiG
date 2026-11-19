@@ -1,0 +1,22 @@
+[
+ {
+  "file": "internal/codingagent/tools/output_accumulator.go",
+  "old": "return errAppendAfterFinish",
+  "new": "return nil"
+ },
+ {
+  "file": "internal/codingagent/tools/output_accumulator.go",
+  "old": "truncated := a.totalLines > a.maxLines || a.totalDecodedBytes > a.maxBytes",
+  "new": "truncated := a.totalLines >= a.maxLines || a.totalDecodedBytes > a.maxBytes"
+ },
+ {
+  "file": "internal/codingagent/tools/output_accumulator.go",
+  "old": "return a.totalRawBytes > a.maxBytes || a.totalDecodedBytes > a.maxBytes || a.totalLines > a.maxLines",
+  "new": "return a.totalRawBytes > a.maxBytes || a.totalDecodedBytes > a.maxBytes"
+ },
+ {
+  "file": "internal/codingagent/tools/output_accumulator.go",
+  "old": "\ta.totalLines = a.completedLines\n\tif a.hasOpenLine {\n\t\ta.totalLines++\n\t}",
+  "new": "\ta.totalLines = a.completedLines"
+ }
+]

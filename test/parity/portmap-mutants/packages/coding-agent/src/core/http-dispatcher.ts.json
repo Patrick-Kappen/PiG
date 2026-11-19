@@ -1,0 +1,17 @@
+[
+ {
+  "file": "ai/http_proxy.go",
+  "old": "if _, exists := os.LookupEnv(key); !exists {",
+  "new": "if _, exists := os.LookupEnv(key); exists {"
+ },
+ {
+  "file": "ai/http_transport.go",
+  "old": "dialer.FallbackDelay = 2000 * time.Millisecond",
+  "new": "dialer.FallbackDelay = 250 * time.Millisecond"
+ },
+ {
+  "file": "internal/codingagent/settings.go",
+  "old": "jsstring.ToLower(trimmed) == \"disabled\"",
+  "new": "trimmed == \"disabled\""
+ }
+]

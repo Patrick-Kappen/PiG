@@ -1,0 +1,7 @@
+[
+ {
+  "file": "schema/formats/internal/idna/hostname.go",
+  "old": "n > 253",
+  "new": "n > 254"
+ }
+]

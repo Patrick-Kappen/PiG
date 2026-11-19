@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/defaults.go",
+  "old": "const DefaultThinkingLevel = \"medium\"",
+  "new": "const DefaultThinkingLevel = \"high\""
+ }
+]

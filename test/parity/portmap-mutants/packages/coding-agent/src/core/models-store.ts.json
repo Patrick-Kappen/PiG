@@ -1,0 +1,17 @@
+[
+ {
+  "file": "internal/codingagent/radius_models.go",
+  "old": "filepath.Join(agentDir, \"models-store.json\")",
+  "new": "filepath.Join(agentDir, \"models.store.json\")"
+ },
+ {
+  "file": "internal/codingagent/model_registry.go",
+  "old": "\t\tr.modelsStore = defaultModelsStore(r.agentDir)\n\t}\n\tr.load()",
+  "new": "\t\tr.modelsStore = ai.NewInMemoryModelsStore()\n\t}\n\tr.load()"
+ },
+ {
+  "file": "ai/models_store.go",
+  "old": "json.Indent(&indented, canonical, \"\", \"  \")",
+  "new": "json.Indent(&indented, canonical, \"\", \"\\t\")"
+ }
+]

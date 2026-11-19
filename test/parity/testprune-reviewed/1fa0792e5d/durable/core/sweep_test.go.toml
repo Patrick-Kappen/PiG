@@ -1,0 +1,6 @@
+[[entry]]
+path = "durable/core/sweep_test.go"
+commit = "1fa0792e5db2dae1fd5dc5b523188e35d98c96b9"
+class = "CITE"
+cite = "packages/durable/src/session/session.ts:736"
+reason = "Pi 6c2fd73b0 adds `held`, the number of documents with held changes, to documentCacheSizes (session.ts:722-737), so the core's doc-cache notice carries `\"held\":0` after `sweeps`, and a sweep job is the async function `#enqueue` runs and whose rejection is caught (session.ts:777-781), so the core's EnqueueSweep job returns an error."

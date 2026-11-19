@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/store/query.go",
+  "old": "if query.direction != \"\" && query.direction != direction {",
+  "new": "if query.direction == \"\" && query.direction != direction {"
+ }
+]

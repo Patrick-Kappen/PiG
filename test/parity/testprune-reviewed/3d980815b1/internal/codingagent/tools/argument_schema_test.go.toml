@@ -1,0 +1,6 @@
+[[entry]]
+path = "internal/codingagent/tools/argument_schema_test.go"
+commit = "3d980815b1ee3dbb3161ea830554cb30a57c33e2"
+class = "CITE"
+cite = "packages/ai/src/utils/validation.ts:15"
+reason = "Pi 6536f801 compiles every tool schema with pi-schema (validation.ts:15, formats, coerce: true, unresolvedRefs: reject): the declared parameters of a built-in tool are the plain JSON the validator reads (no ~kind marks), so the cached argument schema equals the declared parameters."

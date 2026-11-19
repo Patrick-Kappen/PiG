@@ -1,0 +1,7 @@
+[
+ {
+  "file": "tui/bordered_loader.go",
+  "old": "\tif theme == nil {",
+  "new": "\tif theme != nil {"
+ }
+]

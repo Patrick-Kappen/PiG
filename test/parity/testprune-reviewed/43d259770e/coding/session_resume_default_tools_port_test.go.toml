@@ -1,0 +1,6 @@
+[[entry]]
+path = "coding/session_resume_default_tools_port_test.go"
+commit = "43d259770e32ed1996d955e6eda8cccf3766ee04"
+class = "CITE"
+cite = "packages/coding-agent/src/core/agent-session.ts:1845"
+reason = "Pi bd3c9b8237 (#11062/#11075) activates, on resume, the extension tools the branch never added or removed (agent-session.ts:1845-1856: `mentioned` is every tool in toolsAdded or toolsRemoved of the branch's system messages, the rest of the extension tools are activated like newly registered ones, built-in tools follow defaultTools), and the loadout is that of the recorded system messages with the removals applied (default-tools-setting.test.ts:369 and :376, \"activates extension tools the transcript never added or removed\" and \"keeps tools removed before a compaction inactive\"): the resume case's session records the removal of active_tool by a system message, and the new cases expect those activations."

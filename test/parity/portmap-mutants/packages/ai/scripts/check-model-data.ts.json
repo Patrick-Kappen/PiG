@@ -1,0 +1,7 @@
+[
+ {
+  "file": "cmd/check-model-data/main.go",
+  "old": "Model data is missing or stale.",
+  "new": "Model data is missing or stalZ."
+ }
+]

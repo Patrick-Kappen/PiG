@@ -1,0 +1,7 @@
+[
+ {
+  "file": "internal/codingagent/tools/tools_manager.go",
+  "old": "|| !strings.Contains(location, \"/releases/tag/\")",
+  "new": "|| strings.Contains(location, \"/releases/tag/\")"
+ }
+]

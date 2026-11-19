@@ -1,0 +1,7 @@
+[
+ {
+  "file": "chord/next/host/host_routines.go",
+  "old": "if start.Kind == state.StartValue {",
+  "new": "if start.Kind != state.StartValue {"
+ }
+]

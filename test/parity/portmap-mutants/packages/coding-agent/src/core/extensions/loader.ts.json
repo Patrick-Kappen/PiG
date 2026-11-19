@@ -1,0 +1,32 @@
+[
+ {
+  "file": "coding/discover_extensions.go",
+  "old": "addPaths(discoverExtensionsInDir(filepath.Join(resolvedAgentDir, \"extensions\")))",
+  "new": "addPaths(discoverExtensionsInDir(filepath.Join(resolvedAgentDir, \"extension\")))"
+ },
+ {
+  "file": "coding/discover_extensions.go",
+  "old": "\t\t\t\tseen[resolved] = true\n",
+  "new": "\t\t\t\tseen[resolved] = false\n"
+ },
+ {
+  "file": "coding/discover_extensions.go",
+  "old": "if entries := resolveExtensionEntries(resolved); entries != nil {",
+  "new": "if entries := resolveExtensionEntries(resolved); entries == nil {"
+ },
+ {
+  "file": "coding/extension/provider_runtime.go",
+  "old": "\tr.mu.Unlock()\n\treturn register(name, config)",
+  "new": "\tr.mu.Unlock()\n\t_ = register\n\treturn nil"
+ },
+ {
+  "file": "coding/extension/provider_runtime.go",
+  "old": "report(&ExtensionError{ExtensionPath: entry.ExtensionPath, Event: \"register_provider\"",
+  "new": "report(&ExtensionError{ExtensionPath: \"\", Event: \"register_provider\""
+ },
+ {
+  "file": "coding/extension/provider_runtime.go",
+  "old": "\tif unregister != nil {\n\t\tunregister(name)\n\t}\n}",
+  "new": "\t_ = unregister\n}"
+ }
+]
