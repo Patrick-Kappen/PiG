@@ -2,6 +2,7 @@ package workers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -42,8 +43,8 @@ import (
 // outside (freezeWorker, SIGSTOP). `Control.block` takes the path of a file instead of a duration and blocks the NodeHost's event
 // loop until the file exists (for 2 s at most), so a test decides when the NodeHost answers again. `Control.fatal` is not ported:
 // no test calls it. Every message the worker sends to the server (frame or control) is counted by wrapping its port;
-// `Control.localCalls` is called by the worker itself, whose Go code reports how many messages it sent to the server between
-// the calls' two lines.
+// `Control.localCalls` is called by the worker itself, whose Go code reports how many messages it sent to the server while the
+// call ran (localCallsSent).
 
 var (
 	fixtureSession = mustFixture(contracts.NewHostKind("session", contracts.Prop("id", contracts.Str())))
@@ -136,7 +137,8 @@ type workerBehaviour struct {
 	ShutdownDuringReload bool
 	// DisconnectAndBlock: after its load, closes its IPC channel and blocks, alive (the server must reap it).
 	DisconnectAndBlock bool
-	// LocalCalls: 300 ms after its load, this many sequential local calls, then `local calls sent <n>` on stdout.
+	// LocalCalls: 300 ms after its load and once its first holder is gone, this many sequential local calls, then
+	// `local calls sent <n>` on stdout.
 	LocalCalls int
 	// CloserPanics: a closer fails, and the app's OnError panics on that failure once (Pi's `onError` that throws).
 	CloserPanics bool
@@ -229,10 +231,17 @@ func behaviourOf(value delta.JsonValue) workerBehaviour {
 	return b
 }
 
-// countingPort counts every message the worker sends, frames and control messages alike (`process.send` of worker.ts).
+// countingPort counts every message the worker sends, frames and control messages alike (`process.send` of worker.ts), and
+// follows the idle state the worker reports in them (`ready` and `idle`).
 type countingPort struct {
 	processPort
 	sent atomic.Int64
+
+	mu sync.Mutex
+	// idle is the idle state the worker last reported; busy, that it has reported not idle at least once.
+	idle, busy bool
+	// reported is closed and replaced at each report.
+	reported chan struct{}
 }
 
 func (p *countingPort) Send(message []byte, callback func(err error)) (bool, error) {
@@ -241,13 +250,88 @@ func (p *countingPort) Send(message []byte, callback func(err error)) (bool, err
 }
 
 func (p *countingPort) SendControl(payload []byte) bool {
-	p.sent.Add(1)
+	p.count(payload)
 	return p.processPort.SendControl(payload)
 }
 
 func (p *countingPort) sendControlThen(payload []byte, then func()) {
-	p.sent.Add(1)
+	p.count(payload)
 	p.processPort.sendControlThen(payload, then)
+}
+
+// count counts a control message and then notes the idle state it reports, so a caller that sees the state also sees the
+// message in sent.
+func (p *countingPort) count(payload []byte) {
+	p.sent.Add(1)
+	message, ok := controlOf[FromWorker](json.RawMessage(payload))
+	if !ok || (message.Kind != FromWorkerReady && message.Kind != FromWorkerIdle) {
+		return
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.idle = message.Idle
+	p.busy = p.busy || !message.Idle
+	if p.reported != nil {
+		close(p.reported)
+	}
+	p.reported = make(chan struct{})
+}
+
+// localCallsWait is how long the worker waits for each report before it gives up and says why on the line the test reads;
+// the test waits 10 s for that line.
+const localCallsWait = 4 * time.Second
+
+// awaitReport waits until the idle state the worker reported satisfies settled.
+func (p *countingPort) awaitReport(settled func(idle, busy bool) bool) error {
+	timeout := time.NewTimer(localCallsWait)
+	defer timeout.Stop()
+	for {
+		p.mu.Lock()
+		if p.reported == nil {
+			p.reported = make(chan struct{})
+		}
+		done, reported := settled(p.idle, p.busy), p.reported
+		p.mu.Unlock()
+		if done {
+			return nil
+		}
+		select {
+		case <-reported:
+		case <-timeout.C:
+			return fmt.Errorf("no such report within %v", localCallsWait)
+		}
+	}
+}
+
+// localCallsSent makes calls sequential local calls (`Control.localCalls`) and returns the messages the worker sent to the
+// server while they ran. Upstream's worker is one Node process that reads its own counter before and after the loop
+// (worker.ts). Here the calls run in the NodeHost and the counter is in this process, so the count is taken around the one
+// call that runs them, and three messages that belong to references, not to the calls, are kept out of it by waiting for
+// them instead of by the 300 ms alone:
+//   - the answer to the reference that started the worker, and the two reports of that reference (busy, then idle): the
+//     calls start once the worker has been busy and is idle again, which is also what "nobody holds" means;
+//   - the report that `Control`, the worker's own reference, makes it busy: the count starts after that report;
+//   - the report that it is idle again: the count ends before the reference is released.
+//
+// On a loaded runner the answer to the first reference came after the 300 ms and was counted (`local calls sent 1`).
+func localCallsSent(worker host.Host, port *countingPort, id string, calls int) (int64, error) {
+	ctx := chordctx.Background()
+	if err := port.awaitReport(func(idle, busy bool) bool { return busy && idle }); err != nil {
+		return 0, fmt.Errorf("the worker's first holder is not gone: %w", err)
+	}
+	control, err := worker.Get(ctx, fixtureControl, delta.JsonObjectOf("id", id), host.GetOptions{})
+	if err != nil {
+		return 0, err
+	}
+	defer control.Release()
+	if err := port.awaitReport(func(idle, _ bool) bool { return !idle }); err != nil {
+		return 0, fmt.Errorf("the worker did not report its own reference: %w", err)
+	}
+	before := port.sent.Load()
+	if _, err := control.Call("localCalls", float64(calls), ctx); err != nil {
+		return 0, err
+	}
+	return port.sent.Load() - before, nil
 }
 
 // fixtureCoreModule is the fixture worker's JavaScript core facet (testdata/core.mjs): `Control`, a module the worker's Node host
@@ -302,24 +386,13 @@ func fixtureGoCore() host.Facet {
 	})
 }
 
-// fixtureOutput forwards the worker's Node host's output as a worker's own, and turns the two lines of `Control.localCalls`
-// into the line the test reads: the messages this process sent to the server between them (a local call sends none).
-func fixtureOutput(port *countingPort) func(stream plugins.NodeStream, chunk []byte) {
-	var begun atomic.Int64
-	return func(stream plugins.NodeStream, chunk []byte) {
-		out := os.Stdout
-		if stream == plugins.NodeStderr {
-			out = os.Stderr
-		}
-		switch strings.TrimSpace(string(chunk)) {
-		case "local calls begin":
-			begun.Store(port.sent.Load())
-		case "local calls end":
-			_, _ = fmt.Fprintf(os.Stdout, "local calls sent %d\n", port.sent.Load()-begun.Load())
-		default:
-			_, _ = out.Write(chunk)
-		}
+// fixtureOutput forwards the worker's Node host's output as a worker's own.
+func fixtureOutput(stream plugins.NodeStream, chunk []byte) {
+	out := os.Stdout
+	if stream == plugins.NodeStderr {
+		out = os.Stderr
 	}
+	_, _ = out.Write(chunk)
 }
 
 // holdNodeGate is the file HoldNodeStart names, once the worker knows its behaviour.
@@ -425,15 +498,13 @@ func runWorkerFixture() {
 		}
 		if calls := behaviour.LocalCalls; calls != 0 {
 			time.AfterFunc(300*time.Millisecond, func() {
-				control, err := worker.Get(chordctx.Background(), fixtureControl, delta.JsonObjectOf("id", id), host.GetOptions{})
+				sent, err := localCallsSent(worker, port, id, calls)
 				if err != nil {
-					fmt.Fprintln(os.Stderr, err)
+					// On the line the test waits for, so its failure shows the reason and not a timeout.
+					_, _ = fmt.Fprintf(os.Stdout, "local calls sent no count: %v\n", err)
 					return
 				}
-				defer control.Release()
-				if _, err := control.Call("localCalls", float64(calls), chordctx.Background()); err != nil {
-					fmt.Fprintln(os.Stderr, err)
-				}
+				_, _ = fmt.Fprintf(os.Stdout, "local calls sent %d\n", sent)
 			})
 		}
 		if release := behaviour.BlockNode; release != "" {
@@ -472,7 +543,7 @@ func runWorkerFixture() {
 		}
 		return &WorkerResult{Busy: busy.Member("counts")}, nil
 	}, WorkerMainOptions{
-		Node: plugins.NodeOptions{OnOutput: fixtureOutput(port), Command: holdNodeStart},
+		Node: plugins.NodeOptions{OnOutput: fixtureOutput, Command: holdNodeStart},
 		Redact: func(err any) CrossedError {
 			message := fmt.Sprint(err)
 			if typed, ok := err.(error); ok {
