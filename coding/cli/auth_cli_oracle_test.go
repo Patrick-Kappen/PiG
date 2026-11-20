@@ -2,10 +2,12 @@ package cli
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -75,39 +77,58 @@ func TestAuthCommandsMatchPiEndToEnd(t *testing.T) {
 			}
 		}
 	}
-	type outcome struct {
-		code           int
-		stdout, stderr string
-	}
-	piResults := make([]outcome, len(probes))
-	var wg sync.WaitGroup
-	slots := make(chan struct{}, 8)
+	piResults := make([]piAuthOutcome, len(probes))
+	bySetup := make([][]int, len(setups))
 	for i, p := range probes {
-		wg.Add(1)
+		bySetup[p.setup] = append(bySetup[p.setup], i)
+	}
+	piEnv := func(setup int) []string {
+		env := []string{"PATH=" + os.Getenv("PATH"), "HOME=" + dirs[setup], "PI_CODING_AGENT_DIR=" + dirs[setup], "PI_OFFLINE=1", "NO_COLOR=1"}
+		for name, value := range setups[setup].env {
+			env = append(env, name+"="+value)
+		}
+		return env
+	}
+	// One Node process per setup answers all of that setup's probes: the environment is the setup's, and starting Pi
+	// once for each of the 672 probes was nearly all of this test's time.
+	var wg sync.WaitGroup
+	for si := range setups {
+		wg.Go(func() {
+			argv := make([][]string, len(bySetup[si]))
+			for j, i := range bySetup[si] {
+				argv[j] = probes[i].args
+			}
+			for j, result := range piAuthInOneProcess(t, cli, piEnv(si), argv) {
+				piResults[bySetup[si][j]] = result
+			}
+		})
+	}
+	// The same CLI as a process of its own, for a few probes of every setup: what one process answers for many
+	// probes must be what `pi auth ...` answers for each.
+	const every = 29
+	sampled := make(map[int]piAuthOutcome)
+	var sampledMu sync.Mutex
+	slots := make(chan struct{}, 8)
+	for i := 0; i < len(probes); i += every {
 		slots <- struct{}{}
-		go func() {
-			defer func() { <-slots; wg.Done() }()
-			cmd := exec.CommandContext(t.Context(), "node", append([]string{cli, "auth"}, p.args...)...)
-			env := []string{"PATH=" + os.Getenv("PATH"), "HOME=" + dirs[p.setup], "PI_CODING_AGENT_DIR=" + dirs[p.setup], "PI_OFFLINE=1", "NO_COLOR=1"}
-			for name, value := range setups[p.setup].env {
-				env = append(env, name+"="+value)
-			}
-			cmd.Env = env
-			var stdout, stderr bytes.Buffer
-			cmd.Stdout, cmd.Stderr = &stdout, &stderr
-			code := 0
-			if err := cmd.Run(); err != nil {
-				if exit, ok := errors.AsType[*exec.ExitError](err); ok {
-					code = exit.ExitCode()
-				} else {
-					code = -2
-					stderr.WriteString(err.Error())
-				}
-			}
-			piResults[i] = outcome{code, stdout.String(), stderr.String()}
-		}()
+		wg.Go(func() {
+			defer func() { <-slots }()
+			result := piAuthAsAProcess(t, cli, piEnv(probes[i].setup), probes[i].args)
+			sampledMu.Lock()
+			sampled[i] = result
+			sampledMu.Unlock()
+		})
 	}
 	wg.Wait()
+	if t.Failed() {
+		return
+	}
+	for i, want := range sampled {
+		if piResults[i] != want {
+			t.Errorf("%s auth %v: Pi in one process for the whole setup and Pi as a process of its own disagree:\n  one process %d %q %q\n  own process %d %q %q",
+				setups[probes[i].setup].name, probes[i].args, piResults[i].code, piResults[i].stdout, piResults[i].stderr, want.code, want.stdout, want.stderr)
+		}
+	}
 	// The probes must reach every kind of outcome, or agreement would prove nothing.
 	seen := map[string]bool{}
 	for _, result := range piResults {
@@ -166,4 +187,89 @@ func TestAuthCommandsMatchPiEndToEnd(t *testing.T) {
 	if failures > 12 {
 		t.Errorf("%d of %d probes differ", failures, len(probes))
 	}
+}
+
+// piAuthOutcome is what one `pi auth ...` invocation answered.
+type piAuthOutcome struct {
+	code           int
+	stdout, stderr string
+}
+
+// piAuthAsAProcess runs the pinned Pi CLI as `node cli.js auth <args>` with exactly env.
+func piAuthAsAProcess(t *testing.T, cli string, env, args []string) piAuthOutcome {
+	t.Helper()
+	cmd := exec.CommandContext(t.Context(), "node", append([]string{cli, "auth"}, args...)...)
+	cmd.Env = env
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	code := 0
+	if err := cmd.Run(); err != nil {
+		if exit, ok := errors.AsType[*exec.ExitError](err); ok {
+			code = exit.ExitCode()
+		} else {
+			code = -2
+			stderr.WriteString(err.Error())
+		}
+	}
+	return piAuthOutcome{code, stdout.String(), stderr.String()}
+}
+
+// piAuthInOneProcess runs the pinned Pi CLI's auth command once for each argument list of argv, all in one Node
+// process with exactly env, and returns what each wrote and the exit code it set. It does what cli.js does (setupCli,
+// then main with the arguments), once per argument list instead of once per process: Pi's auth command reports through
+// process.exitCode and never exits itself.
+func piAuthInOneProcess(t *testing.T, cli string, env []string, argv [][]string) []piAuthOutcome {
+	t.Helper()
+	const script = `import { readFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
+const dist = process.env.PIG_TEST_PI_DIST;
+const { setupCli } = await import(pathToFileURL(dist + "/cli/setup.js").href);
+const { main } = await import(pathToFileURL(dist + "/main.js").href);
+const write = process.stdout.write.bind(process.stdout);
+let stdout = "", stderr = "";
+const capture = (add) => (chunk, encoding, done) => {
+	add(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString());
+	const callback = typeof encoding === "function" ? encoding : done;
+	if (callback) callback();
+	return true;
+};
+process.stdout.write = capture((text) => { stdout += text; });
+process.stderr.write = capture((text) => { stderr += text; });
+setupCli();
+const results = [];
+for (const args of JSON.parse(readFileSync(0, "utf8"))) {
+	stdout = ""; stderr = ""; process.exitCode = undefined;
+	await main(["auth", ...args]);
+	results.push({ code: process.exitCode ?? 0, stdout, stderr });
+}
+process.exitCode = 0;
+write(JSON.stringify(results));
+`
+	input, err := json.Marshal(argv)
+	if err != nil {
+		t.Error(err)
+		return make([]piAuthOutcome, len(argv))
+	}
+	cmd := exec.CommandContext(t.Context(), "node", "--input-type=module", "-e", script)
+	cmd.Env = append(slices.Clone(env), "PIG_TEST_PI_DIST="+filepath.Dir(cli))
+	cmd.Stdin = bytes.NewReader(input)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	if err := cmd.Run(); err != nil {
+		t.Errorf("Pi's auth command in one process: %v\n%s", err, stderr.String())
+		return make([]piAuthOutcome, len(argv))
+	}
+	var decoded []struct {
+		Code           int
+		Stdout, Stderr string
+	}
+	if err := json.Unmarshal(stdout.Bytes(), &decoded); err != nil || len(decoded) != len(argv) {
+		t.Errorf("Pi's auth command in one process answered %d of %d probes: %v\n%s", len(decoded), len(argv), err, stderr.String())
+		return make([]piAuthOutcome, len(argv))
+	}
+	results := make([]piAuthOutcome, len(argv))
+	for i, d := range decoded {
+		results[i] = piAuthOutcome{d.Code, d.Stdout, d.Stderr}
+	}
+	return results
 }
