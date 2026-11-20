@@ -2,9 +2,11 @@ package generate_test
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -21,17 +23,41 @@ func TestHelpGeneratorIsolatesAgentAndPreservesOutputOnFailure(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, tc := range []struct {
-		name   string
-		repeat int
-		fail   bool
+		name      string
+		repeat    int
+		fail      bool
+		protected bool
 	}{
 		{name: "isolated success"},
 		{name: "complete output before immediate exit", repeat: 40000},
 		{name: "failed generation preserves committed output", fail: true},
+		{name: "protected package success", protected: true},
+		{name: "protected package failure preserves committed output", protected: true, fail: true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.protected && (runtime.GOOS == "windows" || os.Geteuid() == 0) {
+				t.Skip("directory write protection is not enforced on Windows or for root")
+			}
 			fail := tc.fail
 			root := t.TempDir()
+			// Restore both the protected fixture and any leaked copy before TempDir cleanup; WalkDir does not follow links.
+			t.Cleanup(func() {
+				if err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
+					if err != nil {
+						return err
+					}
+					if entry.IsDir() {
+						return os.Chmod(path, 0o700)
+					}
+					return nil
+				}); err != nil {
+					t.Error(err)
+				}
+			})
+			tmp := filepath.Join(root, "tmp")
+			if err := os.Mkdir(tmp, 0o700); err != nil {
+				t.Fatal(err)
+			}
 			put := func(name, body string) {
 				t.Helper()
 				file := filepath.Join(root, name)
@@ -57,13 +83,50 @@ console.log("pig fixture help");
 			if fail {
 				cli = "process.exit(42);\n"
 			}
+			if tc.protected && !fail {
+				cli += `if (!require("fs").lstatSync("node_modules/help-dependency").isSymbolicLink()) { throw new Error("missing dependency link"); }
+`
+			}
 			put(pkg+"dist/cli.js", cli)
 			put("coding/cli/help_upstream.txt", "previous help\n")
+			var protectedDirs []string
+			if tc.protected {
+				// oracle.py protect() removes directory write bits, including dependencies linked by gen-help.sh.
+				put(pkg+"node_modules/help-dependency/nested/index.js", "module.exports = {};\n")
+				if err := filepath.WalkDir(filepath.Join(root, "extensions/sdk-ts/node_modules"), func(path string, entry fs.DirEntry, err error) error {
+					if err != nil {
+						return err
+					}
+					if entry.IsDir() {
+						protectedDirs = append(protectedDirs, path)
+						return os.Chmod(path, 0o555)
+					}
+					return nil
+				}); err != nil {
+					t.Fatal(err)
+				}
+			}
 			// On Windows a bare "bash" can resolve to the WSL launcher in System32; testenv.Bash is Git for Windows bash.
 			cmd := exec.CommandContext(t.Context(), testenv.Bash(t), filepath.Join(root, "automation/gen/gen-help.sh"))
 			cmd.Dir = root
-			cmd.Env = append(os.Environ(), "PATH="+filepath.Dir(strings.TrimSpace(string(node)))+string(os.PathListSeparator)+os.Getenv("PATH"), "PIG_CODING_AGENT_DIR="+root, "PI_CODING_AGENT_DIR="+root, "POISON_AGENT_DIR="+root, "FORCE_COLOR=1")
+			cmd.Env = append(os.Environ(), "PATH="+filepath.Dir(strings.TrimSpace(string(node)))+string(os.PathListSeparator)+os.Getenv("PATH"), "PIG_CODING_AGENT_DIR="+root, "PI_CODING_AGENT_DIR="+root, "POISON_AGENT_DIR="+root, "FORCE_COLOR=1", "TMPDIR="+tmp)
 			output, runErr := cmd.CombinedOutput()
+			for _, directory := range protectedDirs {
+				info, err := os.Stat(directory)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if info.Mode().Perm()&0o222 != 0 {
+					t.Errorf("source directory gained write permission: %s (%o)", directory, info.Mode().Perm())
+				}
+			}
+			leftovers, err := os.ReadDir(tmp)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(leftovers) != 0 {
+				t.Errorf("generator left temporary files: %v", leftovers)
+			}
 			if fail && runErr == nil {
 				t.Fatal("failed generator returned success")
 			}
