@@ -37,6 +37,12 @@ LIGHT_CPUS ?= $(shell nproc)
 # a test, beside three other test binaries; on a GitHub-hosted runner that took more than two minutes and failed the
 # test. A test that passes does not wait longer for this.
 export PIG_TEST_WAIT_TIMEOUT_SEC ?= 300
+# How many compilers Cargo runs at once when a test builds a Rust extension. PiG gives such a build one, unless the
+# environment says otherwise (runtimecell: CARGO_BUILD_JOBS). A runner has no Rust build of this checkout yet: Cargo
+# builds the Rust SDK again in every package whose tests build Rust cells, because a checkout's files are newer than
+# the build in the cache. With one compiler one such test took 37 s and coding/extension/host/subprocess 272 s; with
+# one per processor 14.5 s and 222 s (4 CPUs).
+export CARGO_BUILD_JOBS ?= $(LIGHT_CPUS)
 # How long one package's tests may take on a shard before the go command ends them. Without the cache, on the slower
 # of GitHub's runners, a shard's share of coding/cli passed the go command's own ten minutes (run 44714966342): its
 # tests were waiting for Rust builds, none hung.
