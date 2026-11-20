@@ -32,6 +32,9 @@ LIGHT_OUT ?= tmp/light
 # This runner's shard and the number of shards, as index/total. 1/1 is every test on one machine.
 LIGHT_SHARD ?= 1/1
 LIGHT_CPUS ?= $(shell nproc)
+# How many units the first stage runs at a time (light-fast). More than the processors: part of the tests wait for a
+# timer or a child process, and with a unit per processor a quarter of the processors stood still.
+LIGHT_FAST_WORKERS ?= $(shell echo $$(( $(LIGHT_CPUS) * 3 / 2 )))
 # How long a test waits for a subprocess, an extension or a build before it calls it a hang (internal/testbudget).
 # The tests' own two minutes assume that the Rust SDK is built already. A shard that restored no cache builds it inside
 # a test, beside three other test binaries; on a GitHub-hosted runner that took more than two minutes and failed the
@@ -127,6 +130,14 @@ light-fixtures:
 light-build: | light-plan
 	$(call light_part,build,deps=$$(go list -deps -test -f '{{if and .GoFiles (not .ForTest)}}{{.ImportPath}}{{end}}' $$(cat $(light_plan)/sliced.pkgs $(light_plan)/whole.pkgs) | grep -v '\.test$$' | sort -u) && go build $$deps)
 
+# The first stage, on one runner: the tests that start no program (light/programs.txt names the ones that do). Every
+# package's test binary is built once; then the tests run from one queue, the longest first, LIGHT_FAST_WORKERS units
+# at a time (automation/light/plan -queue). gotestsum reads the events and reports as it does for the shards.
+light-fast: | light-fixtures
+	$(call light_part,test-fast,rc=0; gotestsum --format pkgname-and-test-fails --format-hide-empty-pkg --jsonfile $(LIGHT_OUT)/test-fast.json --raw-command -- \
+		go run ./automation/light/plan -queue -workers $(LIGHT_FAST_WORKERS) -bin $(LIGHT_OUT)/bin -report $(LIGHT_OUT)/fast-report.txt || rc=$$?; \
+		rm -rf $(LIGHT_OUT)/bin; cat $(LIGHT_OUT)/fast-report.txt 2>/dev/null; [ $$rc -eq 0 ])
+
 # The tests, as three runs beside each other. Each waits for the plan, the compiled packages and the fixtures.
 # - light-test-sliced: this shard's share of the tests of the packages with many tests. With one shard no package is
 #   sliced and this run has nothing to do.
@@ -220,5 +231,5 @@ light-times:
 	@if [ -d $(LIGHT_OUT)/times ]; then cat $(LIGHT_OUT)/times/* | awk 'BEGIN { printf "%-20s %4s %7s\n", "part", "exit", "seconds" } { printf "%-20s %4s %7s\n", $$1, $$2, $$3 }'; else echo "light-times: no light run in $(LIGHT_OUT)"; fi
 	@grep -h '^DONE ' $(LIGHT_OUT)/test-*.log 2>/dev/null || true
 
-.PHONY: light light-vet light-vet-platforms light-lint light-plan light-fixtures light-build light-rust-reuse light-test light-test-sliced light-test-whole \
+.PHONY: light light-vet light-vet-platforms light-lint light-plan light-fixtures light-build light-rust-reuse light-fast light-test light-test-sliced light-test-whole \
 	light-test-pigfault light-warm light-warm-go light-warm-programs light-warm-rust light-warm-lint light-timings light-times

@@ -8,6 +8,7 @@ name: Light
 #                 (automation/light/plan), so the shards need no job that plans for them.
 #   Vet (...)     go vet for each platform besides Linux that has code of its own
 #   Lint          golangci-lint on the files the change touches
+#   Fast          the tests that start no program, on one runner, from one queue. Not part of the verdict yet.
 #   Light         the verdict: green when every part above is green. This is the one check to require.
 #   Warm          on main only: compiles, builds and analyses what the tests and the lint start from, runs no test,
 #                 and saves it.
@@ -133,6 +134,60 @@ jobs:
         with:
           name: light-test-${{ matrix.shard }}
           path: tmp/light/test-*.json
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # The first stage on one runner, beside the shards until its time on a runner is known: the tests that start no
+  # program, built once and run from one queue. It is not part of the verdict yet.
+  fast:
+    name: Fast
+    needs: setup
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Pull the light image
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          IMAGE: ${{ needs.setup.outputs.image }}
+        run: |
+          echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          if docker pull -q "$IMAGE"; then echo "PIG_LIGHT_IMAGE=$IMAGE" >> "$GITHUB_ENV"; fi
+
+      - name: Restore what main prepared
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.PIG_LIGHT_CACHE_ROOT }}
+          key: light-test-${{ hashFiles('light/Containerfile') }}-${{ github.sha }}
+          restore-keys: light-test-${{ hashFiles('light/Containerfile') }}-
+
+      - name: Run the tests that start no program
+        run: light/run.sh make -f light/light.mk -k -j4 light-fast
+
+      - name: Report the seconds of each part
+        if: always()
+        run: |
+          {
+            echo '```'
+            make -s -f light/light.mk light-times
+            cat tmp/light/fast-report.txt 2>/dev/null || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the test results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: light-fast
+          path: |
+            tmp/light/test-fast.json
+            tmp/light/fast-report.txt
           retention-days: 14
           if-no-files-found: ignore
 

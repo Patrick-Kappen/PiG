@@ -51,6 +51,18 @@ Nothing checks it against the tests, and a pull request does not have to touch i
 
 Why seconds and not only names: few tests hold most of the time. On GitHub 51 tests of 30 seconds or more held 39% of the test seconds, and by name length alone one shard's share of `coding/cli` was 208 seconds and another's 581. On a slower runner such a share passed the ten minutes.
 
+## The first stage: one runner, one queue
+
+`Fast` runs the tests that start no program, on one runner. `automation/light/plan -queue` builds every package's test binary once and then runs the tests from one queue, the longest first: a worker takes the next unit when it is free, so no processor waits while a test is left.
+
+- A test with a second or more in `timings.txt` is a unit of its own. Starting a test binary takes milliseconds, so that costs nothing, and the long tests are what has to be spread.
+- A package's other tests are one unit, in one process: they share what the package's `TestMain` and its first tests set up.
+- There are more workers than processors (`LIGHT_FAST_WORKERS`): part of the tests wait for a timer or a child process and not for a processor.
+
+`programs.txt` names the tests that start a program, each with what it starts: cargo or sbcl, the go command, `pig`, Node or Pi, Python or tmux. `Fast` leaves those out. The file is measured: every package's tests in one process, one test at a time, under `strace` for the programs that process started while each test ran. A test that is missing there runs in `Fast`. The measuring is not in this directory yet.
+
+`Fast` is not part of the verdict yet: the ten shards still run every test, until its time on a runner is known.
+
 ## What main prepares
 
 A pull request saves no cache. On a push to main the `Warm` job is the one writer: it starts from what the previous push saved, runs no test, and saves
@@ -85,9 +97,10 @@ Everything the light run uses is in this directory, in `automation/light/` and i
 |---|---|
 | `Containerfile` | The image: Ubuntu, Go, Node, npm, Rust, SBCL, libxcb, gotestsum and the apt packages, each with its version here |
 | `light.mk` | What runs: the tests, the lint, `go vet`, and what the tests need first |
-| `automation/light/plan/` | The program that works out a shard's share, with its tests |
+| `automation/light/plan/` | The program that works out a shard's share and that runs the queue of `Fast`, with its tests |
 | `heavy.txt` | The packages and tests the light run leaves to the heavy run, each with its reason |
 | `timings.txt` | The measured seconds of the longer tests and packages, for the plan |
+| `programs.txt` | The tests that start a program, which `Fast` leaves out |
 | `automation/light/rustdeps/` | The program that builds what the tests' Rust builds start from, for `Warm` |
 | `run.sh` | Starts a command in the image against this checkout |
 
