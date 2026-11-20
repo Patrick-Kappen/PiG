@@ -19,7 +19,7 @@ Status values:
 | Badge | Evidence | Status |
 |---|---|---|
 | CI | `.github/workflows/ci.yml`: DCO, Linux `make check`, Windows native | Activates when public |
-| CodeQL | `.github/workflows/security.yml` job `codeql` (Go) | Activates when public |
+| CodeQL | `.github/workflows/security.yml` jobs `codeql-go` (Go) and `codeql` (the Python and TypeScript SDKs) | Activates when public |
 | OpenSSF Scorecard | `.github/workflows/scorecard.yml` with `publish_results: true`; the checks are listed below | Activates when public |
 | OpenSSF Best Practices | Criteria mapped below; the badge is an HTML comment in `README.md` until the project id exists | Owner action: register at bestpractices.dev |
 | REUSE | `REUSE.toml`, `LICENSES/`, SPDX headers; `make compliance` runs `reuse --no-multiprocessing lint` | Verifiable now; badge after registering at api.reuse.software |

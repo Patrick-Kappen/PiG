@@ -4,8 +4,16 @@ name: Security and supply chain
 
 # Security result is a required check, so every event that can land a change
 # reports it: a pull request, and the merge queue's merge_group run.
+# A pull request's light run (PIG_PR_CI_LIGHT, see ci.yml) scans for secrets,
+# reviews dependencies and analyzes the Python and TypeScript SDKs, about three
+# minutes. Source assurance and the CodeQL analysis of Go, about thirteen and
+# nine minutes, run in the full run. The plan is the one ci.yml makes
+# (automation/ci/ci-plan.sh on the same event), and in label mode Security
+# result fails on a light run as CI result does.
 on:
   pull_request:
+    # The same types as ci.yml: labeled and ready_for_review start the full run.
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
   merge_group:
   push:
     branches: [main]
@@ -33,6 +41,8 @@ jobs:
     timeout-minutes: 5
     outputs:
       product: ${{ steps.classify.outputs.product }}
+      full: ${{ steps.plan.outputs.full }}
+      full-required: ${{ steps.plan.outputs.full-required }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -48,11 +58,21 @@ jobs:
         # Source analysis skips pull requests and merge groups that change only
         # project prose and repository metadata. Secret scanning always runs.
         run: automation/ci/classify-changes.sh "$EVENT" "$BASE_SHA" "$HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
+      - name: Plan the full or the light run
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          MODE: ${{ vars.PIG_PR_CI_LIGHT }}
+          # The same three inputs as the plan step of ci.yml, so both workflows plan the same run for one event.
+          FULL_REQUESTED: ${{ contains(github.event.pull_request.labels.*.name, 'ci:full') || github.event.action == 'ready_for_review' || steps.classify.outputs.os-specific == 'true' }}
+        shell: bash
+        # This workflow reads full and full-required; the job matrices the planner also prints are ci.yml's.
+        run: automation/ci/ci-plan.sh "$EVENT" "$MODE" "$FULL_REQUESTED" | grep -E '^full(-required)?=' | tee -a "$GITHUB_OUTPUT"
 
   source-assurance:
     name: Source assurance
     needs: [changes]
-    if: needs.changes.outputs.product == 'true'
+    if: needs.changes.outputs.product == 'true' && needs.changes.outputs.full == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -314,6 +334,7 @@ jobs:
           # installs nor bundles those examples' dependencies.
           allow-ghsas: GHSA-vxpw-j846-p89q, GHSA-rfgv-xxqx-mfg5, GHSA-86w9-cpqp-85rv, GHSA-w7jw-789q-3m8p, GHSA-395f-4hp3-45gv
 
+  # The interpreted SDKs need no build, so their analysis is in every run. Go's is the codeql-go job.
   codeql:
     name: CodeQL (${{ matrix.language }})
     needs: [changes]
@@ -327,11 +348,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - language: go
-            build-mode: manual
-            config: '{}'
           - language: javascript-typescript
-            build-mode: none
             config: |
               paths:
                 - extensions/sdk-ts
@@ -342,7 +359,6 @@ jobs:
                 # code; findings belong upstream, not in local patches.
                 - coding/extension/host/subprocess/runtime-node/shims
           - language: python
-            build-mode: none
             config: |
               paths:
                 - extensions/sdk-py
@@ -350,13 +366,34 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          config: ${{ matrix.config }}
+      - uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          category: /language:${{ matrix.language }}
+
+  # CodeQL builds every Go package to analyze it, about nine minutes, so it runs in the full run only.
+  codeql-go:
+    name: CodeQL (go)
+    needs: [changes]
+    if: github.event.repository.private == false && needs.changes.outputs.product == 'true' && needs.changes.outputs.full == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        if: matrix.language == 'go'
         with:
           go-version-file: .go-version
           cache: false
       - name: Restore the Go module cache
-        if: matrix.language == 'go'
         id: cache-gomod
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -366,7 +403,6 @@ jobs:
             gomod-${{ runner.os }}-
       # A pull request restores the newest build cache of main (cache-warm.yml and the weekly run save it) and saves none.
       - name: Restore the Go build cache
-        if: matrix.language == 'go'
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/go-build
@@ -375,14 +411,12 @@ jobs:
             gocache-${{ runner.os }}-${{ hashFiles('go.sum') }}-
       - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
-          languages: ${{ matrix.language }}
-          build-mode: ${{ matrix.build-mode }}
-          config: ${{ matrix.config }}
-      - if: matrix.build-mode == 'manual'
-        run: go build ./...
+          languages: go
+          build-mode: manual
+      - run: go build ./...
       - uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
-          category: /language:${{ matrix.language }}
+          category: /language:go
       - name: Save the Go module cache
         if: ${{ env.CACHE_SAVE == 'true' && steps.cache-gomod.outcome == 'success' && steps.cache-gomod.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -393,7 +427,13 @@ jobs:
   result:
     name: Security result
     # The one required check for this workflow; see CI result in ci.yml.
-    needs: [changes, source-assurance, secret-scan-gitleaks, secret-scan-trufflehog, dependency-review, codeql]
+    # A job may be skipped only where its own condition skips it: a docs-only
+    # change skips the product scans, and the light pull-request run skips
+    # Source assurance and CodeQL (go). Every event but a pull request must have
+    # planned the full run. Without a merge queue (PIG_PR_CI_LIGHT is label) a
+    # pull request's result fails unless this run is the full run, as CI result
+    # does, so a head that only the light run scanned cannot satisfy the check.
+    needs: [changes, source-assurance, secret-scan-gitleaks, secret-scan-trufflehog, dependency-review, codeql, codeql-go]
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -403,12 +443,15 @@ jobs:
           EVENT: ${{ github.event_name }}
           PRIVATE: ${{ github.event.repository.private }}
           PRODUCT: ${{ needs.changes.outputs.product }}
+          FULL: ${{ needs.changes.outputs.full }}
+          FULL_REQUIRED: ${{ needs.changes.outputs.full-required }}
           CHANGES: ${{ needs.changes.result }}
           SOURCE: ${{ needs.source-assurance.result }}
           GITLEAKS: ${{ needs.secret-scan-gitleaks.result }}
           TRUFFLEHOG: ${{ needs.secret-scan-trufflehog.result }}
           REVIEW: ${{ needs.dependency-review.result }}
           CODEQL: ${{ needs.codeql.result }}
+          CODEQL_GO: ${{ needs.codeql-go.result }}
         shell: bash
         run: |
           set -euo pipefail
@@ -426,10 +469,26 @@ jobs:
           [ "$PRODUCT" = false ] && product_skip=true
           { [ "$EVENT" != pull_request ] || [ "$PRIVATE" = true ] || [ "$product_skip" = true ]; } && review_skip=true
           { [ "$PRIVATE" = true ] || [ "$product_skip" = true ]; } && codeql_skip=true
+          # The light run leaves Source assurance and CodeQL (go) to the full run. Only a plan that says full=false skips
+          # them, so a run without a plan fails here.
+          full_only_skip=false
+          [ "$FULL" = false ] && full_only_skip=true
+          source_skip=$product_skip; [ "$full_only_skip" = true ] && source_skip=true
+          codeql_go_skip=$codeql_skip; [ "$full_only_skip" = true ] && codeql_go_skip=true
+          if [ "$EVENT" != pull_request ] && [ "$FULL" != true ]; then
+            echo "::error::$EVENT must run the full plan, got full=$FULL"
+            status=1
+          fi
+          # A docs-only change runs the same jobs in the light and the full run.
+          if [ "$FULL_REQUIRED" = true ] && [ "$FULL" != true ] && [ "$PRODUCT" != false ]; then
+            echo "::error::full run required: add the ci:full label to this pull request (or mark it ready for review); the light run leaves Source assurance and CodeQL (go) to the full run"
+            status=1
+          fi
           expect "Changed paths" "$CHANGES" false
-          expect "Source assurance" "$SOURCE" "$product_skip"
+          expect "Source assurance" "$SOURCE" "$source_skip"
           expect "Secret scanning (Gitleaks)" "$GITLEAKS" false
           expect "Secret scanning (TruffleHog)" "$TRUFFLEHOG" false
           expect "Dependency review" "$REVIEW" "$review_skip"
           expect "CodeQL" "$CODEQL" "$codeql_skip"
+          expect "CodeQL (go)" "$CODEQL_GO" "$codeql_go_skip"
           exit "$status"
