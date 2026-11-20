@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT
+#
+# What the light run (light/light.mk) leaves to the heavy run. One entry per line: a package's directory below the
+# repository root, a directory followed by /... for everything below it, or directory:TestName for one test. After the
+# # stands why it is not in the light run.
+#
+# The light run answers one question on every push: does this change break the product? A package is here when it
+# answers another question, or when it needs a machine the light run does not have. Seconds are the package's go test
+# time on 4 CPUs in the light image (20 November 2026).
+
+test/extension-conformance   # asks whether the Go, TypeScript, Rust, Python and Lisp SDKs behave alike through every placement; 1,989 s on 8 CPUs
+test/perfgate                # measures allocations, memory and descriptors of a built pig; needs a quiet machine; 269 s
+test/parity/...              # tests of the evidence tools and their registers (interface closure, SDK surface, port map, correspondence): they judge the registers, not the change; 618 s
+automation/ci/...            # tests of upstream's CI and bookkeeping tools (pre-flight, bug ledger, port lint, fixture guard); the light run uses none of them; 113 s
+automation/portlens          # tests of the port map viewer; 53 s
+automation/release/...       # tests of the release tools; 2 s
+test/ci-images               # tests of upstream's workflows and CI scripts; the light run uses none of them; 77 s
+bench/...                    # tests of the benchmark tools; 79 s
+
+test/docs-drift:TestChangelogFragmentsFollowTheRules   # bookkeeping: checks the changelog fragments against the whole git history, which a runner's shallow checkout does not have
