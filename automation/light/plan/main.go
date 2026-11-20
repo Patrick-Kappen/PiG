@@ -31,6 +31,11 @@
 //
 // prints the -run pattern of the tests that exist only with that build tag, so a tagged run does not repeat the tests
 // the untagged run already ran.
+//
+//	go run ./automation/light/plan -queue -workers 4
+//
+// plans nothing for a shard: it builds every package's test binary once and runs the tests that start no program from
+// one queue (queue.go).
 package main
 
 import (
@@ -51,6 +56,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -65,7 +71,7 @@ const (
 	minSlicedTests = 150
 	// minTimedTestSeconds and minTimedPackageSeconds are the smallest entries -timings-from writes: shorter tests are
 	// spread well enough by the length of their name.
-	minTimedTestSeconds    = 5
+	minTimedTestSeconds    = 1
 	minTimedPackageSeconds = 10
 	// maxPatternBytes keeps a pattern inside the size the kernel accepts for one command-line argument (128 KiB).
 	maxPatternBytes = 100_000
@@ -110,6 +116,11 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	timingsFile := flags.String("timings", "light/timings.txt", "the file with the measured seconds of the longer tests and packages")
 	timingsFrom := flags.Bool("timings-from", false, "print a seconds file from the go test -json results given as arguments (file names or patterns)")
 	tagOnly := flags.String("tag-only", "", "print the -run pattern of the tests that exist only with this build `tag`, for the packages given as arguments")
+	queueMode := flags.Bool("queue", false, "build every test binary once and run the tests that start no program from one queue, the longest first")
+	workers := flags.Int("workers", runtime.NumCPU(), "with -queue: how many units run at a time")
+	programsFile := flags.String("programs", "light/programs.txt", "with -queue: the file that names the tests that start a program")
+	binDir := flags.String("bin", "", "with -queue: `directory` for the test binaries (default: a temporary one)")
+	reportFile := flags.String("report", "", "with -queue: `file` for the seconds of the build and the tests (default: standard error)")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
@@ -138,7 +149,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	if err != nil {
 		return err
 	}
-	if *out == "" {
+	if *out == "" && !*queueMode {
 		return errors.New("-out is required")
 	}
 	heavy, err := readHeavy(*heavyFile)
@@ -167,6 +178,22 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	skip, err := skipPattern(light, heavy)
 	if err != nil {
 		return fmt.Errorf("%s: %w", *heavyFile, err)
+	}
+	if *queueMode {
+		starts, err := readPrograms(*programsFile)
+		if err != nil {
+			return err
+		}
+		report := stderr
+		if *reportFile != "" {
+			file, err := os.Create(*reportFile)
+			if err != nil {
+				return err
+			}
+			defer file.Close() //nolint:errcheck // the report is a few lines for the reader of the run; the tests' result does not depend on it
+			report = file
+		}
+		return queue(ctx, root, light, heavy, measured, starts, *workers, *binDir, stdout, stderr, report)
 	}
 	plans, err := planShards(light, measured, total)
 	if err != nil {

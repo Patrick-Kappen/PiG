@@ -51,21 +51,43 @@ Nothing checks it against the tests, and a pull request does not have to touch i
 
 Why seconds and not only names: few tests hold most of the time. On GitHub 51 tests of 30 seconds or more held 39% of the test seconds, and by name length alone one shard's share of `coding/cli` was 208 seconds and another's 581. On a slower runner such a share passed the ten minutes.
 
+## The first stage: one runner, one queue
+
+`Fast` runs the tests that start no program, on one runner. `automation/light/plan -queue` builds every package's test binary once and then runs the tests from one queue, the longest first: a worker takes the next unit when it is free, so no processor waits while a test is left.
+
+- A test with a second or more in `timings.txt` is a unit of its own. Starting a test binary takes milliseconds, so that costs nothing, and the long tests are what has to be spread.
+- A package's other tests are one unit, in one process: they share what the package's `TestMain` and its first tests set up.
+- There are more workers than processors (`LIGHT_FAST_WORKERS`): part of the tests wait for a timer or a child process and not for a processor.
+
+`programs.txt` names the tests that start a program, each with what it starts: cargo or sbcl, the go command, `pig`, Node or Pi, Python or tmux. `Fast` leaves those out. The file is measured: every package's tests in one process, one test at a time, under `strace` for the programs that process started while each test ran. A test that is missing there runs in `Fast`. The measuring is not in this directory yet.
+
+`Fast` is not part of the verdict yet: the ten shards still run every test, until its time on a runner is known.
+
 ## What main prepares
 
 A pull request saves no cache. On a push to main the `Warm` job is the one writer: it starts from what the previous push saved, runs no test, and saves
 
 - every test of the light run, compiled and linked;
+- the programs the tests build while they run, compiled with the flags the tests build them with (`light-warm-programs` in `light.mk` lists them);
 - the npm trees' downloads, the Pi the tests compare with and its source;
-- the Rust SDK and its dependencies, built into the Cargo target of every package whose tests build Rust cells, and the pinned Pi's env daemon (`automation/light/rustdeps`).
+- the Rust SDK and its dependencies, built into the Cargo target of every package whose tests build Rust cells, and the pinned Pi's env daemon (`automation/light/rustdeps`);
+- the lint's analysis of every package.
 
-Every test shard restores that, on a pull request and on main. It then compiles what the change touched and its tests' own cells, nothing else. Locally a shard of ten took 150 seconds from what `Warm` had saved; `Warm` itself took 241 seconds from nothing on 4 CPUs.
+Every test shard and the lint restore that, on a pull request and on main. A shard then compiles what the change touched and its tests' own cells, and the lint analyses the packages the change touched and the ones that import them.
+
+Three things made a shard build again what `Warm` had built, and each is why a line above reads as it does:
+
+- **Build flags.** The go command keeps a compiled package per set of flags. A test that builds `pig` with `-trimpath`, without cgo or with the strip build tags compiled its whole tree, in every shard that had such a test. `Warm` now makes those builds too.
+- **File times.** Cargo builds a path dependency again when a source file is newer than its last build, and after a checkout every file is. `Warm` leaves a stamp beside each build that names the SDK files it was built from; a shard whose SDK files are exactly those sets their times back before its tests start (`light-rust-reuse`), and a shard whose SDK differs by one byte keeps its times and builds.
+- **The toolchain.** rustup takes the toolchain from the directory cargo is started in. The pinned Pi's env daemon names another toolchain than the image's in its own directory, so it is built from `env/`, where env's tests build it.
 
 A test run saves nothing: every run builds cells under new temporary paths, and that would grow the cache from push to push.
 
 Without the cache a shard builds the Rust SDK inside its tests, for each package again and beside three other test binaries. On GitHub-hosted runners that took longer than the two minutes a test waits for its extension, and on the slower runners a shard's share of `coding/cli` then took longer than the go command's ten minutes per package. `light.mk` therefore sets the tests' wait bound (`PIG_TEST_WAIT_TIMEOUT_SEC`) to five minutes and the time per package (`LIGHT_TEST_TIMEOUT`) to twenty: a run without the cache is slow, not red. A test that passes does not wait longer for either.
 
-`go vet` and the lint use no cache: each compiles its platform from nothing on its own runner and is done before the tests are.
+What the tests still build in a shard: a Rust test crate that brings a lock file of its own, or none, resolves other versions of the SDK's dependencies than the SDK's lock file names, and Cargo builds the SDK once more for those.
+
+`go vet` uses no cache: each platform is compiled from nothing on its own runner and is done before the tests are.
 
 ## It stands on its own
 
@@ -75,9 +97,10 @@ Everything the light run uses is in this directory, in `automation/light/` and i
 |---|---|
 | `Containerfile` | The image: Ubuntu, Go, Node, npm, Rust, SBCL, libxcb, gotestsum and the apt packages, each with its version here |
 | `light.mk` | What runs: the tests, the lint, `go vet`, and what the tests need first |
-| `automation/light/plan/` | The program that works out a shard's share, with its tests |
+| `automation/light/plan/` | The program that works out a shard's share and that runs the queue of `Fast`, with its tests |
 | `heavy.txt` | The packages and tests the light run leaves to the heavy run, each with its reason |
 | `timings.txt` | The measured seconds of the longer tests and packages, for the plan |
+| `programs.txt` | The tests that start a program, which `Fast` leaves out |
 | `automation/light/rustdeps/` | The program that builds what the tests' Rust builds start from, for `Warm` |
 | `run.sh` | Starts a command in the image against this checkout |
 
