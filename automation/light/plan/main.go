@@ -32,10 +32,11 @@
 // prints the -run pattern of the tests that exist only with that build tag, so a tagged run does not repeat the tests
 // the untagged run already ran.
 //
-//	go run ./automation/light/plan -queue -workers 4
+//	go run ./automation/light/plan -queue -kind fast
+//	go run ./automation/light/plan -pieces
 //
-// plans nothing for a shard: it builds every package's test binary once and runs the tests that start no program from
-// one queue (queue.go).
+// plan nothing for a shard: the first builds the test binaries of one piece of the run once and runs its tests from
+// one queue, the second prints the pieces a run needs (queue.go).
 package main
 
 import (
@@ -116,9 +117,14 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	timingsFile := flags.String("timings", "light/timings.txt", "the file with the measured seconds of the longer tests and packages")
 	timingsFrom := flags.Bool("timings-from", false, "print a seconds file from the go test -json results given as arguments (file names or patterns)")
 	tagOnly := flags.String("tag-only", "", "print the -run pattern of the tests that exist only with this build `tag`, for the packages given as arguments")
-	queueMode := flags.Bool("queue", false, "build every test binary once and run the tests that start no program from one queue, the longest first")
+	queueMode := flags.Bool("queue", false, "build the test binaries of one piece once and run its tests from one queue, the longest first")
+	kind := flags.String("kind", kindFast, "with -queue: the `kind` of tests to run: "+strings.Join(kinds, ", "))
+	part := flags.String("part", "1/1", "with -queue: which part of the kind's tests, as `index/total`")
 	workers := flags.Int("workers", runtime.NumCPU(), "with -queue: how many units run at a time")
-	programsFile := flags.String("programs", "light/programs.txt", "with -queue: the file that names the tests that start a program")
+	piecesMode := flags.Bool("pieces", false, "print the pieces a run needs after the first stage, as JSON")
+	pieceSeconds := flags.Float64("piece-seconds", 900, "with -pieces: the test `seconds` one piece holds")
+	programsFile := flags.String("programs", "light/programs.txt", "with -queue and -pieces: the file that names the tests that start a program")
+	movedFile := flags.String("moved", "light/moved.txt", "with -queue and -pieces: the file that puts single tests in another kind by hand")
 	binDir := flags.String("bin", "", "with -queue: `directory` for the test binaries (default: a temporary one)")
 	reportFile := flags.String("report", "", "with -queue: `file` for the seconds of the build and the tests (default: standard error)")
 	if err := flags.Parse(args); err != nil {
@@ -149,7 +155,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	if err != nil {
 		return err
 	}
-	if *out == "" && !*queueMode {
+	if *out == "" && !*queueMode && !*piecesMode {
 		return errors.New("-out is required")
 	}
 	heavy, err := readHeavy(*heavyFile)
@@ -179,10 +185,25 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	if err != nil {
 		return fmt.Errorf("%s: %w", *heavyFile, err)
 	}
-	if *queueMode {
+	if *queueMode || *piecesMode {
 		starts, err := readPrograms(*programsFile)
 		if err != nil {
 			return err
+		}
+		moved, err := readPrograms(*movedFile)
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+		maps.Copy(starts, moved)
+		if *piecesMode {
+			return json.NewEncoder(stdout).Encode(runPieces(light, heavy, measured, starts, *pieceSeconds))
+		}
+		if !slices.Contains(kinds, *kind) {
+			return fmt.Errorf("-kind %q: want one of %s", *kind, strings.Join(kinds, ", "))
+		}
+		partIndex, parts, err := parseShard(*part)
+		if err != nil {
+			return fmt.Errorf("-part: %w", err)
 		}
 		report := stderr
 		if *reportFile != "" {
@@ -193,7 +214,8 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 			defer file.Close() //nolint:errcheck // the report is a few lines for the reader of the run; the tests' result does not depend on it
 			report = file
 		}
-		return queue(ctx, root, light, heavy, measured, starts, *workers, *binDir, stdout, stderr, report)
+		units := partOf(queueUnits(light, heavy, measured, starts, *kind), partIndex, parts)
+		return queue(ctx, root, units, *workers, *binDir, stdout, stderr, report)
 	}
 	plans, err := planShards(light, measured, total)
 	if err != nil {

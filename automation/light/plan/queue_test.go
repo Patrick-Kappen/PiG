@@ -4,7 +4,6 @@ package main
 
 import (
 	"bytes"
-	"cmp"
 	"encoding/json"
 	"os"
 	"os/exec"
@@ -15,51 +14,53 @@ import (
 	"testing"
 )
 
-// The first stage runs every test but the ones the heavy list leaves out and the ones that start a program, and every
-// one of them once: a test is in exactly one unit.
-func TestEveryTestThatStartsNoProgramIsInExactlyOneUnit(t *testing.T) {
+// Every test the heavy list does not leave out has one kind and is in exactly one unit of that kind: the pieces
+// together run every test once.
+func TestEveryTestIsInExactlyOneUnitOfItsKind(t *testing.T) {
 	pkgs := []pkg{
-		{Path: "example.com/m/a", Rel: "a", Tests: []string{"TestLong", "TestShort", "TestStartsPig", "TestHeavy", "ExampleA", "FuzzA"}},
+		{Path: "example.com/m/a", Rel: "a", Tests: []string{"TestLong", "TestShort", "TestStartsPig", "TestHeavy", "ExampleA", "FuzzA", "TestMoved"}},
 		{Path: "example.com/m/b", Rel: "b", Tests: []string{"TestLong", "TestOther"}},
-		{Path: "example.com/m/c", Rel: "c", Tests: []string{"TestStartsNode"}},
+		{Path: "example.com/m/c", Rel: "c", Tests: []string{"TestStartsNode", "TestBuildsACell"}},
 	}
 	heavy := heavyList{tests: []heavyTest{{"a", "TestHeavy"}}}
-	measured := timings{tests: map[heavyTest]float64{{"a", "TestLong"}: 12, {"a", "TestShort"}: 0.4, {"b", "TestLong"}: 3}}
-	starts := programs{{"a", "TestStartsPig"}: "pig", {"c", "TestStartsNode"}: "node"}
+	measured := timings{tests: map[heavyTest]float64{{"a", "TestLong"}: 12, {"a", "TestShort"}: 0.4, {"b", "TestLong"}: 3, {"a", "TestMoved"}: 0.1}}
+	starts := programs{{"a", "TestStartsPig"}: "pig", {"c", "TestStartsNode"}: "node", {"c", "TestBuildsACell"}: "rust", {"a", "TestMoved"}: "slow"}
 
-	units := queueUnits(pkgs, heavy, measured, starts)
-
-	ran := map[heavyTest]int{}
-	for _, u := range units {
-		pattern := regexp.MustCompile(u.Run)
-		matched := 0
-		for _, name := range u.Pkg.Tests {
-			if pattern.MatchString(name) {
-				ran[heavyTest{u.Pkg.Rel, name}]++
-				matched++
+	ran := map[heavyTest][]string{}
+	for _, kind := range kinds {
+		for _, u := range queueUnits(pkgs, heavy, measured, starts, kind) {
+			pattern := regexp.MustCompile(u.Run)
+			matched := 0
+			for _, name := range u.Pkg.Tests {
+				if pattern.MatchString(name) {
+					ran[heavyTest{u.Pkg.Rel, name}] = append(ran[heavyTest{u.Pkg.Rel, name}], kind)
+					matched++
+				}
+			}
+			if matched != u.Tests {
+				t.Errorf("%s %s matches %d tests, the unit says %d", u.Pkg.Rel, u.Run, matched, u.Tests)
 			}
 		}
-		if matched != u.Tests {
-			t.Errorf("%s %s matches %d tests, the unit says %d", u.Pkg.Rel, u.Run, matched, u.Tests)
-		}
 	}
-	want := map[heavyTest]int{
-		{"a", "TestLong"}: 1, {"a", "TestShort"}: 1, {"a", "ExampleA"}: 1, {"a", "FuzzA"}: 1,
-		{"b", "TestLong"}: 1, {"b", "TestOther"}: 1,
+	want := map[heavyTest]string{
+		{"a", "TestLong"}: "slow", {"a", "TestShort"}: "fast", {"a", "ExampleA"}: "fast", {"a", "FuzzA"}: "fast",
+		{"a", "TestStartsPig"}: "pig", {"a", "TestMoved"}: "slow",
+		{"b", "TestLong"}: "slow", {"b", "TestOther"}: "fast",
+		{"c", "TestStartsNode"}: "node", {"c", "TestBuildsACell"}: "rust",
 	}
 	if len(ran) != len(want) {
 		t.Errorf("the units run %v, want %v", ran, want)
 	}
-	for test, n := range want {
-		if ran[test] != n {
-			t.Errorf("%s:%s is in %d units, want %d", test.Dir, test.Name, ran[test], n)
+	for test, kind := range want {
+		if !slices.Equal(ran[test], []string{kind}) {
+			t.Errorf("%s:%s is in the units of %v, want once in %s", test.Dir, test.Name, ran[test], kind)
 		}
 	}
 }
 
-// A test with a second or more is a unit of its own, and the units come longest first: that is the order the workers
-// take them in.
-func TestALongTestIsAUnitOfItsOwnAndTheLongestUnitIsFirst(t *testing.T) {
+// A slow test is a unit of its own and the units come longest first: that is the order the workers take them in. A
+// package's fast tests are one unit.
+func TestASlowTestIsAUnitOfItsOwnAndTheLongestUnitIsFirst(t *testing.T) {
 	pkgs := []pkg{
 		{Path: "example.com/m/a", Rel: "a", Tests: []string{"TestQuick", "TestThreeSeconds", "TestJustUnderASecond"}},
 		{Path: "example.com/m/b", Rel: "b", Tests: []string{"TestTwentySeconds"}},
@@ -67,19 +68,105 @@ func TestALongTestIsAUnitOfItsOwnAndTheLongestUnitIsFirst(t *testing.T) {
 	measured := timings{tests: map[heavyTest]float64{
 		{"a", "TestThreeSeconds"}: 3, {"a", "TestJustUnderASecond"}: 0.9, {"b", "TestTwentySeconds"}: 20,
 	}}
+	name := func(units []unit) []string {
+		var names []string
+		for _, u := range units {
+			names = append(names, u.Pkg.Rel+" "+u.Run)
+		}
+		return names
+	}
 
-	units := queueUnits(pkgs, heavyList{}, measured, programs{})
+	slow := queueUnits(pkgs, heavyList{}, measured, programs{}, kindSlow)
+	fast := queueUnits(pkgs, heavyList{}, measured, programs{}, kindFast)
+
+	if got, want := name(slow), []string{"b ^TestTwentySeconds$", "a ^TestThreeSeconds$"}; !slices.Equal(got, want) {
+		t.Errorf("slow units = %q, want %q", got, want)
+	}
+	if got, want := name(fast), []string{"a ^(TestJustUnderASecond|TestQuick)$"}; !slices.Equal(got, want) {
+		t.Errorf("fast units = %q, want %q", got, want)
+	}
+}
+
+// The tests of a package that start a program stay together, because they share what the first of them builds; a
+// package with more of them than one unit may hold is cut into several.
+func TestTestsThatStartAProgramStayTogetherUpToAUnitsSeconds(t *testing.T) {
+	p := pkg{Path: "example.com/m/cli", Rel: "cli"}
+	measured := timings{tests: map[heavyTest]float64{}}
+	starts := programs{}
+	for _, name := range []string{"TestA", "TestB", "TestC", "TestD", "TestE"} {
+		p.Tests = append(p.Tests, name)
+		measured.tests[heavyTest{"cli", name}] = 50
+		starts[heavyTest{"cli", name}] = "pig"
+	}
+	p.Tests = append(p.Tests, "TestUnmeasured")
+	starts[heavyTest{"cli", "TestUnmeasured"}] = "pig"
+
+	units := queueUnits([]pkg{p}, heavyList{}, measured, starts, "pig")
 
 	var got []string
 	for _, u := range units {
-		got = append(got, u.Pkg.Rel+" "+u.Run)
+		got = append(got, u.Run)
+		if u.Seconds > maxTogetherSeconds {
+			t.Errorf("the unit %s expects %.0f s, over the %d a unit may hold", u.Run, u.Seconds, maxTogetherSeconds)
+		}
 	}
-	want := []string{"b ^TestTwentySeconds$", "a ^TestThreeSeconds$", "a ^(TestJustUnderASecond|TestQuick)$"}
+	want := []string{"^(TestA|TestB)$", "^(TestC|TestD)$", "^(TestE|TestUnmeasured)$"}
 	if !slices.Equal(got, want) {
 		t.Errorf("units = %q, want %q", got, want)
 	}
-	if !slices.IsSortedFunc(units, func(a, b unit) int { return cmp.Compare(b.Seconds, a.Seconds) }) {
-		t.Errorf("the units are not longest first: %v", units)
+}
+
+// The parts of a kind hold every unit once and are even: the units are dealt out longest first.
+func TestThePartsOfAKindHoldEveryUnitOnceAndAreEven(t *testing.T) {
+	var units []unit
+	for i, seconds := range []float64{90, 80, 70, 40, 30, 20, 10, 5, 5, 1} {
+		units = append(units, unit{Pkg: pkg{Path: "example.com/m/p"}, Run: "^Test" + string(rune('A'+i)) + "$", Tests: 1, Seconds: seconds})
+	}
+	const total = 3
+	seen := map[string]int{}
+	var loads []float64
+	for part := range total {
+		load := 0.0
+		for _, u := range partOf(units, part, total) {
+			seen[u.Run]++
+			load += u.Seconds
+		}
+		loads = append(loads, load)
+	}
+	for _, u := range units {
+		if seen[u.Run] != 1 {
+			t.Errorf("%s is in %d parts, want 1", u.Run, seen[u.Run])
+		}
+	}
+	if slices.Max(loads)-slices.Min(loads) > 20 {
+		t.Errorf("the parts hold %v seconds, want them within the shortest long unit of each other", loads)
+	}
+}
+
+// A run's pieces after the first stage: every other kind that has tests, in as many parts as its seconds ask for.
+func TestTheRunsPiecesFollowTheSecondsOfEachKind(t *testing.T) {
+	p := pkg{Path: "example.com/m/a", Rel: "a"}
+	measured := timings{tests: map[heavyTest]float64{}}
+	starts := programs{}
+	add := func(name, kind string, seconds float64) {
+		p.Tests = append(p.Tests, name)
+		measured.tests[heavyTest{"a", name}] = seconds
+		if kind != "" {
+			starts[heavyTest{"a", name}] = kind
+		}
+	}
+	add("TestFast", "", 0.2)
+	add("TestSlowOne", "", 400)
+	add("TestSlowTwo", "", 300)
+	add("TestSlowThree", "", 250)
+	add("TestPig", "pig", 100)
+	add("TestNode", "node", 60)
+
+	got := runPieces([]pkg{p}, heavyList{}, measured, starts, 500)
+
+	want := []piece{{"slow 1/2", "slow", "1/2"}, {"slow 2/2", "slow", "2/2"}, {"pig", "pig", "1/1"}, {"node", "node", "1/1"}}
+	if !slices.Equal(got, want) {
+		t.Errorf("pieces = %v, want %v", got, want)
 	}
 }
 
@@ -92,7 +179,7 @@ func TestShortTestsThatDoNotFitOnePatternAreSplit(t *testing.T) {
 		p.Tests = append(p.Tests, name+string(rune('A'+i%26))+string(rune('a'+i/26)))
 	}
 
-	units := queueUnits([]pkg{p}, heavyList{}, timings{}, programs{})
+	units := queueUnits([]pkg{p}, heavyList{}, timings{}, programs{}, kindFast)
 
 	if len(units) < 2 {
 		t.Fatalf("%d tests of 1,000 bytes are in %d unit, want more than one", len(p.Tests), len(units))
@@ -110,14 +197,20 @@ func TestShortTestsThatDoNotFitOnePatternAreSplit(t *testing.T) {
 }
 
 func TestParsePrograms(t *testing.T) {
-	list, err := parsePrograms(strings.NewReader("# a comment\n\npig coding/cli:TestRuns\nnode ai:TestMatchesPi\n"), "programs.txt")
+	list, err := parsePrograms(strings.NewReader("# a comment\n\npig coding/cli:TestRuns\nnode ai:TestMatchesPi\npython tui:TestTmux\nslow ai:TestMoved # it waits for a timer\n"), "programs.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(list) != 2 || list[heavyTest{"coding/cli", "TestRuns"}] != "pig" || list[heavyTest{"ai", "TestMatchesPi"}] != "node" {
-		t.Errorf("parsed %v", list)
+	want := programs{{"coding/cli", "TestRuns"}: "pig", {"ai", "TestMatchesPi"}: "node", {"tui", "TestTmux"}: "node", {"ai", "TestMoved"}: "slow"}
+	if len(list) != len(want) {
+		t.Errorf("parsed %v, want %v", list, want)
 	}
-	for _, bad := range []string{"coding/cli:TestRuns\n", "pig coding/cli\n", "pig coding/cli:TestRuns extra\n", "pig :TestRuns\n"} {
+	for test, kind := range want {
+		if list[test] != kind {
+			t.Errorf("%s:%s is %q, want %q", test.Dir, test.Name, list[test], kind)
+		}
+	}
+	for _, bad := range []string{"coding/cli:TestRuns\n", "pig coding/cli\n", "pig coding/cli:TestRuns extra\n", "pig :TestRuns\n", "heavy ai:TestX\n"} {
 		if _, err := parsePrograms(strings.NewReader(bad), "programs.txt"); err == nil || !strings.Contains(err.Error(), "programs.txt:1") {
 			t.Errorf("%q: error %v, want one that names the line", bad, err)
 		}
@@ -188,7 +281,8 @@ func TestTheQueueRunsUnitsOfRealPackagesAndWritesEachPackageResultOnce(t *testin
 	measured := timings{tests: map[heavyTest]float64{{"a", "TestLong"}: 5}}
 	var events, report bytes.Buffer
 
-	err := queue(t.Context(), root, pkgs, heavyList{}, measured, programs{}, 2, t.TempDir(), &events, os.Stderr, &report)
+	units := slices.Concat(queueUnits(pkgs, heavyList{}, measured, programs{}, kindFast), queueUnits(pkgs, heavyList{}, measured, programs{}, kindSlow))
+	err := queue(t.Context(), root, units, 2, t.TempDir(), &events, os.Stderr, &report)
 
 	if err == nil || !strings.Contains(err.Error(), "example.com/m/b/v2") || strings.Contains(err.Error(), "example.com/m/a,") {
 		t.Errorf("error = %v, want one that names the package whose test failed and no other", err)

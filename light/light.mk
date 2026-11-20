@@ -137,13 +137,35 @@ light-build: | light-plan
 light-bookkeeping: | light-fixtures
 	$(call light_part,bookkeeping,$(MAKE) -k -j$(LIGHT_CPUS) -O ci-bookkeeping-pr)
 
-# The first stage, on one runner: the tests that start no program (light/programs.txt names the ones that do). Every
-# package's test binary is built once; then the tests run from one queue, the longest first, LIGHT_FAST_WORKERS units
-# at a time (automation/light/plan -queue). gotestsum reads the events and reports as it does for the shards.
+# The run in pieces (automation/light/plan, queue.go). Every test has a kind: fast and slow start no program, pig, go,
+# node and rust start one (light/programs.txt, light/timings.txt, and light/moved.txt for a test moved by hand). A
+# piece builds the test binaries it needs once and runs its tests from one queue, the longest first.
+#   light-fast     the first stage: the fast tests. More workers than processors: part of them wait for a timer.
+#   light-piece    one piece after it: LIGHT_PIECE is kind:index/total. The kinds that start a program get a worker
+#                  per processor: each of their tests runs several processes already.
+#   light-pieces   prints the pieces a run needs after the first stage, as JSON: each kind in as many parts as its
+#                  seconds ask for, at LIGHT_PIECE_SECONDS test seconds a part.
+LIGHT_PIECE ?= slow:1/1
+LIGHT_PIECE_SECONDS ?= 900
+light_piece_kind = $(word 1,$(subst :, ,$(LIGHT_PIECE)))
+light_piece_part = $(word 2,$(subst :, ,$(LIGHT_PIECE)))
+light_piece_workers = $(if $(filter slow,$(light_piece_kind)),$(LIGHT_FAST_WORKERS),$(LIGHT_CPUS))
+
+# light_queue <name> <kind> <part> <workers>: gotestsum reads the queue's events and reports as it does for the shards.
+define light_queue
+$(call light_part,$(1),rc=0; gotestsum --format pkgname-and-test-fails --format-hide-empty-pkg --jsonfile $(LIGHT_OUT)/$(1).json --raw-command -- \
+	go run ./automation/light/plan -queue -kind $(2) -part $(3) -workers $(4) -bin $(LIGHT_OUT)/bin -report $(LIGHT_OUT)/$(1)-report.txt || rc=$$?; \
+	rm -rf $(LIGHT_OUT)/bin; cat $(LIGHT_OUT)/$(1)-report.txt 2>/dev/null; [ $$rc -eq 0 ])
+endef
+
 light-fast: | light-fixtures
-	$(call light_part,test-fast,rc=0; gotestsum --format pkgname-and-test-fails --format-hide-empty-pkg --jsonfile $(LIGHT_OUT)/test-fast.json --raw-command -- \
-		go run ./automation/light/plan -queue -workers $(LIGHT_FAST_WORKERS) -bin $(LIGHT_OUT)/bin -report $(LIGHT_OUT)/fast-report.txt || rc=$$?; \
-		rm -rf $(LIGHT_OUT)/bin; cat $(LIGHT_OUT)/fast-report.txt 2>/dev/null; [ $$rc -eq 0 ])
+	$(call light_queue,test-fast,fast,1/1,$(LIGHT_FAST_WORKERS))
+
+light-piece: | light-fixtures light-rust-reuse
+	$(call light_queue,test-piece,$(light_piece_kind),$(light_piece_part),$(light_piece_workers))
+
+light-pieces:
+	@go run ./automation/light/plan -pieces -piece-seconds $(LIGHT_PIECE_SECONDS)
 
 # The tests, as three runs beside each other. Each waits for the plan, the compiled packages and the fixtures.
 # - light-test-sliced: this shard's share of the tests of the packages with many tests. With one shard no package is
@@ -158,7 +180,7 @@ light-test-sliced light-test-whole light-test-pigfault: | light-build light-fixt
 # Cargo builds the Rust SDK again when a source file is newer than its last build, and after a checkout every file
 # is. When the Cargo targets hold the SDK built from exactly this checkout's files (the Warm job's stamp), rustdeps
 # sets those files' times back, so a test compiles its own cell only. A checkout whose SDK differs keeps its times.
-light-rust-reuse: | light-build
+light-rust-reuse:
 	$(call light_part,rust-reuse,go run ./automation/light/rustdeps -reuse)
 
 light-test-sliced:
@@ -238,5 +260,5 @@ light-times:
 	@if [ -d $(LIGHT_OUT)/times ]; then cat $(LIGHT_OUT)/times/* | awk 'BEGIN { printf "%-20s %4s %7s\n", "part", "exit", "seconds" } { printf "%-20s %4s %7s\n", $$1, $$2, $$3 }'; else echo "light-times: no light run in $(LIGHT_OUT)"; fi
 	@grep -h '^DONE ' $(LIGHT_OUT)/test-*.log 2>/dev/null || true
 
-.PHONY: light light-vet light-vet-platforms light-lint light-plan light-fixtures light-build light-rust-reuse light-bookkeeping light-fast light-test light-test-sliced light-test-whole \
+.PHONY: light light-vet light-vet-platforms light-lint light-plan light-fixtures light-build light-rust-reuse light-bookkeeping light-fast light-piece light-pieces light-test light-test-sliced light-test-whole \
 	light-test-pigfault light-warm light-warm-go light-warm-programs light-warm-rust light-warm-lint light-timings light-times

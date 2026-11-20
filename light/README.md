@@ -51,17 +51,37 @@ Nothing checks it against the tests, and a pull request does not have to touch i
 
 Why seconds and not only names: few tests hold most of the time. On GitHub 51 tests of 30 seconds or more held 39% of the test seconds, and by name length alone one shard's share of `coding/cli` was 208 seconds and another's 581. On a slower runner such a share passed the ten minutes.
 
-## The first stage: one runner, one queue
+## The run in pieces
 
-`Fast` runs the tests that start no program, on one runner. `automation/light/plan -queue` builds every package's test binary once and then runs the tests from one queue, the longest first: a worker takes the next unit when it is free, so no processor waits while a test is left.
+On the branch `light-next` the run is pieces of a few minutes, each a job of its own: a runner is free again soon, and a piece that failed can be run again without the others (`.github/workflows/light.yml`).
 
-- A test with a second or more in `timings.txt` is a unit of its own. Starting a test binary takes milliseconds, so that costs nothing, and the long tests are what has to be spread.
-- A package's other tests are one unit, in one process: they share what the package's `TestMain` and its first tests set up.
-- There are more workers than processors (`LIGHT_FAST_WORKERS`): part of the tests wait for a timer or a child process and not for a processor.
+Every test has one kind:
 
-`programs.txt` names the tests that start a program, each with what it starts: cargo or sbcl, the go command, `pig`, Node or Pi, Python or tmux. `Fast` leaves those out. The file is measured: every package's tests in one process, one test at a time, under `strace` for the programs that process started while each test ran. A test that is missing there runs in `Fast`. The measuring is not in this directory yet.
+| Kind | What the test starts |
+|---|---|
+| `fast` | nothing, and it takes under a second, or nobody has measured it yet |
+| `slow` | nothing, and it takes a second or more |
+| `pig` | the built `pig` |
+| `go` | the go command: it builds something |
+| `node` | Node or Pi (and the few that start Python or tmux) |
+| `rust` | cargo, rustc or sbcl: it builds a cell |
 
-`Fast` is not part of the verdict yet: the ten shards still run every test, until its time on a runner is known.
+- `programs.txt` says what a test starts and `timings.txt` how long it takes. Both are measured, not written by hand.
+- `moved.txt` puts one test in another kind by hand: the kind, the test, and the reason. To move a test, add a line.
+- A new test needs no line anywhere. It is `fast` until a measurement says otherwise: slower there, not wrong.
+
+The first layer starts at once: `Fast` (the fast tests), `Lint` and `Bookkeeping` beside each other, and `Light` is green when they are. The second layer starts when `Light` is green: every other kind, in as many parts as its seconds ask for (`make -f light/light.mk light-pieces`), beside each other. `All tests` is green when everything is.
+
+A piece (`automation/light/plan -queue`) builds the test binaries it needs once and runs its tests from one queue, the longest first: a worker takes the next unit when it is free.
+
+- A slow test is a unit of its own: starting a test binary takes milliseconds, and the long tests are what has to be spread.
+- A package's fast tests are one unit, in one process: they share what the package's `TestMain` sets up.
+- A package's tests that start a program stay together in units of at most two minutes: they share what the first of them builds, the `pig` binary for one.
+- The fast and the slow tests get more workers than processors (`LIGHT_FAST_WORKERS`), because part of them wait for a timer and not for a processor. The kinds that start a program get a worker per processor.
+
+Nothing is compiled twice: `Fast` compiles the change, packs what main's cache did not hold, and every piece unpacks that over the cache it restored.
+
+`programs.txt` is measured with every package's tests in one process, one test at a time, under `strace` for the programs that process started while each test ran. The measuring is not in this directory yet.
 
 ## What main prepares
 
@@ -97,10 +117,11 @@ Everything the light run uses is in this directory, in `automation/light/` and i
 |---|---|
 | `Containerfile` | The image: Ubuntu, Go, Node, npm, Rust, SBCL, libxcb, gotestsum and the apt packages, each with its version here |
 | `light.mk` | What runs: the tests, the lint, `go vet`, and what the tests need first |
-| `automation/light/plan/` | The program that works out a shard's share and that runs the queue of `Fast`, with its tests |
+| `automation/light/plan/` | The program that works out the pieces and runs a piece's queue, with its tests |
 | `heavy.txt` | The packages and tests the light run leaves to the heavy run, each with its reason |
 | `timings.txt` | The measured seconds of the longer tests and packages, for the plan |
-| `programs.txt` | The tests that start a program, which `Fast` leaves out |
+| `programs.txt` | The tests that start a program, each with what it starts |
+| `moved.txt` | The tests put in another kind by hand, each with its reason |
 | `automation/light/rustdeps/` | The program that builds what the tests' Rust builds start from, for `Warm` |
 | `run.sh` | Starts a command in the image against this checkout |
 

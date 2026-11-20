@@ -3,19 +3,31 @@
 name: Light
 
 # What every push to a pull request gets: does this change break the product? light/light.mk says what runs.
-#   Fast    the tests that start no program, on one runner: every test binary built once, then one queue, the longest
-#           test first (automation/light/plan -queue)
-#   Lint    golangci-lint on the files the change touches
+# The run is pieces of a few minutes, each a job of its own, so a runner is free again soon and one piece can be run
+# again without the others.
+#
+# The chain: the pre-flight, then the first layer, then the second. Each link starts when the one before it is green,
+# so what fails soon fails before a runner is spent on the rest.
+#
+#   Pre-flight verdict  waits for the verdict the Pre-flight workflow gives this head: the pull request's text, its
+#                commits' signatures and sign-offs, licenses, secrets. It runs none of the pull request's code.
+#
+# The first layer starts when that is green, its jobs beside each other:
+#   Fast         the tests that start no program and take under a second. It builds every test binary once and keeps
+#                what it compiled for the pieces after it.
+#   Lint         golangci-lint on the files the change touches
 #   Bookkeeping  the repository's own gates: stale generated files, stale ledgers, the policy gates
-#   Light   the verdict: green when all three are green. This is the one check to require.
-#   Warm    on a push to main or light-next only: compiles, builds and analyses what the tests and the lint start
-#           from, runs no test, and saves it.
-# A pull request saves no cache: Fast and Lint restore what Warm saved.
+#   Light        the first verdict: green when those three are green.
+# The second layer starts when Light is green, its jobs beside each other:
+#   slow, pig, go, node, rust   the other tests by what they start, each kind in as many parts as its seconds ask for
+#                (automation/light/plan -pieces). A piece starts from what Fast compiled.
+#   All tests    the second verdict: green when Light and every piece are green.
+#   Warm         on a push to main or light-next only: compiles, builds and analyses what the jobs start from, runs no
+#                test, and saves it. A pull request saves no cache.
 #
 # This is the light run of the branch light-next, where a pull request gets Pre-flight, Repository bootstrap and this
-# and nothing else. Not
-# in it yet, and run nowhere on this branch: the tests that start a program (light/programs.txt), go vet for the
-# platforms besides Linux, and the security checks.
+# and nothing else. Not in it yet, and run nowhere on this branch: go vet for the platforms besides Linux, and the
+# security checks.
 on:
   pull_request:
   push:
@@ -69,14 +81,43 @@ jobs:
           echo "image=$image" >> "$GITHUB_OUTPUT"
 
   # One runner: the tests that start no program, built once and run from one queue.
+  # The pre-flight (.github/workflows/preflight.yml) judges the pull request from its API data and records the
+  # "preflight" commit status on the head. This job reads that status, as the CI workflow's job of the same name does on
+  # main, and fails when the pre-flight rejected the head or gave no verdict: then nothing after it starts. Outside a
+  # pull request it waits for nothing and succeeds.
+  verdict:
+    name: Pre-flight verdict
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      statuses: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'pull_request'
+        with:
+          sparse-checkout: automation/ci/wait-preflight.sh
+          persist-credentials: false
+      - name: Wait for the pre-flight verdict of this head
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          # pull_request_target runs preflight.yml from the default branch, whatever the pull request's base.
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: automation/ci/wait-preflight.sh "$REPO" "$HEAD_SHA" "$DEFAULT_BRANCH"
+
   fast:
     name: Fast
-    needs: setup
+    needs: [setup, verdict]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: read
       packages: read
+    outputs:
+      pieces: ${{ steps.pieces.outputs.pieces }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -97,8 +138,36 @@ jobs:
           key: light-test-${{ hashFiles('light/Containerfile') }}-${{ github.sha }}
           restore-keys: light-test-${{ hashFiles('light/Containerfile') }}-
 
-      - name: Run the tests that start no program
+      # The compiled packages in the cache before this job adds its own: the pieces get the difference.
+      - name: Note what the cache holds
+        run: |
+          mkdir -p "$PIG_LIGHT_CACHE_ROOT/.cache/go-build"
+          (cd "$PIG_LIGHT_CACHE_ROOT" && find .cache/go-build -type f | sort) > "$RUNNER_TEMP/before.txt"
+
+      - name: Run the fast tests
         run: light/run.sh make -f light/light.mk -k -j4 light-fast
+
+      - name: Say which pieces the rest of the run has
+        id: pieces
+        run: echo "pieces=$(light/run.sh make -s -f light/light.mk light-pieces)" >> "$GITHUB_OUTPUT"
+
+      # What this job compiled that main had not: the change's own packages and what imports them. A piece unpacks it
+      # over what it restored and compiles nothing again.
+      - name: Pack what this job compiled
+        run: |
+          cd "$PIG_LIGHT_CACHE_ROOT"
+          find .cache/go-build -type f | sort > "$RUNNER_TEMP/after.txt"
+          comm -13 "$RUNNER_TEMP/before.txt" "$RUNNER_TEMP/after.txt" > "$RUNNER_TEMP/new.txt"
+          tar -cf - -T "$RUNNER_TEMP/new.txt" | zstd -3 -T0 -q > "$RUNNER_TEMP/light-build.tar.zst"
+          echo "Compiled here and kept for the pieces: $(wc -l < "$RUNNER_TEMP/new.txt") files, $(du -h "$RUNNER_TEMP/light-build.tar.zst" | cut -f1)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep it for the pieces
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: light-build
+          path: ${{ runner.temp }}/light-build.tar.zst
+          retention-days: 3
+          compression-level: 0
 
       - name: Report the seconds of each part
         if: always()
@@ -106,7 +175,7 @@ jobs:
           {
             echo '```'
             make -s -f light/light.mk light-times
-            cat tmp/light/fast-report.txt 2>/dev/null || true
+            cat tmp/light/test-fast-report.txt 2>/dev/null || true
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -117,7 +186,78 @@ jobs:
           name: light-fast
           path: |
             tmp/light/test-fast.json
-            tmp/light/fast-report.txt
+            tmp/light/test-fast-report.txt
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # The tests after the fast ones, by what they start, each kind in parts of a few minutes. They start when the first
+  # layer is green, beside each other, each from what Fast compiled. A piece that failed can be run again alone.
+  piece:
+    name: ${{ matrix.piece.name }}
+    needs: [setup, fast, light]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        piece: ${{ fromJSON(needs.fast.outputs.pieces) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Pull the light image
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          IMAGE: ${{ needs.setup.outputs.image }}
+        run: |
+          echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          if docker pull -q "$IMAGE"; then echo "PIG_LIGHT_IMAGE=$IMAGE" >> "$GITHUB_ENV"; fi
+
+      - name: Restore what main prepared
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.PIG_LIGHT_CACHE_ROOT }}
+          key: light-test-${{ hashFiles('light/Containerfile') }}-${{ github.sha }}
+          restore-keys: light-test-${{ hashFiles('light/Containerfile') }}-
+
+      - name: Fetch what Fast compiled
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: light-build
+          path: ${{ runner.temp }}
+
+      - name: Unpack it over the cache
+        run: |
+          mkdir -p "$PIG_LIGHT_CACHE_ROOT"
+          zstd -dc "$RUNNER_TEMP/light-build.tar.zst" | tar -xf - -C "$PIG_LIGHT_CACHE_ROOT"
+
+      - name: Run this piece's tests
+        env:
+          KIND: ${{ matrix.piece.kind }}
+          PART: ${{ matrix.piece.part }}
+        run: light/run.sh make -f light/light.mk -k -j4 light-piece LIGHT_PIECE="$KIND:$PART"
+
+      - name: Report the seconds of each part
+        if: always()
+        run: |
+          {
+            echo '```'
+            make -s -f light/light.mk light-times
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the test results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: light-piece-${{ strategy.job-index }}
+          path: |
+            tmp/light/test-piece.json
+            tmp/light/test-piece-report.txt
           retention-days: 14
           if-no-files-found: ignore
 
@@ -125,7 +265,7 @@ jobs:
   # the CI workflow's Bookkeeping job runs them; a pull request into this branch does not start that workflow.
   bookkeeping:
     name: Bookkeeping
-    needs: setup
+    needs: [setup, verdict]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -158,7 +298,7 @@ jobs:
 
   lint:
     name: Lint
-    needs: setup
+    needs: [setup, verdict]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -236,16 +376,33 @@ jobs:
   light:
     name: Light
     if: always()
-    needs: [fast, lint, bookkeeping]
+    needs: [verdict, fast, lint, bookkeeping]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: {}
     steps:
-      - name: Every part is green
+      - name: The first layer is green
         env:
+          PREFLIGHT: ${{ needs.verdict.result }}
           FAST: ${{ needs.fast.result }}
           LINT: ${{ needs.lint.result }}
           BOOKKEEPING: ${{ needs.bookkeeping.result }}
         run: |
-          echo "fast: $FAST, lint: $LINT, bookkeeping: $BOOKKEEPING"
-          [ "$FAST" = success ] && [ "$LINT" = success ] && [ "$BOOKKEEPING" = success ]
+          echo "pre-flight: $PREFLIGHT, fast: $FAST, lint: $LINT, bookkeeping: $BOOKKEEPING"
+          [ "$PREFLIGHT" = success ] && [ "$FAST" = success ] && [ "$LINT" = success ] && [ "$BOOKKEEPING" = success ]
+
+  all:
+    name: All tests
+    if: always()
+    needs: [light, piece]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: The first layer and every piece are green
+        env:
+          LIGHT: ${{ needs.light.result }}
+          PIECES: ${{ needs.piece.result }}
+        run: |
+          echo "light: $LIGHT, pieces: $PIECES"
+          [ "$LIGHT" = success ] && [ "$PIECES" = success ]
