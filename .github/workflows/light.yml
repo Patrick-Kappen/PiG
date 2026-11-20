@@ -6,12 +6,14 @@ name: Light
 #   Fast    the tests that start no program, on one runner: every test binary built once, then one queue, the longest
 #           test first (automation/light/plan -queue)
 #   Lint    golangci-lint on the files the change touches
-#   Light   the verdict: green when both are green. This is the one check to require.
+#   Bookkeeping  the repository's own gates: stale generated files, stale ledgers, the policy gates
+#   Light   the verdict: green when all three are green. This is the one check to require.
 #   Warm    on a push to main or light-next only: compiles, builds and analyses what the tests and the lint start
 #           from, runs no test, and saves it.
 # A pull request saves no cache: Fast and Lint restore what Warm saved.
 #
-# This is the light run of the branch light-next, where a pull request gets Pre-flight and this and nothing else. Not
+# This is the light run of the branch light-next, where a pull request gets Pre-flight, Repository bootstrap and this
+# and nothing else. Not
 # in it yet, and run nowhere on this branch: the tests that start a program (light/programs.txt), go vet for the
 # platforms besides Linux, and the security checks.
 on:
@@ -119,6 +121,41 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
+  # The repository's own gates: stale generated files, stale ledgers, the policy gates (make ci-bookkeeping-pr). On main
+  # the CI workflow's Bookkeeping job runs them; a pull request into this branch does not start that workflow.
+  bookkeeping:
+    name: Bookkeeping
+    needs: setup
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      # The whole history: the bug ledger reads it.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Pull the light image
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          IMAGE: ${{ needs.setup.outputs.image }}
+        run: |
+          echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          if docker pull -q "$IMAGE"; then echo "PIG_LIGHT_IMAGE=$IMAGE" >> "$GITHUB_ENV"; fi
+
+      - name: Restore what main prepared
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.PIG_LIGHT_CACHE_ROOT }}
+          key: light-test-${{ hashFiles('light/Containerfile') }}-${{ github.sha }}
+          restore-keys: light-test-${{ hashFiles('light/Containerfile') }}-
+
+      - name: Run the bookkeeping gates
+        run: light/run.sh make -f light/light.mk -k -j4 light-bookkeeping
+
   lint:
     name: Lint
     needs: setup
@@ -199,7 +236,7 @@ jobs:
   light:
     name: Light
     if: always()
-    needs: [fast, lint]
+    needs: [fast, lint, bookkeeping]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: {}
@@ -208,6 +245,7 @@ jobs:
         env:
           FAST: ${{ needs.fast.result }}
           LINT: ${{ needs.lint.result }}
+          BOOKKEEPING: ${{ needs.bookkeeping.result }}
         run: |
-          echo "fast: $FAST, lint: $LINT"
-          [ "$FAST" = success ] && [ "$LINT" = success ]
+          echo "fast: $FAST, lint: $LINT, bookkeeping: $BOOKKEEPING"
+          [ "$FAST" = success ] && [ "$LINT" = success ] && [ "$BOOKKEEPING" = success ]

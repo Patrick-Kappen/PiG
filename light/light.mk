@@ -21,7 +21,8 @@
 # The light run stands on its own. Everything it needs is in light/ (the image's Containerfile, this file, heavy.txt
 # and timings.txt) and in automation/light/ (its two programs, plan and rustdeps: the repository exempts the tests of
 # CI tooling from the rule for tests of ported code only below automation/, test/testdata-provenance.toml). It includes no other make file and no other make file includes it, it calls no script under
-# automation/ci, and it reads no workflow, no test selection and no generated report.
+# automation/ci, and it reads no workflow, no test selection and no generated report. One target is the exception and
+# says so: light-bookkeeping runs the repository's own gates.
 # From the rest of the repository it takes the product: the code and its tests, the versions go.mod and the lock files
 # name, the lint rules in .golangci.yml, and the Pi the tests compare PiG with (light-fixtures).
 
@@ -130,6 +131,12 @@ light-fixtures:
 light-build: | light-plan
 	$(call light_part,build,deps=$$(go list -deps -test -f '{{if and .GoFiles (not .ForTest)}}{{.ImportPath}}{{end}}' $$(cat $(light_plan)/sliced.pkgs $(light_plan)/whole.pkgs) | grep -v '\.test$$' | sort -u) && go build $$deps)
 
+# The repository's own gates for a pull request: stale generated files, stale ledgers and the policy gates. They are
+# the repository's make file's (make ci-bookkeeping-pr), not the light run's: this is the one place the light run calls
+# it. They read Pi's source, which the fixtures lay out.
+light-bookkeeping: | light-fixtures
+	$(call light_part,bookkeeping,$(MAKE) -k -j$(LIGHT_CPUS) -O ci-bookkeeping-pr)
+
 # The first stage, on one runner: the tests that start no program (light/programs.txt names the ones that do). Every
 # package's test binary is built once; then the tests run from one queue, the longest first, LIGHT_FAST_WORKERS units
 # at a time (automation/light/plan -queue). gotestsum reads the events and reports as it does for the shards.
@@ -231,5 +238,5 @@ light-times:
 	@if [ -d $(LIGHT_OUT)/times ]; then cat $(LIGHT_OUT)/times/* | awk 'BEGIN { printf "%-20s %4s %7s\n", "part", "exit", "seconds" } { printf "%-20s %4s %7s\n", $$1, $$2, $$3 }'; else echo "light-times: no light run in $(LIGHT_OUT)"; fi
 	@grep -h '^DONE ' $(LIGHT_OUT)/test-*.log 2>/dev/null || true
 
-.PHONY: light light-vet light-vet-platforms light-lint light-plan light-fixtures light-build light-rust-reuse light-fast light-test light-test-sliced light-test-whole \
+.PHONY: light light-vet light-vet-platforms light-lint light-plan light-fixtures light-build light-rust-reuse light-bookkeeping light-fast light-test light-test-sliced light-test-whole \
 	light-test-pigfault light-warm light-warm-go light-warm-programs light-warm-rust light-warm-lint light-timings light-times

@@ -2,9 +2,8 @@
 
 name: Repository bootstrap
 
-# On the branch light-next a pull request gets Pre-flight and Light and nothing else: this workflow's pull_request and
-# merge_group triggers are taken out here. main has them.
 on:
+  pull_request:
   push:
     branches: [main]
   workflow_dispatch:
