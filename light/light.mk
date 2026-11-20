@@ -151,10 +151,16 @@ light_piece_kind = $(word 1,$(subst :, ,$(LIGHT_PIECE)))
 light_piece_part = $(word 2,$(subst :, ,$(LIGHT_PIECE)))
 light_piece_workers = $(if $(filter slow,$(light_piece_kind)),$(LIGHT_FAST_WORKERS),$(LIGHT_CPUS))
 
+# A test that fails runs once more, alone: when it passes then, the piece is green and <name>-flaky.txt names the test
+# with what its failed run printed. LIGHT_EARLIER is the results file an earlier run of the same piece kept: the tests
+# that passed there are not run again, so a piece that is asked for again runs what was red.
+LIGHT_EARLIER ?=
+
 # light_queue <name> <kind> <part> <workers>: gotestsum reads the queue's events and reports as it does for the shards.
 define light_queue
 $(call light_part,$(1),rc=0; gotestsum --format pkgname-and-test-fails --format-hide-empty-pkg --jsonfile $(LIGHT_OUT)/$(1).json --raw-command -- \
-	go run ./automation/light/plan -queue -kind $(2) -part $(3) -workers $(4) -bin $(LIGHT_OUT)/bin -report $(LIGHT_OUT)/$(1)-report.txt || rc=$$?; \
+	go run ./automation/light/plan -queue -kind $(2) -part $(3) -workers $(4) -bin $(LIGHT_OUT)/bin \
+		-report $(LIGHT_OUT)/$(1)-report.txt -flaky $(LIGHT_OUT)/$(1)-flaky.txt $(if $(LIGHT_EARLIER),-earlier $(LIGHT_EARLIER)) || rc=$$?; \
 	rm -rf $(LIGHT_OUT)/bin; cat $(LIGHT_OUT)/$(1)-report.txt 2>/dev/null; [ $$rc -eq 0 ])
 endef
 

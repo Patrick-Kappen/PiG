@@ -22,6 +22,9 @@ name: Light
 #   slow, pig, go, node, rust   the other tests by what they start, each kind in as many parts as its seconds ask for
 #                (automation/light/plan -pieces). A piece starts from what Fast compiled.
 #   All tests    the second verdict: green when Light and every piece are green.
+# A test that fails runs once more, alone. When it passes then, its job stays green and names it as flaky, in a warning
+# on the run. "Re-run failed jobs" starts only the pieces that were red, and such a piece runs only the tests that
+# were red in it.
 #   Warm         on a push to main or light-next only: compiles, builds and analyses what the jobs start from, runs no
 #                test, and saves it. A pull request saves no cache.
 #
@@ -169,6 +172,19 @@ jobs:
           retention-days: 3
           compression-level: 0
 
+      # A test that failed and passed on its second run, alone, leaves the job green. It is named here so that it is
+      # repaired: as a warning on the run and in the job's summary.
+      - name: Name the flaky tests
+        if: always()
+        run: |
+          for file in tmp/light/*-flaky.txt; do
+            [ -s "$file" ] || continue
+            grep '^## ' "$file" | sed 's/^## //' | while read -r test; do
+              echo "::warning title=Flaky test::$test failed and passed when it ran once more, alone"
+              echo "- Flaky: \`$test\` failed and passed when it ran once more, alone" >> "$GITHUB_STEP_SUMMARY"
+            done
+          done
+
       - name: Report the seconds of each part
         if: always()
         run: |
@@ -187,6 +203,7 @@ jobs:
           path: |
             tmp/light/test-fast.json
             tmp/light/test-fast-report.txt
+            tmp/light/test-fast-flaky.txt
           retention-days: 14
           if-no-files-found: ignore
 
@@ -235,11 +252,37 @@ jobs:
           mkdir -p "$PIG_LIGHT_CACHE_ROOT"
           zstd -dc "$RUNNER_TEMP/light-build.tar.zst" | tar -xf - -C "$PIG_LIGHT_CACHE_ROOT"
 
+      # Asked for again (Re-run failed jobs): the results this piece kept the time before. It then runs what was red
+      # or did not run, and nothing else. The first time there is nothing to fetch.
+      - name: Fetch this piece's earlier results
+        if: github.run_attempt > 1
+        continue-on-error: true
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: light-piece-${{ strategy.job-index }}
+          path: tmp/earlier
+
       - name: Run this piece's tests
         env:
           KIND: ${{ matrix.piece.kind }}
           PART: ${{ matrix.piece.part }}
-        run: light/run.sh make -f light/light.mk -k -j4 light-piece LIGHT_PIECE="$KIND:$PART"
+        run: |
+          earlier=
+          if [ -s tmp/earlier/test-piece.json ]; then earlier=tmp/earlier/test-piece.json; fi
+          light/run.sh make -f light/light.mk -k -j4 light-piece LIGHT_PIECE="$KIND:$PART" LIGHT_EARLIER="$earlier"
+
+      # A test that failed and passed on its second run, alone, leaves the job green. It is named here so that it is
+      # repaired: as a warning on the run and in the job's summary.
+      - name: Name the flaky tests
+        if: always()
+        run: |
+          for file in tmp/light/*-flaky.txt; do
+            [ -s "$file" ] || continue
+            grep '^## ' "$file" | sed 's/^## //' | while read -r test; do
+              echo "::warning title=Flaky test::$test failed and passed when it ran once more, alone"
+              echo "- Flaky: \`$test\` failed and passed when it ran once more, alone" >> "$GITHUB_STEP_SUMMARY"
+            done
+          done
 
       - name: Report the seconds of each part
         if: always()
@@ -258,6 +301,8 @@ jobs:
           path: |
             tmp/light/test-piece.json
             tmp/light/test-piece-report.txt
+            tmp/light/test-piece-flaky.txt
+          overwrite: true
           retention-days: 14
           if-no-files-found: ignore
 

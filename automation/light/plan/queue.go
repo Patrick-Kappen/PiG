@@ -73,9 +73,44 @@ var kinds = []string{kindFast, kindSlow, "pig", "go", "node", "rust"}
 // unit is what one worker runs at a time: tests of one package, in one process.
 type unit struct {
 	Pkg     pkg
-	Run     string  // the -test.run pattern
-	Tests   int     // how many tests the pattern names
-	Seconds float64 // what the seconds file expects
+	Names   []string // the top-level tests it runs
+	Run     string   // the -test.run pattern that matches exactly those
+	Tests   int      // how many they are
+	Seconds float64  // what the seconds file expects
+}
+
+// unitOf returns the unit that runs the named tests of one package in one process.
+func unitOf(p pkg, names []string, seconds float64) unit {
+	quoted := make([]string, len(names))
+	for i, name := range names {
+		quoted[i] = regexp.QuoteMeta(name)
+	}
+	run := "^(" + strings.Join(quoted, "|") + ")$"
+	if len(names) == 1 {
+		run = "^" + quoted[0] + "$"
+	}
+	return unit{Pkg: p, Names: slices.Clone(names), Run: run, Tests: len(names), Seconds: seconds}
+}
+
+// unitsOf cuts the named tests of one package into units whose patterns each fit one command-line argument and that
+// each expect at most limit seconds (no limit when it is zero), a test without measured seconds counting for perTest.
+func unitsOf(p pkg, names []string, measured timings, perTest, limit float64) []unit {
+	var units []unit
+	for len(names) > 0 {
+		n, size, seconds := 0, len("^()$"), 0.0
+		for n < len(names) {
+			next := max(measured.tests[heavyTest{p.Rel, names[n]}], perTest)
+			if n > 0 && (size+len(regexp.QuoteMeta(names[n]))+1 > maxPatternBytes || (limit > 0 && seconds+next > limit)) {
+				break
+			}
+			size += len(regexp.QuoteMeta(names[n])) + 1
+			seconds += next
+			n++
+		}
+		units = append(units, unitOf(p, names[:n], seconds))
+		names = names[n:]
+	}
+	return units
 }
 
 // programs holds light/programs.txt: the tests that start a program, each with what it starts.
@@ -142,33 +177,16 @@ func queueUnits(pkgs []pkg, heavy heavyList, measured timings, starts programs, 
 				continue
 			}
 			if kind == kindSlow {
-				units = append(units, unit{Pkg: p, Run: "^" + regexp.QuoteMeta(name) + "$", Tests: 1, Seconds: measured.tests[test]})
+				units = append(units, unitOf(p, []string{name}, measured.tests[test]))
 				continue
 			}
 			together = append(together, name)
 		}
 		slices.Sort(together)
-		perTest, limit := secondsPerShortTest, 0.0
-		if kind != kindFast {
-			perTest, limit = secondsPerProgramTest, maxTogetherSeconds
-		}
-		for len(together) > 0 {
-			n, size, seconds := 0, len("^()$"), 0.0
-			for n < len(together) {
-				next := max(measured.tests[heavyTest{p.Rel, together[n]}], perTest)
-				if n > 0 && (size+len(regexp.QuoteMeta(together[n]))+1 > maxPatternBytes || (limit > 0 && seconds+next > limit)) {
-					break
-				}
-				size += len(regexp.QuoteMeta(together[n])) + 1
-				seconds += next
-				n++
-			}
-			quoted := make([]string, n)
-			for i, name := range together[:n] {
-				quoted[i] = regexp.QuoteMeta(name)
-			}
-			units = append(units, unit{Pkg: p, Run: "^(" + strings.Join(quoted, "|") + ")$", Tests: n, Seconds: seconds})
-			together = together[n:]
+		if kind == kindFast {
+			units = append(units, unitsOf(p, together, measured, secondsPerShortTest, 0)...)
+		} else {
+			units = append(units, unitsOf(p, together, measured, secondsPerProgramTest, maxTogetherSeconds)...)
 		}
 	}
 	slices.SortStableFunc(units, byLongestFirst)
@@ -302,9 +320,122 @@ type testEvent struct {
 	Output  string  `json:",omitempty"`
 }
 
+// topLevel is the top-level test an event belongs to: a subtest's events are its parent's.
+func (e testEvent) topLevel() string {
+	top, _, _ := strings.Cut(e.Test, "/")
+	return top
+}
+
+// attempt is what one run of a unit came to.
+type attempt struct {
+	lines [][]byte // the event lines, without the package's own result
+	ok    bool     // the test process ended with status 0
+}
+
+// runner runs one unit once.
+type runner func(u unit) (attempt, error)
+
+// flake is a test that failed and then passed when it ran once more, alone.
+type flake struct {
+	Pkg    pkg
+	Test   string // empty when the test process failed and no test did
+	Output string // what the failed run printed for it
+}
+
+// results reads an attempt's lines: the result of every top-level test that has one, the tests that started, and
+// what each printed.
+func (a attempt) results() (result map[string]string, started map[string]bool, output map[string]string) {
+	result, started, output = map[string]string{}, map[string]bool{}, map[string]string{}
+	for _, line := range a.lines {
+		var event testEvent
+		if json.Unmarshal(line, &event) != nil || event.Test == "" {
+			continue
+		}
+		switch event.Action {
+		case "run":
+			started[event.topLevel()] = true
+		case "pass", "fail", "skip":
+			if event.Test == event.topLevel() {
+				result[event.Test] = event.Action
+			}
+		case "output":
+			output[event.topLevel()] += event.Output
+		}
+	}
+	return result, started, output
+}
+
+// without returns the lines that do not belong to the named top-level tests.
+func (a attempt) without(tests []string) [][]byte {
+	var kept [][]byte
+	for _, line := range a.lines {
+		var event testEvent
+		if json.Unmarshal(line, &event) == nil && event.Test != "" && slices.Contains(tests, event.topLevel()) {
+			continue
+		}
+		kept = append(kept, line)
+	}
+	return kept
+}
+
+// runTwice runs a unit, and once more what did not pass:
+//
+//   - every test that failed, or that had started when the process ended, alone in a process of its own. One that
+//     passes then is a flake: the unit passes and the test is named, so it is repaired and not forgotten. One that
+//     fails again fails the unit.
+//   - the tests that never started, together: a test that ended the process took the ones after it with it.
+//   - the whole unit, when the process failed and every test has a result that is not a failure.
+//
+// The lines it returns hold each test's last run only, so a reader of the events sees one result per test.
+func runTwice(run runner, u unit, measured timings) (lines [][]byte, ok bool, flakes []flake, err error) {
+	first, err := run(u)
+	if err != nil || first.ok {
+		return first.lines, first.ok && err == nil, nil, err
+	}
+	result, started, output := first.results()
+	var alone, together []string
+	for _, name := range u.Names {
+		switch {
+		case result[name] == "fail", result[name] == "" && started[name]:
+			alone = append(alone, name)
+		case result[name] == "":
+			together = append(together, name)
+		}
+	}
+	if len(alone)+len(together) == 0 {
+		second, err := run(u)
+		if second.ok && err == nil {
+			flakes = append(flakes, flake{Pkg: u.Pkg})
+		}
+		return second.lines, second.ok && err == nil, flakes, err
+	}
+
+	lines, ok = first.without(slices.Concat(alone, together)), true
+	again := make([]unit, 0, len(alone)+1)
+	for _, name := range alone {
+		again = append(again, unitOf(u.Pkg, []string{name}, 0))
+	}
+	again = append(again, unitsOf(u.Pkg, together, measured, secondsPerProgramTest, 0)...)
+	for i, retry := range again {
+		second, err := run(retry)
+		if err != nil {
+			return lines, false, flakes, err
+		}
+		lines = append(lines, second.lines...)
+		switch {
+		case !second.ok:
+			ok = false
+		case i < len(alone):
+			flakes = append(flakes, flake{Pkg: u.Pkg, Test: alone[i], Output: output[alone[i]]})
+		}
+	}
+	return lines, ok, flakes, nil
+}
+
 // queueResult is what running the units came to.
 type queueResult struct {
 	failed  []string       // the packages with a unit that failed
+	flakes  []flake        // the tests that failed and passed on their second run
 	busy    time.Duration  // the units' times added up
 	longest []unitDuration // the units that took longest
 	elapsed map[string]float64
@@ -315,9 +446,9 @@ type unitDuration struct {
 	seconds float64
 }
 
-// runQueue runs the units with the given number of workers and writes the tests' events to out. A package's own result
-// is written once, when its last unit has ended: a package is in several units, and each ends with a result line.
-func runQueue(ctx context.Context, root string, units []unit, binaries map[string]string, workers int, out io.Writer) (queueResult, error) {
+// runQueue runs the units with the given number of workers and writes the tests' events to out, a unit's when the
+// unit has ended. A package's own result is written once, when its last unit has ended: a package is in several units.
+func runQueue(run runner, units []unit, measured timings, workers int, out io.Writer) (queueResult, error) {
 	var (
 		mu       sync.Mutex
 		writeErr error
@@ -341,20 +472,20 @@ func runQueue(ctx context.Context, root string, units []unit, binaries map[strin
 		wg.Go(func() {
 			for u := range next {
 				started := time.Now()
-				ok, err := runUnit(ctx, root, u, binaries[u.Pkg.Path], func(line []byte) {
-					mu.Lock()
-					defer mu.Unlock()
-					_, err := out.Write(line)
-					writeErr = cmp.Or(writeErr, err)
-				})
+				lines, ok, flakes, err := runTwice(run, u, measured)
 				took := time.Since(started)
 				mu.Lock()
+				for _, line := range lines {
+					_, err := out.Write(line)
+					writeErr = cmp.Or(writeErr, err)
+				}
 				if err != nil {
 					write(testEvent{Time: time.Now(), Action: "output", Package: u.Pkg.Path, Output: "light queue: " + err.Error() + "\n"})
 				}
 				if !ok || err != nil {
 					failed[u.Pkg.Path] = true
 				}
+				result.flakes = append(result.flakes, flakes...)
 				result.busy += took
 				result.elapsed[u.Pkg.Path] += took.Seconds()
 				result.longest = append(result.longest, unitDuration{u, took.Seconds()})
@@ -378,6 +509,7 @@ func runQueue(ctx context.Context, root string, units []unit, binaries map[strin
 
 	result.failed = slices.Sorted(maps.Keys(failed))
 	slices.SortFunc(result.longest, func(a, b unitDuration) int { return cmp.Compare(b.seconds, a.seconds) })
+	slices.SortFunc(result.flakes, func(a, b flake) int { return cmp.Or(cmp.Compare(a.Pkg.Rel, b.Pkg.Rel), cmp.Compare(a.Test, b.Test)) })
 	return result, writeErr
 }
 
@@ -385,15 +517,15 @@ func runQueue(ctx context.Context, root string, units []unit, binaries map[strin
 // behind holds the pipe open, and the unit is done all the same.
 const ioGrace = 5 * time.Second
 
-// runUnit runs one unit's tests and gives every event line but the package's own result to write. It reports whether
-// the tests passed: the test process's own exit status says so.
+// runUnit runs one unit's tests once and returns every event line but the package's own result. The test process's
+// own exit status says whether they passed.
 //
 // The test binary is started here and not by test2json, which only converts what the binary prints: test2json ignores
 // SIGINT and SIGQUIT, an ignored signal is inherited, and a test that sends its child SIGINT would find it ignored.
-func runUnit(ctx context.Context, root string, u unit, binary string, write func(line []byte)) (bool, error) {
+func runUnit(ctx context.Context, root string, u unit, binary string) (attempt, error) {
 	fromTest, toConvert, err := os.Pipe()
 	if err != nil {
-		return false, err
+		return attempt{}, err
 	}
 	test := exec.CommandContext(ctx, binary, "-test.v=test2json", "-test.paniconexit0", "-test.timeout="+unitTimeout, "-test.run", u.Run) //nolint:gosec // G204: a binary this command built and a pattern of test names from this checkout.
 	test.Dir = filepath.Join(root, filepath.FromSlash(u.Pkg.Rel))
@@ -406,15 +538,15 @@ func runUnit(ctx context.Context, root string, u unit, binary string, write func
 		if input, err = convert.StdinPipe(); err == nil {
 			err = convert.Start()
 			if err == nil {
-				return runConverted(test, convert, fromTest, toConvert, input, events, write)
+				return runConverted(test, convert, fromTest, toConvert, input, events)
 			}
 		}
 	}
-	return false, errors.Join(err, fromTest.Close(), toConvert.Close())
+	return attempt{}, errors.Join(err, fromTest.Close(), toConvert.Close())
 }
 
-// runConverted starts the test, copies what it prints to the converter and the converter's events to write.
-func runConverted(test, convert *exec.Cmd, fromTest, toConvert *os.File, input io.WriteCloser, events io.Reader, write func(line []byte)) (bool, error) {
+// runConverted starts the test, copies what it prints to the converter and collects the converter's events.
+func runConverted(test, convert *exec.Cmd, fromTest, toConvert *os.File, input io.WriteCloser, events io.Reader) (attempt, error) {
 	startErr := test.Start()
 	// The test holds its own copy of the pipe's writing end; this process's copy would keep the reading end open.
 	closeErr := toConvert.Close()
@@ -423,13 +555,14 @@ func runConverted(test, convert *exec.Cmd, fromTest, toConvert *os.File, input i
 		_, err := io.Copy(input, fromTest)
 		copied <- errors.Join(err, input.Close())
 	}()
+	var result attempt
 	read := make(chan error, 1)
 	go func() {
 		reader := bufio.NewReader(events)
 		for {
 			line, err := reader.ReadBytes('\n')
 			if len(line) > 0 && !isPackageResult(line) {
-				write(line)
+				result.lines = append(result.lines, line)
 			}
 			if err != nil {
 				if errors.Is(err, io.EOF) {
@@ -454,12 +587,13 @@ func runConverted(test, convert *exec.Cmd, fromTest, toConvert *os.File, input i
 	readErr := <-read
 	convertErr := convert.Wait()
 	if startErr != nil {
-		return false, errors.Join(startErr, closeErr)
+		return result, errors.Join(startErr, closeErr)
 	}
 	if _, exited := errors.AsType[*exec.ExitError](testErr); testErr != nil && !exited {
-		return false, testErr
+		return result, testErr
 	}
-	return testErr == nil, errors.Join(readErr, convertErr)
+	result.ok = testErr == nil
+	return result, errors.Join(readErr, convertErr)
 }
 
 // isPackageResult reports whether an event line is the package's own result or last line: each unit of a package
@@ -478,8 +612,90 @@ func isPackageResult(line []byte) bool {
 	return false
 }
 
-// queue builds the test binaries the units need and runs the units.
-func queue(ctx context.Context, root string, units []unit, workers int, binDir string, stdout, stderr, report io.Writer) error {
+// earlierRun holds the results of this piece's run before this one, when a person asks for the piece again: the lines
+// of every top-level test that passed or was skipped then, by package and test.
+type earlierRun map[string]map[string][][]byte
+
+// readEarlier reads the results an earlier run of this piece kept. No file is no earlier run.
+func readEarlier(name string) (earlierRun, error) {
+	if name == "" {
+		return nil, nil
+	}
+	content, err := os.ReadFile(name)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	lines := map[string]map[string][][]byte{}
+	done := map[string]map[string]bool{}
+	for line := range bytes.Lines(content) {
+		var event testEvent
+		if json.Unmarshal(line, &event) != nil || event.Test == "" {
+			continue
+		}
+		top := event.topLevel()
+		if lines[event.Package] == nil {
+			lines[event.Package], done[event.Package] = map[string][][]byte{}, map[string]bool{}
+		}
+		lines[event.Package][top] = append(lines[event.Package][top], bytes.Clone(line))
+		if event.Test == top && (event.Action == "pass" || event.Action == "skip") {
+			done[event.Package][top] = true
+		}
+	}
+	earlier := earlierRun{}
+	for importPath, tests := range lines {
+		for test, testLines := range tests {
+			if done[importPath][test] {
+				if earlier[importPath] == nil {
+					earlier[importPath] = map[string][][]byte{}
+				}
+				earlier[importPath][test] = testLines
+			}
+		}
+	}
+	return earlier, nil
+}
+
+// leftToRun returns the units without the tests that passed in the earlier run: a piece that is asked for again runs
+// what was red or did not run, and nothing else.
+func leftToRun(units []unit, earlier earlierRun, measured timings) []unit {
+	var left []unit
+	for _, u := range units {
+		var names []string
+		for _, name := range u.Names {
+			if _, passed := earlier[u.Pkg.Path][name]; !passed {
+				names = append(names, name)
+			}
+		}
+		switch {
+		case len(names) == len(u.Names):
+			left = append(left, u)
+		case len(names) > 0:
+			left = append(left, unitsOf(u.Pkg, names, measured, secondsPerProgramTest, 0)...)
+		}
+	}
+	return left
+}
+
+// queue builds the test binaries the units need and runs the units. With an earlier run of the same piece it runs what
+// did not pass then and writes the earlier results of the rest again, so the results it leaves are the whole piece's.
+func queue(ctx context.Context, root string, units []unit, measured timings, earlier earlierRun, workers int, binDir string, stdout, stderr, report, flaky io.Writer) error {
+	replayed := map[string]bool{}
+	if len(earlier) > 0 {
+		for _, u := range units {
+			for _, name := range u.Names {
+				for _, line := range earlier[u.Pkg.Path][name] {
+					if _, err := stdout.Write(line); err != nil {
+						return err
+					}
+					replayed[u.Pkg.Path] = true
+				}
+			}
+		}
+		units = leftToRun(units, earlier, measured)
+	}
 	var withUnits []pkg
 	seen := map[string]bool{}
 	tests, alone := 0, 0
@@ -510,21 +726,48 @@ func queue(ctx context.Context, root string, units []unit, workers int, binDir s
 	}
 	built := time.Since(started)
 	var lines strings.Builder
+	if len(replayed) > 0 {
+		fmt.Fprintf(&lines, "queue: this piece ran before; the tests that passed then are not run again\n")
+	}
 	fmt.Fprintf(&lines, "queue: built %d test binaries in %.0f s; %d tests in %d units (%d tests alone), %d workers\n",
 		len(binaries), built.Seconds(), tests, len(units), alone, workers)
 
 	started = time.Now()
-	result, err := runQueue(ctx, root, units, binaries, workers, stdout)
+	result, err := runQueue(func(u unit) (attempt, error) { return runUnit(ctx, root, u, binaries[u.Pkg.Path]) }, units, measured, workers, stdout)
 	if err != nil {
 		return err
 	}
+	for importPath := range replayed {
+		if !seen[importPath] {
+			line, err := json.Marshal(testEvent{Time: time.Now(), Action: "pass", Package: importPath})
+			if err == nil {
+				_, err = stdout.Write(append(line, '\n'))
+			}
+			if err != nil {
+				return err
+			}
+		}
+	}
 	ran := time.Since(started)
 	fmt.Fprintf(&lines, "queue: the tests took %.0f s; the workers were busy %.0f%% of that time\n",
-		ran.Seconds(), 100*result.busy.Seconds()/(ran.Seconds()*float64(max(workers, 1))))
+		ran.Seconds(), 100*result.busy.Seconds()/max(ran.Seconds()*float64(max(workers, 1)), 0.001))
 	for _, d := range result.longest[:min(5, len(result.longest))] {
 		fmt.Fprintf(&lines, "queue: %6.1f s  %s  %d tests\n", d.seconds, d.unit.Pkg.Rel, d.unit.Tests)
 	}
+	var flakes strings.Builder
+	for _, f := range result.flakes {
+		name := f.Pkg.Rel + ":" + f.Test
+		if f.Test == "" {
+			name = f.Pkg.Rel + ": the test process"
+		}
+		fmt.Fprintf(&lines, "queue: flaky: %s failed and passed when it ran once more, alone\n", name)
+		fmt.Fprintf(&flakes, "## %s\n%s\n", name, f.Output)
+	}
 	_, err = io.WriteString(report, lines.String())
+	if flaky != nil {
+		_, flakyErr := io.WriteString(flaky, flakes.String())
+		err = errors.Join(err, flakyErr)
+	}
 	if len(result.failed) > 0 {
 		return fmt.Errorf("tests failed in %s", strings.Join(result.failed, ", "))
 	}

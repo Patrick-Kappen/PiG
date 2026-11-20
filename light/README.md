@@ -81,6 +81,10 @@ A piece (`automation/light/plan -queue`) builds the test binaries it needs once 
 
 Nothing is compiled twice: `Fast` compiles the change, packs what main's cache did not hold, and every piece unpacks that over the cache it restored.
 
+A test that fails runs once more, alone in a process of its own. When it fails again its piece is red. When it passes, the piece stays green and names the test as flaky, in a warning on the run and in the job's summary, with what the failed run printed kept beside the results: a test that only fails now and then does not hold a pull request up, and it is not forgotten either. A test that ended the test process is treated the same, and the tests that never started because of it run again together.
+
+"Re-run failed jobs" starts only the pieces that were red. Such a piece fetches the results it kept the time before and runs the tests that were red or did not run, nothing else; the results it leaves are the whole piece's again.
+
 `programs.txt` is measured with every package's tests in one process, one test at a time, under `strace` for the programs that process started while each test ran. The measuring is not in this directory yet.
 
 ## What main prepares

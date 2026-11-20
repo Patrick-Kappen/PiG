@@ -127,6 +127,8 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	movedFile := flags.String("moved", "light/moved.txt", "with -queue and -pieces: the file that puts single tests in another kind by hand")
 	binDir := flags.String("bin", "", "with -queue: `directory` for the test binaries (default: a temporary one)")
 	reportFile := flags.String("report", "", "with -queue: `file` for the seconds of the build and the tests (default: standard error)")
+	flakyFile := flags.String("flaky", "", "with -queue: `file` for the tests that failed and passed on their second run, each with what its failed run printed")
+	earlierFile := flags.String("earlier", "", "with -queue: the results `file` an earlier run of this piece kept; the tests that passed there are not run again")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
@@ -205,17 +207,27 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		if err != nil {
 			return fmt.Errorf("-part: %w", err)
 		}
-		report := stderr
-		if *reportFile != "" {
-			file, err := os.Create(*reportFile)
+		report, flaky := stderr, io.Writer(nil)
+		for _, file := range []struct {
+			name string
+			to   *io.Writer
+		}{{*reportFile, &report}, {*flakyFile, &flaky}} {
+			if file.name == "" {
+				continue
+			}
+			created, err := os.Create(file.name)
 			if err != nil {
 				return err
 			}
-			defer file.Close() //nolint:errcheck // the report is a few lines for the reader of the run; the tests' result does not depend on it
-			report = file
+			defer created.Close() //nolint:errcheck // a few lines for the reader of the run; the tests' result does not depend on them
+			*file.to = created
+		}
+		earlier, err := readEarlier(*earlierFile)
+		if err != nil {
+			return err
 		}
 		units := partOf(queueUnits(light, heavy, measured, starts, *kind), partIndex, parts)
-		return queue(ctx, root, units, *workers, *binDir, stdout, stderr, report)
+		return queue(ctx, root, units, measured, earlier, *workers, *binDir, stdout, stderr, report, flaky)
 	}
 	plans, err := planShards(light, measured, total)
 	if err != nil {
