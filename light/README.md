@@ -56,16 +56,26 @@ Why seconds and not only names: few tests hold most of the time. On GitHub 51 te
 A pull request saves no cache. On a push to main the `Warm` job is the one writer: it starts from what the previous push saved, runs no test, and saves
 
 - every test of the light run, compiled and linked;
+- the programs the tests build while they run, compiled with the flags the tests build them with (`light-warm-programs` in `light.mk` lists them);
 - the npm trees' downloads, the Pi the tests compare with and its source;
-- the Rust SDK and its dependencies, built into the Cargo target of every package whose tests build Rust cells, and the pinned Pi's env daemon (`automation/light/rustdeps`).
+- the Rust SDK and its dependencies, built into the Cargo target of every package whose tests build Rust cells, and the pinned Pi's env daemon (`automation/light/rustdeps`);
+- the lint's analysis of every package.
 
-Every test shard restores that, on a pull request and on main. It then compiles what the change touched and its tests' own cells, nothing else. Locally a shard of ten took 150 seconds from what `Warm` had saved; `Warm` itself took 241 seconds from nothing on 4 CPUs.
+Every test shard and the lint restore that, on a pull request and on main. A shard then compiles what the change touched and its tests' own cells, and the lint analyses the packages the change touched and the ones that import them.
+
+Three things made a shard build again what `Warm` had built, and each is why a line above reads as it does:
+
+- **Build flags.** The go command keeps a compiled package per set of flags. A test that builds `pig` with `-trimpath`, without cgo or with the strip build tags compiled its whole tree, in every shard that had such a test. `Warm` now makes those builds too.
+- **File times.** Cargo builds a path dependency again when a source file is newer than its last build, and after a checkout every file is. `Warm` leaves a stamp beside each build that names the SDK files it was built from; a shard whose SDK files are exactly those sets their times back before its tests start (`light-rust-reuse`), and a shard whose SDK differs by one byte keeps its times and builds.
+- **The toolchain.** rustup takes the toolchain from the directory cargo is started in. The pinned Pi's env daemon names another toolchain than the image's in its own directory, so it is built from `env/`, where env's tests build it.
 
 A test run saves nothing: every run builds cells under new temporary paths, and that would grow the cache from push to push.
 
 Without the cache a shard builds the Rust SDK inside its tests, for each package again and beside three other test binaries. On GitHub-hosted runners that took longer than the two minutes a test waits for its extension, and on the slower runners a shard's share of `coding/cli` then took longer than the go command's ten minutes per package. `light.mk` therefore sets the tests' wait bound (`PIG_TEST_WAIT_TIMEOUT_SEC`) to five minutes and the time per package (`LIGHT_TEST_TIMEOUT`) to twenty: a run without the cache is slow, not red. A test that passes does not wait longer for either.
 
-`go vet` and the lint use no cache: each compiles its platform from nothing on its own runner and is done before the tests are.
+What the tests still build in a shard: a Rust test crate that brings a lock file of its own, or none, resolves other versions of the SDK's dependencies than the SDK's lock file names, and Cargo builds the SDK once more for those.
+
+`go vet` uses no cache: each platform is compiled from nothing on its own runner and is done before the tests are.
 
 ## It stands on its own
 

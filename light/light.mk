@@ -89,8 +89,12 @@ light-vet-platforms:
 light-vet-%:
 	$(call light_part,vet-$*,$(if $(filter android-%,$*),CGO_ENABLED=0 )GOOS=$(word 1,$(subst -, ,$*)) GOARCH=$(word 2,$(subst -, ,$*)) go vet ./...)
 
+# The lint analyses every package and reports the findings in the files changed since a commit. It keeps each package's
+# analysis under ~/.cache and takes it from there while the package and what it imports are unchanged.
+light_lint = go tool golangci-lint run --allow-parallel-runners --build-tags=integration$(light_comma)live$(light_comma)parity --whole-files
+
 light-lint:
-	$(call light_part,lint,go tool golangci-lint run --allow-parallel-runners --build-tags=integration$(light_comma)live$(light_comma)parity --new-from-rev="$$(git merge-base HEAD $(LIGHT_BASE))" --whole-files ./...)
+	$(call light_part,lint,$(light_lint) --new-from-rev="$$(git merge-base HEAD $(LIGHT_BASE))" ./...)
 
 # What this shard tests: automation/light/plan writes the packages it runs whole, the packages every shard runs a share of, the
 # patterns of this shard's share, and the pattern of the single tests light/heavy.txt leaves out.
@@ -131,7 +135,13 @@ light-build: | light-plan
 #   package's other tests run in the build that ships, in one of the two runs above.
 light-test: light-test-sliced light-test-whole $(if $(filter 1/%,$(LIGHT_SHARD)),light-test-pigfault)
 
-light-test-sliced light-test-whole light-test-pigfault: | light-build light-fixtures
+light-test-sliced light-test-whole light-test-pigfault: | light-build light-fixtures light-rust-reuse
+
+# Cargo builds the Rust SDK again when a source file is newer than its last build, and after a checkout every file
+# is. When the Cargo targets hold the SDK built from exactly this checkout's files (the Warm job's stamp), rustdeps
+# sets those files' times back, so a test compiles its own cell only. A checkout whose SDK differs keeps its times.
+light-rust-reuse: | light-build
+	$(call light_part,rust-reuse,go run ./automation/light/rustdeps -reuse)
 
 light-test-sliced:
 	$(call light_part,test-sliced,if [ -s $(light_plan)/sliced.pkgs ]; then \
@@ -149,13 +159,50 @@ light-test-pigfault:
 # What main prepares for the pull requests (the Warm job), without running a test:
 # - light-fixtures: the npm trees, the Pi the tests compare with, its source;
 # - light-warm-go: every test of the light run compiled and linked;
+# - light-warm-programs: the programs the tests build while they run, compiled with the flags the tests build them with;
 # - light-warm-rust: the Rust SDK and its dependencies built into the Cargo target of every package whose tests build
-#   Rust cells, and the pinned Pi's env daemon (automation/light/rustdeps).
-# A shard that starts from this compiles what its pull request changed and its tests' own cells, nothing else.
-light-warm: light-fixtures light-warm-go light-warm-rust
+#   Rust cells, with a stamp that says which SDK files they were built from, and the pinned Pi's env daemon
+#   (automation/light/rustdeps);
+# - light-warm-lint: the lint's analysis of every package.
+# A shard that starts from this compiles what its pull request changed and its tests' own cells, nothing else, and
+# the lint analyses what the pull request changed and what imports that.
+light-warm: light-fixtures light-warm-go light-warm-programs light-warm-rust light-warm-lint
 
 light-warm-go: | light-plan
 	$(call light_part,warm-go,go test -c -o /dev/null $$(cat $(light_plan)/sliced.pkgs $(light_plan)/whole.pkgs))
+
+# The go command keeps a compiled package per set of build flags: what light-warm-go compiled does not serve a build
+# with -trimpath, without cgo, with build tags or for another platform. A test that builds a program that way compiled
+# the program's whole tree, and with a package's tests spread over the shards every shard that has such a test did.
+# Each line below is one such build with the flags its test gives the go command, in this order:
+#   pig as the tests start it                       coding/cli/build_binary_test.go
+#   pig as it is released                           coding/cli/build_binary_test.go
+#   pig with everything stripped that can be        coding/cli/strip_binary_test.go
+#   a Piglet binary with everything stripped        coding/pigletbuild/native_build.go, for the tests of that package
+#   PiG's env daemon as it is packaged              env/local_daemon_terminal_test.go
+#   the headless example                            examples/headless/main_test.go
+#   the durable core for WebAssembly                durable/core/contracttest/binding, .../counts
+# The program is discarded, the compiled packages stay in the build cache. A line that no longer matches its test
+# costs that test's shard the build again, nothing else.
+define light_warm_programs
+tags="$$(go run ./coding/piglet/internal/genstripids -print-tags)" \
+&& go build -pgo=off -o /dev/null ./cmd/pig \
+&& CGO_ENABLED=0 go build -pgo=off -trimpath -buildvcs=false -o /dev/null ./cmd/pig \
+&& CGO_ENABLED=0 go build -tags "$$tags" -o /dev/null ./cmd/pig \
+&& CGO_ENABLED=0 go build -trimpath -buildvcs=false -tags "$$tags" -o /dev/null ./cmd/pig \
+&& CGO_ENABLED=0 go build -trimpath -o /dev/null ./env/cmd/pi-env \
+&& CGO_ENABLED=0 go build -trimpath -buildvcs=false -o /dev/null ./examples/headless \
+&& GOOS=wasip1 GOARCH=wasm go build -buildmode=c-shared -trimpath -o $(LIGHT_OUT)/warm-core.wasm ./durable/core/cmd/corewasm \
+&& rm -f $(LIGHT_OUT)/warm-core.wasm $(LIGHT_OUT)/warm-core.h
+endef
+
+# After light-warm-go: the packages both compile the same way are compiled once.
+light-warm-programs: | light-warm-go
+	$(call light_part,warm-programs,$(light_warm_programs))
+
+# The commit itself is what the lint compares with here, so it reports nothing and analyses everything.
+light-warm-lint: | light-warm-go
+	$(call light_part,warm-lint,$(light_lint) --new-from-rev=HEAD ./...)
 
 # After the fixtures: the daemon's source is in the mirror they lay out.
 light-warm-rust: | light-fixtures
@@ -173,5 +220,5 @@ light-times:
 	@if [ -d $(LIGHT_OUT)/times ]; then cat $(LIGHT_OUT)/times/* | awk 'BEGIN { printf "%-20s %4s %7s\n", "part", "exit", "seconds" } { printf "%-20s %4s %7s\n", $$1, $$2, $$3 }'; else echo "light-times: no light run in $(LIGHT_OUT)"; fi
 	@grep -h '^DONE ' $(LIGHT_OUT)/test-*.log 2>/dev/null || true
 
-.PHONY: light light-vet light-vet-platforms light-lint light-plan light-fixtures light-build light-test light-test-sliced light-test-whole \
-	light-test-pigfault light-warm light-warm-go light-warm-rust light-timings light-times
+.PHONY: light light-vet light-vet-platforms light-lint light-plan light-fixtures light-build light-rust-reuse light-test light-test-sliced light-test-whole \
+	light-test-pigfault light-warm light-warm-go light-warm-programs light-warm-rust light-warm-lint light-timings light-times
