@@ -4,9 +4,9 @@ name: Security and supply chain
 
 # Security result is a required check, so every event that can land a change
 # reports it: a pull request, and the merge queue's merge_group run.
+# On the branch light-next a pull request gets Pre-flight and Light and nothing else: this workflow's pull_request and
+# merge_group triggers are taken out here. main has them.
 on:
-  pull_request:
-  merge_group:
   push:
     branches: [main]
   schedule:

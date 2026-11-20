@@ -5,20 +5,9 @@ name: Nix
 # Builds the flake's package in the Nix sandbox and smoke-tests the binary. Every system is evaluated; each runner builds its own.
 # A weekly run catches drift from changes that do not touch these paths, such as a new module that changes the fixed-output module
 # cache.
+# On the branch light-next a pull request gets Pre-flight and Light and nothing else: this workflow's pull_request and
+# merge_group triggers are taken out here. main has them.
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/nix.yml'
-      - 'flake.lock'
-      - 'flake.nix'
-      - 'nix/**'
-      - 'go.mod'
-      - 'go.sum'
-      - 'go.work'
-      - 'go.work.sum'
-      - '.go-version'
-      - 'internal/coding/pigversion/**'
-      - 'extensions/sdk/**'
   schedule:
     - cron: '17 4 * * 2'
   workflow_dispatch:

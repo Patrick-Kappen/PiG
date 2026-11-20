@@ -9,22 +9,9 @@ name: CI images
 # the tree. The refresh below is the only place the index and the database are read: it runs weekly and on dispatch, resolves the
 # locks, builds, validates and scans, and proposes the new lock on a branch. Publication stays a dispatch from main behind the
 # release environment; the pin proposal that follows it records the published digest.
+# On the branch light-next a pull request gets Pre-flight and Light and nothing else: this workflow's pull_request and
+# merge_group triggers are taken out here. main has them.
 on:
-  pull_request:
-    paths:
-      - .go-version
-      - .node-version
-      - internal/coding/pigversion/pigversion.go
-      - .upstream/pin
-      - .github/workflows/ci.yml
-      - .dockerignore
-      - automation/images/**
-      - automation/ci/build-ci-image.sh
-      - automation/ci/ci-image-inputs.sh
-      - automation/ci/propose-ci-image-change.py
-      - automation/ci/check-npm-lock-integrity.py
-      - automation/ci/seed-ci-image-bases.sh
-      - .github/workflows/ci-images.yml
   push:
     branches: [main]
     paths:

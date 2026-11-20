@@ -5,19 +5,9 @@ name: Nix vendor hash
 # Fails when `vendorHash` in nix/package.nix no longer matches the Go modules cmd/pig links, and names the hash to set. It builds
 # only the fixed-output module cache on one system (the hash is the same on every system), so it runs on any Go change: a new
 # import of an already-required module changes the cache without touching go.sum. nix.yml builds the whole package.
+# On the branch light-next a pull request gets Pre-flight and Light and nothing else: this workflow's pull_request and
+# merge_group triggers are taken out here. main has them.
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/nix-vendor-hash.yml'
-      - 'flake.lock'
-      - 'flake.nix'
-      - 'nix/**'
-      - 'go.mod'
-      - 'go.sum'
-      - 'go.work'
-      - 'go.work.sum'
-      - '.go-version'
-      - '**/*.go'
   push:
     branches: [main]
   schedule:

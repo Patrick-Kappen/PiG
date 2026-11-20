@@ -19,11 +19,9 @@ name: CI
 # status that .github/workflows/preflight.yml records on the head (automation/ci/preflight, about two minutes).
 # The full run is also the nightly run on main (the only run that saves caches, with a manual dispatch), a push to a
 # release/** branch, and a dispatch; .github/workflows/nightly-bisect.yml bisects a red nightly.
+# On the branch light-next a pull request gets Pre-flight and Light and nothing else: this workflow's pull_request and
+# merge_group triggers are taken out here. main has them.
 on:
-  pull_request:
-    # labeled starts the run that the ci:full label asks for; ready_for_review starts the one a draft's owner asks for.
-    types: [opened, synchronize, reopened, ready_for_review, labeled]
-  merge_group:
   push:
     branches: ['release/**']
   schedule:

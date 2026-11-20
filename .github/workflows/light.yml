@@ -2,25 +2,22 @@
 
 name: Light
 
-# What every push to a pull request gets: does this change break the product? light/light.mk says what runs; this file
-# only gives every part a runner of its own, so the parts run beside each other and none waits for another:
-#   Test (1..10)  the tests, spread over ten runners. Each runner works out its own share from the checkout
-#                 (automation/light/plan), so the shards need no job that plans for them.
-#   Vet (...)     go vet for each platform besides Linux that has code of its own
-#   Lint          golangci-lint on the files the change touches
-#   Fast          the tests that start no program, on one runner, from one queue. Not part of the verdict yet.
-#   Light         the verdict: green when every part above is green. This is the one check to require.
-#   Warm          on main only: compiles, builds and analyses what the tests and the lint start from, runs no test,
-#                 and saves it.
-# A pull request saves no cache: the test shards and the lint restore what Warm saved. go vet uses no cache.
-# The light run stands on its own: everything it uses is in light/ and in this file. It calls no other workflow, no
-# make file but its own and no script under automation/ci, and it selects no tests by path, reads no report and
-# compares no generated file. light/README.md says what it takes from the repository.
-# A contributor runs the same thing with `light/run.sh`.
+# What every push to a pull request gets: does this change break the product? light/light.mk says what runs.
+#   Fast    the tests that start no program, on one runner: every test binary built once, then one queue, the longest
+#           test first (automation/light/plan -queue)
+#   Lint    golangci-lint on the files the change touches
+#   Light   the verdict: green when both are green. This is the one check to require.
+#   Warm    on a push to main or light-next only: compiles, builds and analyses what the tests and the lint start
+#           from, runs no test, and saves it.
+# A pull request saves no cache: Fast and Lint restore what Warm saved.
+#
+# This is the light run of the branch light-next, where a pull request gets Pre-flight and this and nothing else. Not
+# in it yet, and run nowhere on this branch: the tests that start a program (light/programs.txt), go vet for the
+# platforms besides Linux, and the security checks.
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, light-next]
   workflow_dispatch:
 
 permissions:
@@ -49,7 +46,6 @@ jobs:
       packages: write
     outputs:
       image: ${{ steps.image.outputs.image }}
-      vet-platforms: ${{ steps.platforms.outputs.platforms }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -70,75 +66,7 @@ jobs:
           fi
           echo "image=$image" >> "$GITHUB_OUTPUT"
 
-      # light.mk names the platforms; the Vet jobs below take their list from it.
-      - name: Read the go vet platforms from light.mk
-        id: platforms
-        run: echo "platforms=$(make -s -f light/light.mk light-vet-platforms)" >> "$GITHUB_OUTPUT"
-
-  test:
-    name: Test (${{ matrix.shard }})
-    needs: setup
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    permissions:
-      contents: read
-      packages: read
-    strategy:
-      fail-fast: false
-      matrix:
-        # One entry per runner. A runner takes its place and the number of runners from the matrix itself
-        # (strategy.job-index, strategy.job-total), so adding or removing an entry cannot lose a test.
-        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Pull the light image
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          IMAGE: ${{ needs.setup.outputs.image }}
-        run: |
-          echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          if docker pull -q "$IMAGE"; then echo "PIG_LIGHT_IMAGE=$IMAGE" >> "$GITHUB_ENV"; fi
-
-      # What the Warm job of the last push to main prepared: the compiled packages, the programs the tests build with
-      # flags of their own, the module, cargo and npm downloads, the Pi the tests compare with, and the Rust builds
-      # the tests' cells start from. A test shard only reads it, on a pull request and on main.
-      - name: Restore what main prepared
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ${{ env.PIG_LIGHT_CACHE_ROOT }}
-          key: light-test-${{ hashFiles('light/Containerfile') }}-${{ github.sha }}
-          restore-keys: light-test-${{ hashFiles('light/Containerfile') }}-
-
-      - name: Run this shard's tests
-        env:
-          SHARD: ${{ strategy.job-index }}
-          SHARDS: ${{ strategy.job-total }}
-        run: light/run.sh make -f light/light.mk -k -j4 light-test LIGHT_SHARD="$((SHARD + 1))/$SHARDS"
-
-      - name: Report the seconds of each part
-        if: always()
-        run: |
-          {
-            echo '```'
-            make -s -f light/light.mk light-times
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      # Every test's result and seconds, as go test wrote them; light/timings.txt is written from these.
-      - name: Keep the test results
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: light-test-${{ matrix.shard }}
-          path: tmp/light/test-*.json
-          retention-days: 14
-          if-no-files-found: ignore
-
-  # The first stage on one runner, beside the shards until its time on a runner is known: the tests that start no
-  # program, built once and run from one queue. It is not part of the verdict yet.
+  # One runner: the tests that start no program, built once and run from one queue.
   fast:
     name: Fast
     needs: setup
@@ -190,37 +118,6 @@ jobs:
             tmp/light/fast-report.txt
           retention-days: 14
           if-no-files-found: ignore
-
-  vet:
-    name: Vet (${{ matrix.platform }})
-    needs: setup
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    permissions:
-      contents: read
-      packages: read
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: ${{ fromJSON(needs.setup.outputs.vet-platforms) }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Pull the light image
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          IMAGE: ${{ needs.setup.outputs.image }}
-        run: |
-          echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          if docker pull -q "$IMAGE"; then echo "PIG_LIGHT_IMAGE=$IMAGE" >> "$GITHUB_ENV"; fi
-
-      # No cache: this runner compiles the platform from nothing and is still done before the tests are.
-      - name: Run go vet for ${{ matrix.platform }}
-        env:
-          PLATFORM: ${{ matrix.platform }}
-        run: light/run.sh make -f light/light.mk "light-vet-$PLATFORM"
 
   lint:
     name: Lint
@@ -293,7 +190,7 @@ jobs:
       - name: Compile, build and analyse what the tests and the lint start from
         run: light/run.sh make -f light/light.mk -k -j2 light-warm
 
-      - name: Save it for the test shards
+      - name: Save it for the pull requests
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.PIG_LIGHT_CACHE_ROOT }}
@@ -302,16 +199,15 @@ jobs:
   light:
     name: Light
     if: always()
-    needs: [test, vet, lint]
+    needs: [fast, lint]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: {}
     steps:
       - name: Every part is green
         env:
-          TEST: ${{ needs.test.result }}
-          VET: ${{ needs.vet.result }}
+          FAST: ${{ needs.fast.result }}
           LINT: ${{ needs.lint.result }}
         run: |
-          echo "test: $TEST, vet: $VET, lint: $LINT"
-          [ "$TEST" = success ] && [ "$VET" = success ] && [ "$LINT" = success ]
+          echo "fast: $FAST, lint: $LINT"
+          [ "$FAST" = success ] && [ "$LINT" = success ]
