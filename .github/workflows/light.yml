@@ -9,8 +9,9 @@ name: Light
 #   Vet (...)     go vet for each platform besides Linux that has code of its own
 #   Lint          golangci-lint on the files the change touches
 #   Light         the verdict: green when every part above is green. This is the one check to require.
-#   Warm          on main only: compiles and builds what the tests start from, runs no test, and saves it.
-# A pull request saves no cache: the test shards restore what Warm saved. go vet and the lint use no cache.
+#   Warm          on main only: compiles, builds and analyses what the tests and the lint start from, runs no test,
+#                 and saves it.
+# A pull request saves no cache: the test shards and the lint restore what Warm saved. go vet uses no cache.
 # The light run stands on its own: everything it uses is in light/ and in this file. It calls no other workflow, no
 # make file but its own and no script under automation/ci, and it selects no tests by path, reads no report and
 # compares no generated file. light/README.md says what it takes from the repository.
@@ -100,9 +101,9 @@ jobs:
           echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
           if docker pull -q "$IMAGE"; then echo "PIG_LIGHT_IMAGE=$IMAGE" >> "$GITHUB_ENV"; fi
 
-      # What the Warm job of the last push to main prepared: the compiled packages, the module, cargo and npm downloads,
-      # the Pi the tests compare with, and the Rust SDK built for the packages whose tests build Rust cells. A test
-      # shard only reads it, on a pull request and on main.
+      # What the Warm job of the last push to main prepared: the compiled packages, the programs the tests build with
+      # flags of their own, the module, cargo and npm downloads, the Pi the tests compare with, and the Rust builds
+      # the tests' cells start from. A test shard only reads it, on a pull request and on main.
       - name: Restore what main prepared
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -189,12 +190,22 @@ jobs:
           echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
           if docker pull -q "$IMAGE"; then echo "PIG_LIGHT_IMAGE=$IMAGE" >> "$GITHUB_ENV"; fi
 
+      # What the Warm job of the last push to main prepared: the lint's analysis of every package as main has it. The
+      # lint analyses again only the packages this change touches and the ones that import them. It only reads it.
+      - name: Restore what main prepared
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.PIG_LIGHT_CACHE_ROOT }}
+          key: light-test-${{ hashFiles('light/Containerfile') }}-${{ github.sha }}
+          restore-keys: light-test-${{ hashFiles('light/Containerfile') }}-
+
       - name: Lint the changed files
         run: light/run.sh make -f light/light.mk light-lint LIGHT_BASE='HEAD^1'
 
   # On main only, and the one writer of the cache. It starts from what the previous push saved, compiles every test of
-  # the light run and builds what the tests' own builds start from, and runs no test: what a test run leaves behind
-  # (every run builds cells under new temporary paths) would grow the cache from push to push.
+  # the light run, builds what the tests' own builds start from, analyses every package for the lint, and runs no
+  # test: what a test run leaves behind (every run builds cells under new temporary paths) would grow the cache from
+  # push to push.
   warm:
     name: Warm
     if: github.event_name == 'push'
@@ -224,7 +235,7 @@ jobs:
           key: light-test-${{ hashFiles('light/Containerfile') }}-${{ github.sha }}
           restore-keys: light-test-${{ hashFiles('light/Containerfile') }}-
 
-      - name: Compile and build what the tests start from
+      - name: Compile, build and analyse what the tests and the lint start from
         run: light/run.sh make -f light/light.mk -k -j2 light-warm
 
       - name: Save it for the test shards
