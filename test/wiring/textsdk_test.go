@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/MichaelKinsy/PiG/internal/testenv"
 )
 
 // sourceFile is one production source file of a non-Go SDK.
@@ -40,7 +42,7 @@ type textSDK struct {
 
 func readSourceTree(t *testing.T, rel, suffix string) []sourceFile {
 	t.Helper()
-	root := filepath.Join(moduleRoot, filepath.FromSlash(rel))
+	root := filepath.Join(testenv.ModuleRoot(t), filepath.FromSlash(rel))
 	var files []sourceFile
 	err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {

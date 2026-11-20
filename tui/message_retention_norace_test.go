@@ -56,6 +56,10 @@ func TestWholeMessageRetention(t *testing.T) {
 	sizes := []int{10, 100, 1000, 10000}
 	for _, owner := range owners {
 		t.Run(owner.name, func(t *testing.T) {
+			// What the first rendered message of a process sets up once (the renderer's tables, the theme) is not
+			// retained per message: with ten messages it was 78 KB each when this test ran before any other. One
+			// message is rendered and dropped first, so every size measures messages alone.
+			owner.build(retentionSource(0)).Render(100)
 			perMessage := make([]float64, len(sizes))
 			for k, n := range sizes {
 				src := make([]string, n)
