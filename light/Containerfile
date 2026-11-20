@@ -1,0 +1,127 @@
+# SPDX-License-Identifier: MIT
+#
+# The light run's test image: one Linux environment that holds everything the tests need to start.
+# This file is the only place that names what is in it. It reads no other file of the repository (the build copies
+# nothing from it), runs no script of the repository and shares no version file with another pipeline: every version below is
+# this file's own, and a change of the image is a change of this file.
+#   Go, Node, Rust    the official images, by tag and digest
+#   apt packages      the list below, from the Ubuntu archive as it was at APT_SNAPSHOT
+#   npm, SBCL, libxcb by version, SBCL and libxcb with their sha256
+#   gotestsum         by version, built here with this image's Go
+# Go follows go.mod: when its toolchain line names a later Go than this image holds, go fetches that one itself.
+# light/run.sh builds the image and runs a command in it.
+
+FROM docker.io/library/golang:1.27.4-bookworm@sha256:4fa7c968ba93f1635670522dbb01a2c78150443e1385746924566079f36570ea AS go
+FROM docker.io/library/node:24.22.1-bookworm-slim@sha256:be8204d4bd327363357f532187b752ff62759c31bedf98e9e18fc08c9cbd605c AS node
+
+# Rust with the two components the SDK tests call (cargo fmt, cargo clippy); the official image holds neither.
+FROM docker.io/library/rust:1.97.1-slim-bookworm@sha256:2775a09d208ff0d7c1f50490c45b62db929e87ba1dcbc3f2132ac71a704bcdd3 AS rust
+RUN rustup component add rustfmt clippy
+
+# Ubuntu 24.04 with apt set to the archive of one day, so a build next month installs the same packages.
+# ca-certificates comes first and from today's archive: the snapshot server speaks https only.
+FROM docker.io/library/ubuntu:24.04@sha256:73b999393d07f2bf65a40373778a44dc9a6d54ad7718d29247d8ff9413c4d6a8 AS os
+ARG APT_SNAPSHOT=20261115T000000Z
+ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 TZ=Etc/UTC
+# No recommended packages: the tests need what a package depends on, not what it recommends (xvfb alone recommends
+# about 280 MB of Mesa and LLVM).
+RUN printf 'APT::Install-Recommends "false";\nAPT::Install-Suggests "false";\n' > /etc/apt/apt.conf.d/50-light-no-recommends \
+ && apt-get update \
+ && apt-get install -y ca-certificates \
+ && printf 'APT::Snapshot "%s";\n' "$APT_SNAPSHOT" > /etc/apt/apt.conf.d/50-light-snapshot \
+ && rm -rf /var/lib/apt/lists/*
+
+# libxcb 1.16: Ubuntu 24.04 ships 1.15, and 1.16 changed how DISPLAY is read. internal/nativeplatform's X11 display
+# tests compare PiG with the libxcb that pkg-config finds.
+FROM os AS libxcb
+ARG LIBXCB_VERSION=1.16.1
+ARG LIBXCB_SHA256=f24d187154c8e027b358fc7cb6588e35e33e6a92f11c668fe77396a7ae66e311
+RUN apt-get update \
+ && apt-get install -y curl xz-utils gcc libc6-dev make pkg-config python3 xcb-proto python3-xcbgen libxau-dev libxdmcp-dev \
+ && curl -fsSL --retry 5 --retry-all-errors -o /tmp/libxcb.tar.xz "https://xorg.freedesktop.org/archive/individual/lib/libxcb-${LIBXCB_VERSION}.tar.xz" \
+ && echo "${LIBXCB_SHA256}  /tmp/libxcb.tar.xz" | sha256sum -c - \
+ && tar -xJf /tmp/libxcb.tar.xz -C /tmp \
+ && cd "/tmp/libxcb-${LIBXCB_VERSION}" \
+ && ./configure PYTHON=/usr/bin/python3 --prefix=/opt/libxcb --disable-static --disable-devel-docs --without-doxygen >/tmp/configure.log 2>&1 \
+ && make -j"$(nproc)" >/tmp/make.log 2>&1 \
+ && make install >>/tmp/make.log 2>&1 \
+ && test -f /opt/libxcb/lib/pkgconfig/xcb.pc
+
+FROM os
+ARG NPM_VERSION=12.1.0
+ARG SBCL_VERSION=2.6.9
+ARG SBCL_SHA256=39fac28407405841003e4c2abfbe0d96abd93b7701e8b61cdd35e713943b46d6
+# The uid of the user who runs the image, so a checkout mounted from the host keeps its owner: light/run.sh passes
+# the building user's (1000 on a typical desktop, 1001 on a GitHub-hosted runner).
+ARG RUNNER_UID=1000
+
+# The first three lines are what any job needs: git, curl, the archive tools, time zones, Python with venv for the SDK
+# and terminal-engine venvs. tzdata-legacy holds the backward zone links (Cuba, US/Eastern): Node resolves a TZ value
+# through the host's zoneinfo, and internal/yaml12's date tests name those zones.
+# The last three are what the tests start or build with: tmux, fd and ripgrep for the coding-agent tests, a C toolchain
+# with pkg-config and the xcb headers for the native clipboard tests, Xvfb and xclip for the tests that start a real
+# X11 selection.
+RUN apt-get update \
+ && apt-get install -y \
+      curl git sudo xz-utils bzip2 unzip zstd file tzdata tzdata-legacy locales \
+      python3 python3-venv python3-pip jq less openssh-client \
+      procps psmisc lsof \
+      tmux fd-find ripgrep \
+      libc6-dev gcc g++ make dpkg-dev pkg-config libxcb1-dev xcb-proto python3-xcbgen libxau-dev libxdmcp-dev \
+      xvfb xclip \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY --from=go /usr/local/go /usr/local/go
+COPY --from=node /usr/local/bin/node /usr/local/bin/node
+COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
+COPY --from=node /usr/local/include/node /usr/local/include/node
+COPY --from=rust /usr/local/rustup /usr/local/rustup
+COPY --from=rust /usr/local/cargo/bin /usr/local/cargo/bin
+COPY --from=libxcb /opt/libxcb /opt/libxcb
+
+# npm: Node's archive bundles one; the Pi the tests compare with is built with this one.
+RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+ && ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx \
+ && npm install --global --no-audit --no-fund "npm@${NPM_VERSION}" \
+ && test "$(npm --version)" = "$NPM_VERSION" \
+ && rm -rf /root/.npm
+
+# SBCL: the project's own Linux binary, checked against its sha256.
+RUN curl -fsSL --retry 5 --retry-all-errors -o /tmp/sbcl.tar.bz2 "https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VERSION}/sbcl-${SBCL_VERSION}-x86-64-linux-binary.tar.bz2" \
+ && echo "${SBCL_SHA256}  /tmp/sbcl.tar.bz2" | sha256sum -c - \
+ && mkdir /tmp/sbcl && tar -xjf /tmp/sbcl.tar.bz2 -C /tmp/sbcl --strip-components=1 \
+ && (cd /tmp/sbcl && INSTALL_ROOT=/opt/sbcl sh install.sh >/dev/null) \
+ && rm -rf /tmp/sbcl /tmp/sbcl.tar.bz2 \
+ && test "$(SBCL_HOME=/opt/sbcl/lib/sbcl /opt/sbcl/bin/sbcl --version)" = "SBCL ${SBCL_VERSION}"
+
+# gotestsum runs go test and reports it. It is in the image so that no runner downloads and builds it for itself.
+ARG GOTESTSUM_VERSION=1.13.0
+RUN GOBIN=/usr/local/bin GOCACHE=/tmp/go-build GOMODCACHE=/tmp/go-mod GOTOOLCHAIN=local \
+      /usr/local/go/bin/go install "gotest.tools/gotestsum@v${GOTESTSUM_VERSION}" \
+ && rm -rf /tmp/go-build /tmp/go-mod \
+ && gotestsum --version
+
+# The user the tests run as: not root, with sudo, and with the uid of the user who built the image.
+RUN userdel -r ubuntu 2>/dev/null || true \
+ && useradd -m -u "$RUNNER_UID" -s /bin/bash runner \
+ && echo 'runner ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/runner && chmod 0440 /etc/sudoers.d/runner \
+ && install -d -m 0700 -o runner -g runner "/run/user/$RUNNER_UID"
+
+USER runner
+# XDG_RUNTIME_DIR: without it the extension host puts its sockets in $TMPDIR/pig-<uid>, and the tests that look for
+# leaked scratch directories report them.
+# CARGO_HOME is the user's, so cargo can write its registry; the toolchain itself stays in /usr/local/rustup.
+ENV HOME=/home/runner \
+    XDG_RUNTIME_DIR=/run/user/${RUNNER_UID} \
+    RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/home/runner/.cargo \
+    PIG_SBCL=/opt/sbcl/bin/sbcl \
+    SBCL_HOME=/opt/sbcl/lib/sbcl \
+    PKG_CONFIG_PATH=/opt/libxcb/lib/pkgconfig \
+    PATH=/home/runner/.cargo/bin:/home/runner/go/bin:/usr/local/cargo/bin:/usr/local/go/bin:/opt/sbcl/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Every tool starts as the user the tests run as.
+RUN mkdir -p /home/runner/.cache /home/runner/go /home/runner/.cargo/registry /home/runner/.cargo/git /home/runner/.npm \
+ && go version && node --version && npm --version && rustc --version && cargo fmt --version && cargo clippy --version \
+ && sbcl --version && tmux -V && pkg-config --atleast-version=1.16 xcb
+WORKDIR /home/runner

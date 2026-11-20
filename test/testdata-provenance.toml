@@ -33,6 +33,14 @@ reason = "CI tooling owned by PiG; no upstream Pi behaviour to cite"
 prefix = "automation/ci/changelogfrag/"
 reason = "CI tooling owned by PiG; no upstream Pi behaviour to cite"
 
+[[tooling]]
+prefix = "automation/light/plan/"
+reason = "CI tooling owned by PiG: spreads the light run's tests over its shards; no upstream Pi behaviour to cite"
+
+[[tooling]]
+prefix = "automation/light/rustdeps/"
+reason = "CI tooling owned by PiG: builds what the light run's Rust test builds start from; no upstream Pi behaviour to cite"
+
 [[golden]]
 paths = ["ai/providers/bedrock/testdata/bedrock-eventstream/golden.json"]
 owner = "pi"
