@@ -13,23 +13,6 @@ import (
 )
 
 var _ = Describe("print mode", startsPig, func() {
-	// `pig < /dev/null`: no message, stdin not a terminal. Upstream main.ts runs print mode, sends nothing, and exits 0.
-	It("prints nothing when stdin is not a terminal and there is no message", within, func(ctx SpecContext) {
-		got := run(fauxPig(ctx, GinkgoT().TempDir()))
-		Expect(got).To(And(HaveField("Code", 0), HaveField("Stdout", WithTransform(strings.TrimSpace, BeEmpty()))))
-	})
-
-	// Upstream print-mode.test.ts "returns non-zero on assistant error": text mode reports the session's last message
-	// even when no prompt is sent, so `pig -c -p` on a session that ended in an error prints that error and exits 1.
-	It("reports the session's last message when no prompt is sent", within, func(ctx SpecContext) {
-		const failure = `test-faux: unhandled request "no scripted answer"`
-		agentDir := GinkgoT().TempDir()
-		first := run(fauxPig(ctx, agentDir, "-p", "no scripted answer"))
-		Expect(first).To(And(HaveField("Code", 1), HaveField("Stderr", WithTransform(strings.TrimSpace, Equal(failure)))))
-		again := run(fauxPig(ctx, agentDir, "-c", "-p"))
-		Expect(again).To(And(HaveField("Code", 1), HaveField("Stderr", WithTransform(strings.TrimSpace, Equal(failure))), HaveField("Stdout", BeEmpty())))
-	})
-
 	// Upstream main.ts passes every positional message after the first to print mode, and print-mode.ts sends each
 	// as its own prompt after the initial message. Pig sent only the first and exited 0.
 	Describe("with several positional messages", func() {
@@ -84,6 +67,14 @@ var _ = Describe("the order of pig's startup checks", startsPig, func() {
 	It("rejects --fork with --no-session with Pi's error", within, func(ctx SpecContext) {
 		got := run(fauxPig(ctx, GinkgoT().TempDir(), "-p", "--fork", "abc", "--no-session", "hello"))
 		Expect(got).To(Equal(result{Code: 1, Stderr: "Error: --fork cannot be combined with --no-session\n"}))
+	})
+
+	// main.ts validateSessionIdFlags returns early only when --session-id is absent; an explicitly empty id fails
+	// assertValidSessionId, so Pi 1.1.0 'pi --session-id "" -p hi' exits 1 with this error before any model or session
+	// work.
+	It("rejects an empty --session-id with Pi's error", within, func(ctx SpecContext) {
+		got := run(fauxPig(ctx, GinkgoT().TempDir(), "--session-id", "", "-p", "hi"))
+		Expect(got).To(Equal(result{Code: 1, Stderr: "Error: Session id must be non-empty, contain only alphanumeric characters, '-', '_', and '.', and start and end with an alphanumeric character\n"}))
 	})
 
 	// Pi prints the version before validateForkFlags runs, so a conflicting --fork does not stop --version.

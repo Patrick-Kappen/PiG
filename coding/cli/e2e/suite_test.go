@@ -1,10 +1,10 @@
-// Package e2e is a trial of a Ginkgo suite for the tests of coding/cli that run the pig binary and use none of the
-// package's unexported code. A spec carries a label for every kind of program it starts, so a run selects by label:
+// Package e2e holds the tests of coding/cli that run the pig binary and use none of the package's unexported code,
+// as a Ginkgo suite. A spec carries a label for every kind of program it starts, so a run selects by label:
 //
 //	ginkgo -p --label-filter='pig && !node' ./coding/cli/e2e
 //
-// The specs are the tests of app_mode_binary_test.go, print_signal_exit_test.go and no_home_directory_test.go that
-// qualify, with the same commands and the same expected values.
+// The light run's piece "suites" runs it (automation/light/plan, suites.go). Each spec was a test of package cli and
+// has that test's commands and expected values; the test it came from is named where the name helps to find history.
 package e2e
 
 import (
@@ -13,6 +13,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,7 +31,6 @@ import (
 var (
 	startsPig  = Label("pig")
 	startsNode = Label("node")
-	needsPTY   = Label("pty")
 )
 
 // within bounds a spec; its context ends then, and with it every program the spec started with that context.
@@ -95,6 +95,17 @@ func run(cmd *exec.Cmd) result {
 	return result{Stdout: stdout.String(), Stderr: stderr.String(), Code: code}
 }
 
+// stdinFile is a file with the given content, opened for a command to read as its standard input.
+func stdinFile(content string) *os.File {
+	GinkgoHelper()
+	path := filepath.Join(GinkgoT().TempDir(), "stdin")
+	Expect(os.WriteFile(path, []byte(content), 0o600)).To(Succeed())
+	file, err := os.Open(path)
+	Expect(err).NotTo(HaveOccurred())
+	DeferCleanup(file.Close)
+	return file
+}
+
 // jsonLines reads json mode's output: one JSON object a line.
 func jsonLines(stdout string) []map[string]any {
 	GinkgoHelper()
@@ -107,4 +118,16 @@ func jsonLines(stdout string) []map[string]any {
 		lines = append(lines, line)
 	}
 	return lines
+}
+
+// toolExecutionEnd returns the tool_execution_end record of the tool.
+func toolExecutionEnd(lines []map[string]any, tool string) map[string]any {
+	GinkgoHelper()
+	for _, line := range lines {
+		if line["type"] == "tool_execution_end" && line["toolName"] == tool {
+			return line
+		}
+	}
+	Fail(fmt.Sprintf("no tool_execution_end for %s in %v", tool, lines))
+	return nil
 }
