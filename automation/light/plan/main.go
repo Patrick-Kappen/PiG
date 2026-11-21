@@ -83,6 +83,7 @@ type pkg struct {
 	Rel   string   // directory below the repository root, with forward slashes: what heavy.txt and timings.txt name
 	Files []string // absolute paths of its test files for the default build
 	Tests []string // names of its top-level tests, fuzz targets and examples
+	Suite bool     // a test file imports Ginkgo: its tests are specs, and the ginkgo command runs them (suites.go)
 }
 
 // shardPlan is what one shard runs.
@@ -118,7 +119,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	timingsFrom := flags.Bool("timings-from", false, "print a seconds file from the go test -json results given as arguments (file names or patterns)")
 	tagOnly := flags.String("tag-only", "", "print the -run pattern of the tests that exist only with this build `tag`, for the packages given as arguments")
 	queueMode := flags.Bool("queue", false, "build the test binaries of one piece once and run its tests from one queue, the longest first")
-	kind := flags.String("kind", kindFast, "with -queue: the `kind` of tests to run: "+strings.Join(kinds, ", "))
+	kind := flags.String("kind", kindFast, "with -queue: the `kind` of tests to run: "+strings.Join(kinds, ", ")+", or "+kindSuites+" for the Ginkgo suites")
 	part := flags.String("part", "1/1", "with -queue: which part of the kind's tests, as `index/total`")
 	workers := flags.Int("workers", runtime.NumCPU(), "with -queue: how many units run at a time")
 	piecesMode := flags.Bool("pieces", false, "print the pieces a run needs after the first stage, as JSON")
@@ -200,8 +201,8 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		if *piecesMode {
 			return json.NewEncoder(stdout).Encode(runPieces(light, heavy, measured, starts, *pieceSeconds))
 		}
-		if !slices.Contains(kinds, *kind) {
-			return fmt.Errorf("-kind %q: want one of %s", *kind, strings.Join(kinds, ", "))
+		if !slices.Contains(kinds, *kind) && *kind != kindSuites {
+			return fmt.Errorf("-kind %q: want one of %s, %s", *kind, strings.Join(kinds, ", "), kindSuites)
 		}
 		partIndex, parts, err := parseShard(*part)
 		if err != nil {
@@ -221,6 +222,13 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 			}
 			defer created.Close() //nolint:errcheck // a few lines for the reader of the run; the tests' result does not depend on them
 			*file.to = created
+		}
+		if *kind == kindSuites {
+			reportDir := ""
+			if *reportFile != "" {
+				reportDir = filepath.Dir(*reportFile)
+			}
+			return runSuites(ctx, root, suitesOf(light), *workers, *binDir, reportDir, stdout, stderr, report, flaky)
 		}
 		earlier, err := readEarlier(*earlierFile)
 		if err != nil {
@@ -530,9 +538,12 @@ func parseTimings(r io.Reader, name string) (timings, error) {
 // writeTimings prints a seconds file from go test -json results: the top-level tests and the packages that took
 // long enough to matter, longest first. A sliced package's seconds are the sum over the shards that ran a share.
 func writeTimings(w io.Writer, pkgs []pkg, patterns []string) error {
+	// A suite's specs have sentences for names; the seconds file names tests the queue runs, so it leaves them out.
 	rels := map[string]string{}
 	for _, p := range pkgs {
-		rels[p.Path] = p.Rel
+		if !p.Suite {
+			rels[p.Path] = p.Rel
+		}
 	}
 	var files []string
 	for _, pattern := range patterns {
@@ -618,7 +629,7 @@ func addTimings(r io.Reader, rels map[string]string, tests map[heavyTest]float64
 // listPackages returns the packages that match the patterns, with the tests of their test files for the default build
 // and, when tags is not empty, those build tags.
 func listPackages(ctx context.Context, root, tags string, patterns ...string) ([]pkg, error) {
-	args := []string{"list", "-json=ImportPath,Dir,TestGoFiles,XTestGoFiles"}
+	args := []string{"list", "-json=ImportPath,Dir,TestGoFiles,XTestGoFiles,TestImports,XTestImports"}
 	if tags != "" {
 		args = append(args, "-tags", tags)
 	}
@@ -631,6 +642,7 @@ func listPackages(ctx context.Context, root, tags string, patterns ...string) ([
 		var listed struct {
 			ImportPath, Dir           string
 			TestGoFiles, XTestGoFiles []string
+			TestImports, XTestImports []string
 		}
 		if err := decoder.Decode(&listed); errors.Is(err, io.EOF) {
 			break
@@ -644,6 +656,7 @@ func listPackages(ctx context.Context, root, tags string, patterns ...string) ([
 			return nil, err
 		}
 		p := pkg{Path: listed.ImportPath, Rel: filepath.ToSlash(rel)}
+		p.Suite = slices.Contains(listed.TestImports, ginkgoPath) || slices.Contains(listed.XTestImports, ginkgoPath)
 		for _, file := range slices.Concat(listed.TestGoFiles, listed.XTestGoFiles) {
 			path := filepath.Join(listed.Dir, file)
 			names, err := testNames(path, nil)

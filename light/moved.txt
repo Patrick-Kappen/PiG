@@ -3,3 +3,5 @@
 # Tests put in another kind by hand, each with its reason: the kind, then package:Test, then # and the reason.
 # The kinds are fast, slow, pig, go, node and rust (automation/light/plan, queue.go). A line here wins over what
 # light/programs.txt and light/timings.txt say. To move a test, add a line; to move it back, take the line out.
+go automation/light/plan:TestTheSuitesRunWithTheGinkgoCommandAndEverySpecIsATest # builds the ginkgo command and a suite with the go command
+go automation/light/plan:TestTheQueueRunsUnitsOfRealPackagesAndWritesEachPackageResultOnce # builds three test binaries with the go command

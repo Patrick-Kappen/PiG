@@ -22,6 +22,8 @@ name: Light
 #   slow, pig, go, node, rust   the other tests by what they start, each kind in as many parts as its seconds ask for
 #                (automation/light/plan -pieces). A piece starts from what Fast compiled.
 #   All tests    the second verdict: green when Light and every piece are green.
+# The piece "suites" runs the Ginkgo suites (packages whose tests import Ginkgo) with the ginkgo command: every spec is
+# a test in the results, and Ginkgo's own reports (suites.json with each spec's labels, suites.xml as JUnit) are kept.
 # A test that fails runs once more, alone. When it passes then, its job stays green and names it as flaky, in a warning
 # on the run. "Re-run failed jobs" starts only the pieces that were red, and such a piece runs only the tests that
 # were red in it.
@@ -302,6 +304,9 @@ jobs:
             tmp/light/test-piece.json
             tmp/light/test-piece-report.txt
             tmp/light/test-piece-flaky.txt
+            tmp/light/suites.json
+            tmp/light/suites.xml
+            tmp/light/suites.log
           overwrite: true
           retention-days: 14
           if-no-files-found: ignore
