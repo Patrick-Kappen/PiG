@@ -167,9 +167,13 @@ func kindOf(test heavyTest, measured timings, starts programs) string {
 // A slow test is a unit of its own. A package's fast tests are one unit, or more when their names do not fit one
 // pattern. A package's tests of a kind that starts a program are one unit, or several of at most maxTogetherSeconds.
 // A test that no file names is fast: a new test runs in the first stage until a measurement says otherwise.
+// A Ginkgo suite has no units: the ginkgo command runs it (suites.go).
 func queueUnits(pkgs []pkg, heavy heavyList, measured timings, starts programs, kind string) []unit {
 	var units []unit
 	for _, p := range pkgs {
+		if p.Suite {
+			continue
+		}
 		var together []string
 		for _, name := range p.Tests {
 			test := heavyTest{p.Rel, name}
@@ -223,7 +227,7 @@ type piece struct {
 }
 
 // runPieces returns the pieces after the first stage: each other kind in as many parts as its seconds ask for, at
-// seconds per part. A kind without tests has no piece.
+// seconds per part, and one piece for the Ginkgo suites. A kind without tests has no piece.
 func runPieces(pkgs []pkg, heavy heavyList, measured timings, starts programs, seconds float64) []piece {
 	var pieces []piece
 	for _, kind := range kinds[1:] {
@@ -243,6 +247,9 @@ func runPieces(pkgs []pkg, heavy heavyList, measured timings, starts programs, s
 			}
 			pieces = append(pieces, piece{Name: name, Kind: kind, Part: fmt.Sprintf("%d/%d", part, parts)})
 		}
+	}
+	if len(suitesOf(pkgs)) > 0 {
+		pieces = append(pieces, piece{Name: kindSuites, Kind: kindSuites, Part: "1/1"})
 	}
 	return pieces
 }

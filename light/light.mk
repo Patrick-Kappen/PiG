@@ -144,7 +144,9 @@ light-bookkeeping: | light-fixtures
 #   light-piece    one piece after it: LIGHT_PIECE is kind:index/total. The kinds that start a program get a worker
 #                  per processor: each of their tests runs several processes already.
 #   light-pieces   prints the pieces a run needs after the first stage, as JSON: each kind in as many parts as its
-#                  seconds ask for, at LIGHT_PIECE_SECONDS test seconds a part.
+#                  seconds ask for, at LIGHT_PIECE_SECONDS test seconds a part, and the piece suites:1/1 when a
+#                  package's tests import Ginkgo. That piece runs the suites with the ginkgo command go.mod pins, a
+#                  process per CPU, and leaves Ginkgo's own reports in $(LIGHT_OUT)/suites.json and suites.xml.
 LIGHT_PIECE ?= slow:1/1
 LIGHT_PIECE_SECONDS ?= 900
 light_piece_kind = $(word 1,$(subst :, ,$(LIGHT_PIECE)))

@@ -83,6 +83,8 @@ Nothing is compiled twice: `Fast` compiles the change, packs what main's cache d
 
 A test that fails runs once more, alone in a process of its own. When it fails again its piece is red. When it passes, the piece stays green and names the test as flaky, in a warning on the run and in the job's summary, with what the failed run printed kept beside the results: a test that only fails now and then does not hold a pull request up, and it is not forgotten either. A test that ended the test process is treated the same, and the tests that never started because of it run again together.
 
+A package whose tests import Ginkgo is a suite. The queue leaves it out, and the piece `suites` runs every suite with the `ginkgo` command that `go.mod` pins: a process per CPU, and a second attempt for a spec that fails. Every spec is a test in the results, a spec that needed its second attempt is named as flaky like any other test, and Ginkgo's own reports are kept with the piece: `suites.json` has each spec's labels, `suites.xml` is JUnit. A spec says with labels what it starts (`pig`, `node`); `ginkgo --label-filter` selects by them.
+
 "Re-run failed jobs" starts only the pieces that were red. Such a piece fetches the results it kept the time before and runs the tests that were red or did not run, nothing else; the results it leaves are the whole piece's again.
 
 `programs.txt` is measured with every package's tests in one process, one test at a time, under `strace` for the programs that process started while each test ran. The measuring is not in this directory yet.
